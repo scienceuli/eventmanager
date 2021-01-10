@@ -13,9 +13,25 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.contrib.staticfiles.urls import static, staticfiles_urlpatterns
+
+from .views import dashboard, login_page, logut_page
+
+from django.conf import settings
+
+# from .views import dashboard, login_page, logut_page
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', dashboard, name='dashboard'),
+    path('login/', login_page, name='login'),
+    path('logout/', logut_page, name='logout'),
+    path('events/', include('events.urls')),
+    path('ckeditor/', include('ckeditor_uploader.urls')),
 ]
+
+urlpatterns += staticfiles_urlpatterns()
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
