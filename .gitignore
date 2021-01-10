@@ -107,6 +107,7 @@ production.py
 development.py
 db.sqlite3
 db.sqlite3-journal
+manage.py
 
 # Flask stuff:
 instance/
