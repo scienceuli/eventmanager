@@ -84,7 +84,15 @@ class EventCategoryListView(LoginRequiredMixin, ListView):
     context_object_name = 'event_category'
 
 class EventCategoryCreateView(LoginRequiredMixin, CreateView):
-    pass
+    login_url = 'login'
+    model = EventCategory
+    fields = ['name',]
+    template_name = 'events/create_event_category.html'
+
+    def form_valid(self, form):
+        form.instance.created_user = self.request.user
+        form.instance.updated_user = self.request.user
+        return super().form_valid(form)
 
 def search_event(request):
     if request.method == 'POST':
