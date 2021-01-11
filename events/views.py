@@ -1,6 +1,7 @@
 from django.shortcuts import render
 
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
 
 from django.views.generic import (
     ListView,
@@ -17,6 +18,20 @@ from .models import (
 
 import itertools
 
+def home(request):
+    return render(request, 'events/home.html')
+
+@login_required(login_url='login')
+def dashboard(request):
+    event_ctg_count = EventCategory.objects.count()
+    event_count = Event.objects.count()
+    events = Event.objects.all()
+    context = {
+        'event_ctg_count': event_ctg_count,
+        'event_count': event_count,
+        'events': events
+    }
+    return render(request, 'events/dashboard.html', context)
 
 class EventListView(ListView):
     model = Event

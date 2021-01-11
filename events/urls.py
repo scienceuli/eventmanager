@@ -9,10 +9,14 @@ from .views import (
     EventDetailView,
     EventDeleteView,
     search_event,
+    home,
+    dashboard,
 )
 
 urlpatterns = [
-    path('event-list/', EventListView.as_view(), name='event-list'),
+    path('', home, name='home'),
+    path('dashboard/', dashboard, name='dashboard'),
+    path('event_list/', EventListView.as_view(), name='event-list'),
     path('event-create/', EventCreateView.as_view(), name='event-create'),
     path('category-list/', EventCategoryListView.as_view(), name='event-category-list'),
     path('create-category/', EventCategoryCreateView.as_view(), name='create-event-category'),

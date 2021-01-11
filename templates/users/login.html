@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>AdminLTE 3 | Log in</title>
+  <title>FOBI | Log in</title>
   <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% include 'base/header.html' %}
@@ -20,7 +20,7 @@
 <body class="hold-transition login-page">
 <div class="login-box">
   <div class="login-logo">
-    <a href="#"><b>Admin </b>Login</a>
+    <a href="#"><b>FOBI </b>Login</a>
   </div>
   <!-- /.login-logo -->
   <div class="card">
@@ -69,7 +69,7 @@
         <a href="forgot-password.html">Passwort vergessen</a>
       </p>
       <p class="mb-0">
-        <a href="register.html" class="text-center">Registrieren</a>
+        <a href="{% url 'register' %}" class="text-center">Registrieren</a>
       </p>
     </div>
     <!-- /.login-card-body -->

@@ -17,7 +17,9 @@
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-          <li class="nav-item">
+               {% if user.is_staff %}
+               
+              <li class="nav-item">
             <a href="{% url 'dashboard' %}" class="nav-link">
               <i class="nav-icon fas fa-th"></i>
               <p>
@@ -25,6 +27,8 @@
               </p>
             </a>
           </li>
+          {% endif %}
+          
           <li class="nav-item has-treeview menu-open">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-folder"></i>
@@ -34,12 +38,14 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              {% if user.is_staff %}
               <li class="nav-item">
                 <a href="{% url 'create-event-category' %}" class="nav-link">
                   <i class="far fa fa-edit nav-icon"></i>
                   <p>Kategorie anlegen</p>
                 </a>
               </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="{% url 'event-category-list' %}" class="nav-link">
                   <i class="far fa fa-list nav-icon"></i>
@@ -48,6 +54,7 @@
               </li>
             </ul>
           </li>
+          
           <li class="nav-item has-treeview menu-open">
             <a href="#" class="nav-link">
               <i class="nav-icon fas fa-calendar"></i>
@@ -57,12 +64,14 @@
               </p>
             </a>
             <ul class="nav nav-treeview">
+              {% if user.is_staff %}
               <li class="nav-item">
                 <a href="{% url 'event-create' %}" class="nav-link">
                   <i class="far fa fa-edit nav-icon"></i>
                   <p>Create Event</p>
                 </a>
               </li>
+              {% endif %}
               <li class="nav-item">
                 <a href="{% url 'event-list' %}" class="nav-link">
                   <i class="far fa fa-list nav-icon"></i>
