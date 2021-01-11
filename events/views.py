@@ -77,7 +77,11 @@ class EventDeleteView(LoginRequiredMixin, DeleteView):
     pass
 
 class EventCategoryListView(LoginRequiredMixin, ListView):
-    pass
+    
+    login_url = 'login'
+    model = EventCategory
+    template_name = 'events/event_category.html'
+    context_object_name = 'event_category'
 
 class EventCategoryCreateView(LoginRequiredMixin, CreateView):
     pass
