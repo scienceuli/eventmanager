@@ -65,7 +65,9 @@ class EventListView(ListView):
         return context
 
 class EventCreateView(LoginRequiredMixin, CreateView):
-    pass  
+    model = Event
+    fields = ['name', ]
+    template_name = 'events/create_event.html'
 
 class EventUpdateView(LoginRequiredMixin, UpdateView):
     pass
