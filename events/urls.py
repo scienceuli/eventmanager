@@ -9,6 +9,7 @@ from .views import (
     EventDetailView,
     EventDeleteView,
     search_event,
+    moodle,
     home,
     dashboard,
 )
@@ -24,5 +25,6 @@ urlpatterns = [
     path('detail/<int:pk>', EventDetailView.as_view(), name='event-detail'),
     path('delete/<int:pk>', EventDeleteView.as_view(), name='event-delete'),
     path('search_event/', search_event, name='search-event'),
+    path('moodle_list/', moodle, name='moodle-list'),
 ]
 

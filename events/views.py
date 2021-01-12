@@ -16,6 +16,8 @@ from .models import (
     EventImage,
 )
 
+from .api import call
+
 import itertools
 
 def home(request):
@@ -38,6 +40,11 @@ class EventListView(ListView):
     template_name = 'events/event_list.html'
     
     def get_context_data(self, **kwargs):
+        # get moodle courses
+        fname = 'core_course_get_courses'
+        courses_list = call(fname)
+
+        # events from database
         context = super().get_context_data(**kwargs)
         event_queryset = Event.objects.order_by('start_date')
         
@@ -110,3 +117,12 @@ def search_event(request):
            }
        return render(request, 'events/event_list.html', context)
     return render(request, 'events/event_list.html')
+
+# moodle
+def moodle(request):
+    fname = 'core_course_get_courses'
+    courses_list = call(fname)
+    context = {
+        'courses': courses_list
+    }
+    return render(request, 'events/moodle_list.html', context)
