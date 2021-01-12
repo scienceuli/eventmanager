@@ -40,6 +40,9 @@ class EventListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         event_queryset = Event.objects.order_by('start_date')
+        
+        if self.request.GET.get('cat'):
+            event_queryset = event_queryset.filter(category__name=self.request.GET.get('cat'))
 
         # Version 1
         events_dict = {}

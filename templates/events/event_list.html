@@ -33,6 +33,7 @@
                 </div>
             </div>
             <div class="card-body">
+                
                 {% for year, events_month_dict in events_dict.items %}
                 <h3>{{ year }}</h3>
         
@@ -72,6 +73,8 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                {% empty %}
+                <p>keine Veranstaltungen vorhanden</p>
                 
                 {% endfor %}
             </div>

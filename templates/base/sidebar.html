@@ -77,10 +77,16 @@
                   <i class="far fa fa-list nav-icon"></i>
                   <p>Event List</p>
                 </a>
+      
+                  {% for c in all_categories %} 
+                  <li class="nav-item">
+                  <a href="{% url 'event-list' %}?cat={{ c.name }}" class="nav-link"> - {{ c.name }}</a>
+                </li>
+                {% endfor %}
+                </ul>
               </li>
-            </ul>
-          </li>
-        </ul>
+              
+         
       </nav>
       <!-- /.sidebar-menu -->
     </div>
