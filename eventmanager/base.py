@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'crispy_forms',
     'ckeditor',
     'ckeditor_uploader',
+    'easy_thumbnails',
 
     # lokale apps
     'events.apps.EventsConfig',
@@ -136,4 +137,9 @@ CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': None,
     },
+}
+
+# easy thumbnails 
+THUMBNAIL_ALIASES = {
+    "": {"logo": {"size": (130, 130), "crop": True},},
 }

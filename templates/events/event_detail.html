@@ -1,0 +1,48 @@
+{% extends 'base/base.html' %}
+
+{% load thumbnail %}
+
+{% block title %}Veranstaltung Details{% endblock title %}
+{% block breadcrumb %}Veranstaltung Detail{% endblock breadcrumb %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col-md-10">
+                            <h5>{{ event.name }}</h5>
+                            <p>{{ event.category }} | {{ event.start_date|date:"DATE_FORMAT" }}{% if event.end_date %} -
+                                {{ event.end_date|date:"DATE_FORMAT" }}{% endif %} </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    
+                    <div class="row">
+                        
+                        {% if event.eventimage %}
+                        <div class="col-md-2">
+                    <img src="{{ event.eventimage.image|thumbnail_url:'logo' }}" alt="" />
+                </div>
+                    {% endif %}
+                        <div class="col-md-10">
+                                    
+  
+                                    <p><span>Ort: {{ event.venue }}</span></p>
+                                    
+                                    <p><span>Maximale Teilnehmerzahl: {{ event.maximum_attende }}</span></p>
+                                    
+                            <p>{{ event.description|safe }}</p>
+                            
+                        </div>
+                    </div>
+                </div>
+                <div class="footer text-center m-2">
+                    <a href="{% url 'event-list' %}">Zurück zur Liste</a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock content %}
