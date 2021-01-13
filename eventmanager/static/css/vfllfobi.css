@@ -1,5 +1,5 @@
 [class*=sidebar-dark-] {
-    background-color:#d63f04
+    background-color:#fe0000
    }
 
 
@@ -15,9 +15,9 @@
    h4,
    h5,
    h6 {
-    color:#d63f04
+    color:#fe0000
    }
 
    .monatsangabe {
-    color:#d63f04
+    color:#fe0000
    }
