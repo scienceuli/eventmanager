@@ -1,48 +1,4 @@
 
-Skip to content
-Pull requests
-Issues
-Marketplace
-Explore
-@scienceuli
-Learn Git and GitHub without any code!
-
-Using the Hello World guide, you’ll start a branch, write comments, and open a pull request.
-github /
-gitignore
-
-3.2k
-113k
-
-    60.9k
-
-Code
-Pull requests 253
-Actions
-Projects
-Security
-
-    Insights
-
-gitignore/Python.gitignore
-@pradyunsg
-pradyunsg Remove pip-wheel-metadata/ from Python.gitignore (#3364)
-Latest commit 14f8a8b on 11 Apr 2020
-History
-83 contributors
-@arcresu
-@shiftkey
-@Lucretiel
-@Harrison-G
-@jwg4
-@GabrielC101
-@misaelnieto
-@pmsosa
-@svkampen
-@vltr
-@thedrow
-@matheussl
-138 lines (112 sloc) 1.99 KB
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -185,17 +141,4 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
-    © 2021 GitHub, Inc.
-    Terms
-    Privacy
-    Security
-    Status
-    Help
-
-    Contact GitHub
-    Pricing
-    API
-    Training
-    Blog
-    About
 
