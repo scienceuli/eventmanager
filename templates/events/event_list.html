@@ -1,6 +1,7 @@
 {% extends 'base/base.html' %}
 
 {% load static timetags %}
+{% load i18n %}
 
 {% block title %}Veranstaltungen{% endblock title %}
 {% block breadcrumb %}Veranstaltungen{% endblock breadcrumb %}
@@ -36,6 +37,7 @@
             <div class="card-body">
                 
                 {% for year, events_month_dict in events_dict.items %}
+               <div>
                 <h3>{{ year }}</h3>
         
                 <table class="table table-striped table-bordered" id="DataTables_Table_0"
@@ -53,7 +55,7 @@
                     <tbody>
                         {% for month, events in events_month_dict.items %}
                         <tr>
-                            <td colspan="7">{{ month }}</td>
+                            <td colspan="7" class='monatsangabe'>{{ month }}</td>
                         </tr>
                         {% for event in events %}
                         <tr>
@@ -76,7 +78,7 @@
                 </table>
                 {% empty %}
                 <p>keine Veranstaltungen vorhanden</p>
-                
+            </div>
                 {% endfor %}
             </div>
         </div>

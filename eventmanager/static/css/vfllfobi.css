@@ -1,0 +1,23 @@
+[class*=sidebar-dark-] {
+    background-color:#d63f04
+   }
+
+
+   .h1,
+   .h2,
+   .h3,
+   .h4,
+   .h5,
+   .h6,
+   h1,
+   h2,
+   h3,
+   h4,
+   h5,
+   h6 {
+    color:#d63f04
+   }
+
+   .monatsangabe {
+    color:#d63f04
+   }

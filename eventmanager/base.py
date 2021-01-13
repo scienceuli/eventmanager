@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 import os
+from celery.schedules import crontab  
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -45,6 +46,7 @@ INSTALLED_APPS = [
 
     # lokale apps
     'events.apps.EventsConfig',
+    'users.apps.UsersConfig',
 ]
 
 MIDDLEWARE = [
@@ -144,3 +146,19 @@ CKEDITOR_CONFIGS = {
 THUMBNAIL_ALIASES = {
     "": {"logo": {"size": (130, 130), "crop": True},},
 }
+
+# CELERY STUFF
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/Berlin'
+CELERY_BEAT_SCHEDULE = {
+    # Executes every minute
+    'get_courses_from_moodle_every_minute': { 
+         'task': 'events.tasks.get_courses_from_moodle', 
+         'schedule': crontab(minute='*/1'),
+        },          
+}
+
