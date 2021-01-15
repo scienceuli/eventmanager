@@ -140,7 +140,16 @@ CKEDITOR_CONFIGS = {
     'default': {
         'toolbar': None,
     },
+    'short': {
+        'toolbar': 'Short', 'height': 100,
+        'toolbar_Short':
+            [
+                ['Bold', 'Italic', 'Link', 'Unlink', 'NumberedList','BulletedList',],
+            ],
+    }
 }
+
+
 
 # easy thumbnails 
 THUMBNAIL_ALIASES = {
