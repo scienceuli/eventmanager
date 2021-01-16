@@ -1,0 +1,38 @@
+{% extends 'base/base.html' %}
+{% block title %}Anmeldung{% endblock title %}
+{% block breadcrumb %}Anmeldung{% endblock breadcrumb %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-10">
+                        <h5>Anmeldung</h5>
+                        <p>Veranstaltung: {{ event.name }}</p>
+                        <p>Termin: {{ event.start_date|date:"DATE_FORMAT" }}{% if event.end_date %} -
+                            {{ event.end_date|date:"DATE_FORMAT" }}{% endif %}</p>
+                        <p><span>Ort: {{ event.location.city }}</span></p>
+                        <p><span>Refent*in: {{ event.speaker }}</span></p>
+                    </div>
+
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button class="btn btn-success ml-2" type="submit">Anmelden</button>
+                </form>
+                <div class="row">
+                    <div class="col-md-12">
+                        <p>weiterer Text ...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

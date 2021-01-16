@@ -68,7 +68,8 @@
                             <td>
                                 <a class="btn btn-info" href="{% url 'event-detail' event.pk %}" title="view">
                                     <i class="fa fa-eye"></i>
-                                </a>
+                                </a>&nbsp;
+                                <a href="{% url 'event-add-member' event.pk %}">Anmelden</a>
 
                             </td>
                         </tr>

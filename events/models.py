@@ -191,3 +191,29 @@ class EventAgenda(BaseModel):
 class EventImage(BaseModel):
     event = models.OneToOneField(Event, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='event_image/')
+
+class EventMember(BaseModel):
+    '''
+    Teilnehmer sollen nicht verwaltet werden
+    d.h. nur anonyme Erfassung ohne Teilnehmerdaten
+    '''
+    event = models.ForeignKey(Event, on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    attend_status_choice = (
+        ('waiting', 'Warteliste'),
+        ('attending', 'Zusage'),
+        ('completed', 'Abgesa'),
+        ('absent', 'Nicht erschienen'),
+        ('cancelled', 'Abgesagt'),
+    )
+    attend_status = models.CharField(choices=attend_status_choice, max_length=10)
+
+
+    class Meta:
+        unique_together = ['event', 'name']
+
+    def __str__(self):
+        return str(self.name)
+    
+    def get_absolute_url(self):
+        return reverse('join-event-list')

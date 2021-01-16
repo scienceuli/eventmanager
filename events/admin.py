@@ -12,6 +12,10 @@ from .models import (
     EventAgenda,
 )
 
+from .email_template import (
+    EmailTemplate
+)
+
 class EventImageInline(admin.StackedInline):
     model = EventImage
 
@@ -81,4 +85,25 @@ class EventLocationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(EventLocation, EventLocationAdmin)
+
+class EmailTemplateAdmin(admin.ModelAdmin):
+    list_display = ('name', 'text_template', 'counter')
+    ordering = ('name',)
+    search_fields = ('=name',)
+    readonly_fields = ('date_created', 'date_modified', 'counter')
+    fieldsets = (
+        ('Basic Info', {
+            'fields': ('name', 'counter'),
+        }),
+        ('Templates', {
+            'fields': ('text_template', 'html_template',),
+        }),
+        ('Änderungen', {
+            'fields': ('date_created', 'date_modified',),
+            'classes': ('collapse',),
+        }),
+    )
+
+
+admin.site.register(EmailTemplate, EmailTemplateAdmin)
 
