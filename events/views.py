@@ -132,7 +132,7 @@ def search_event(request):
        return render(request, 'events/event_list.html', context)
     return render(request, 'events/event_list.html')
 
-
+@login_required(login_url='login')
 def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
     template_name = 'anmeldung'
