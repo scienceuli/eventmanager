@@ -66,10 +66,12 @@
                             
 
                             <td>
-                                <a class="btn btn-info" href="{% url 'event-detail' event.pk %}" title="view">
+                                <a class="btn btn-info" href="{% url 'event-detail' event.slug %}" title="view">
                                     <i class="fa fa-eye"></i>
                                 </a>&nbsp;
-                                <a href="{% url 'event-add-member' event.pk %}">Anmelden</a>
+                                {% if event.is_open_for_registration %}
+                                <a href="{% url 'event-add-member' event.slug %}">Anmelden</a>
+                                {% endif %}
 
                             </td>
                         </tr>

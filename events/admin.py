@@ -10,11 +10,18 @@ from .models import (
     EventSpeaker,
     EventLocation,
     EventAgenda,
+    EventMember,
 )
 
 from .email_template import (
     EmailTemplate
 )
+
+# setting date format in admin page
+from django.conf.locale.de import formats as de_formats
+
+de_formats.DATETIME_FORMAT = "d.m.y H:i"
+
 
 class EventImageInline(admin.StackedInline):
     model = EventImage
@@ -27,15 +34,36 @@ class EventAgendaInline(admin.StackedInline):
     verbose_name_plural = "Programme"
     
 
+class EventMemberInline(admin.TabularInline):
+    model = EventMember
+    extra = 0
+    verbose_name = "Anmeldung"
+    verbose_name_plural = "Anmeldungen"
+    readonly_fields = ('name', 'label')
 
+    def has_add_permission(self, request, obj=None):
+        if obj and obj.is_past():
+            return False
+        return True
 
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('name', 'start_date', 'end_date', 'eventformat', 'category', 'status')
+    list_display = (
+        'name', 
+        'label',
+        "registration_over",
+        'start_date',
+        'end_date',
+        "get_number_of_members",
+        "capacity",
+        'eventformat',
+        'category',
+        'status'
+    )
     list_filter = ('eventformat', 'category', 'status')
     ordering = ('start_date', 'name')
     search_fields = ('=name',)
-    readonly_fields = ('uuid', 'date_created', 'date_modified')
-    inlines = (EventAgendaInline, EventImageInline, )
+    readonly_fields = ('uuid', 'label', 'slug', 'date_created', 'date_modified')
+    inlines = (EventAgendaInline, EventImageInline, EventMemberInline)
 
 admin.site.register(EventCategory)
 admin.site.register(EventFormat)

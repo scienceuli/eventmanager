@@ -13,7 +13,6 @@ from .views import (
     home,
     dashboard,
     event_add_member,
-    event_add_member_success_view,
 )
 
 urlpatterns = [
@@ -24,10 +23,9 @@ urlpatterns = [
     path('category-list/', EventCategoryListView.as_view(), name='event-category-list'),
     path('create-category/', EventCategoryCreateView.as_view(), name='create-event-category'),
     path('event/<int:pk>/edit/', EventUpdateView.as_view(), name='event-edit'),
-    path('detail/<int:pk>', EventDetailView.as_view(), name='event-detail'),
+    path('detail/<slug:slug>', EventDetailView.as_view(), name='event-detail'),
     path('delete/<int:pk>', EventDeleteView.as_view(), name='event-delete'),
-    path('event_add_member/<int:pk>', event_add_member, name='event-add-member'),
-    path('event_add_member_success/', event_add_member_success_view, name='event-add-member-success'),
+    path('event_add_member/<slug:slug>', event_add_member, name='event-add-member'),
     path('search_event/', search_event, name='search-event'),
     path('moodle_list/', moodle, name='moodle-list'),
 ]

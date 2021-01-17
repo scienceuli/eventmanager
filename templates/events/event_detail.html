@@ -16,7 +16,9 @@
                             <p>{{ event.category }} | {{ event.start_date|date:"DATE_FORMAT" }}{% if event.end_date %} -
                                 {{ event.end_date|date:"DATE_FORMAT" }}{% endif %} </p>
                                 <p>Format: {{ event.eventformat }} | Dauer: {{ event.duration }}</p>
-                                <p> <a href="{% url 'event-add-member' event.pk %}">Anmelden</a></p>
+                                {% if event.is_open_for_registration %}
+                                <p> {{ event.get_number_of_free_places }} freie Plätze |  <a href="{% url 'event-add-member' event.slug %}">Anmelden</a></p>
+                                {% endif %}
                         </div>
                     </div>
                 </div>
@@ -34,7 +36,7 @@
   
                                     <p><span>Ort: {{ event.location.city }}</span></p>
                                     
-                                    <p><span>Maximale Teilnehmerzahl: {{ event.maximum_attende }}</span></p>
+                                    <p><span>Maximale Teilnehmerzahl: {{ event.capacity }}</span></p>
                                     <p><span>Refent*in: {{  event.speaker }}</span></p>
                                     
                             <p>{{ event.description|safe }}</p>

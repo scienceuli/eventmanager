@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
+from django.utils import timezone
+
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
@@ -8,6 +10,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail, BadHeaderError
 
 from django.conf import settings
+#
 
 from django.views.generic import (
     ListView,
@@ -20,6 +23,7 @@ from .models import (
     EventCategory,
     Event,
     EventImage,
+    EventMember,
 )
 
 from .forms import EventMemberForm
@@ -129,8 +133,8 @@ def search_event(request):
     return render(request, 'events/event_list.html')
 
 
-def event_add_member(request, pk):
-    event = get_object_or_404(Event, pk=pk)
+def event_add_member(request, slug):
+    event = get_object_or_404(Event, slug=slug)
     template_name = 'anmeldung'
 
     if request.method == 'GET':
@@ -143,6 +147,21 @@ def event_add_member(request, pk):
             email = form.cleaned_data['email']
             phone = form.cleaned_data['phone']
             message = form.cleaned_data['message']
+
+            '''
+            Das Anmeldeobjekt wird zuerst gespeichert, um das Label
+            für Mailversand zu haben.
+            Das wird in in models.py in der save method hinzugefügt
+            '''
+            
+            new_member_name = f"{event.label} | {timezone.now()}"
+            new_member = EventMember.objects.create(
+                name=new_member_name, 
+                event=event,
+                attend_status="registered"
+            )
+            member_label = EventMember.objects.latest('date_created').label
+
             subject=f"Anmeldung am Kurs {event.name}"
             formatting_dict = {
                 'name': name,
@@ -150,20 +169,27 @@ def event_add_member(request, pk):
                 'email': email,
                 'phone': phone,
                 'event': event.name,
+                'label': event.label,
                 'start': event.start_date,
                 'end': event.end_date,
+                'member_label': member_label
             }
+
             try:
                 addresses = {'to': [settings.EVENT_RECEIVER_EMAIL]}
                 send_email(addresses, subject, template_name, formatting_dict=formatting_dict)
                 messages.success(request, 'Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen.')
+                new_member = EventMember.objects.latest('date_created')
+                new_member.mail_to_admin = True
+                new_member.save()
+
             except BadHeaderError:
                 return HttpResponse('Invalid header found.')
-            return redirect('event-detail', event.id)
+                
+            return redirect('event-detail', event.slug)
     return render(request, "events/add_event_member.html", {'form': form, 'event': event})
 
-def event_add_member_success_view(request):
-    return HttpResponse('Success! Thank you for your message.')
+
 
 
 # moodle
