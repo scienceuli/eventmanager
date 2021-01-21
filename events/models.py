@@ -103,7 +103,7 @@ class Event(BaseModel):
     category = models.ForeignKey(EventCategory, verbose_name="Kategorie", on_delete=models.CASCADE)
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(null=False, unique=True)
+    slug = models.SlugField(max_length=255, null=False, unique=True)
     label = models.CharField(max_length=64)
     description = RichTextUploadingField(verbose_name="Teaser")
     duration = models.CharField(verbose_name="Dauer", max_length=255, null=True, blank=True)
@@ -174,12 +174,13 @@ class Event(BaseModel):
 
         
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
+        max_length = self._meta.get_field('slug').max_length
+        self.slug = slugify(self.name)[:max_length]
         add = not self.pk
         super(Event, self).save(*args, **kwargs)
         if add:
             if not self.slug:
-                self.slug = slugify(self.name)
+                self.slug = slugify(self.name)[:max_length]
             if not self.label:
                 self.label = f"{self.eventformat.name[0].capitalize()}{self.start_date.year}-{str(self.id)}"
             kwargs['force_insert'] = False # create() uses this, which causes error.
@@ -229,6 +230,8 @@ class Event(BaseModel):
         if capacity <= count:
             return True
         return False
+
+
 
 
 class EventAgenda(BaseModel):
