@@ -62,7 +62,7 @@ class EventAdmin(admin.ModelAdmin):
     list_filter = ('eventformat', 'category', 'status')
     ordering = ('start_date', 'name')
     search_fields = ('=name',)
-    readonly_fields = ('uuid', 'label', 'slug', 'date_created', 'date_modified')
+    readonly_fields = ('uuid', 'label', 'slug', 'moodle_id', 'date_created', 'date_modified')
     inlines = (EventAgendaInline, EventImageInline, EventMemberInline)
 
 admin.site.register(EventCategory)

@@ -17,3 +17,9 @@ def get_courses_from_moodle():
     fname = 'core_course_get_courses'
     courses_list = call(fname)
     logger.info("Get courses from Moodle")
+
+@shared_task
+def get_and_save_courses_from_moodle():
+    from django.core.management import call_command
+    call_command('moodle')
+

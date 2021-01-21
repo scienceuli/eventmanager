@@ -34,6 +34,11 @@ from .utils import send_email
 
 import itertools
 
+import locale
+# for German locale
+locale.setlocale(locale.LC_TIME, "de_DE") 
+
+
 def home(request):
     return render(request, 'events/home.html')
 
@@ -200,3 +205,8 @@ def moodle(request):
         'courses': courses_list
     }
     return render(request, 'events/moodle_list.html', context)
+
+@login_required(login_url='login')
+def get_moodle_data(request):
+    get_and_save_courses_from_moodle.delay()
+    return HttpResponse('moodle Daten aktualisiert')

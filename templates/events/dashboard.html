@@ -80,7 +80,7 @@
                               <td>{{ event.end_date }}</td>
                               <td>{{ event.venue|capfirst }}</td>
                               <td>
-                                  <a class="btn btn-info" href="{% url 'event-detail' event.pk %}" title="view">
+                                  <a class="btn btn-info" href="{% url 'event-detail' event.slug %}" title="view">
                                       <i class="fa fa-eye"></i>
                                   </a>
                                   <a class="btn btn-info" href="{% url 'event-edit' event.pk %}" title="edit">

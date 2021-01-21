@@ -78,9 +78,9 @@ class EventLocation(AddressModel):
 
 
 class EventSpeaker(BaseModel):
-    first_name = models.CharField("Vorname", max_length=128)
+    first_name = models.CharField("Vorname", blank=True, max_length=128)
     last_name = models.CharField("Nachname", max_length=128)
-    email = models.EmailField("E-Mail", max_length=255)
+    email = models.EmailField("E-Mail", blank=True, max_length=255)
     phone = models.CharField("Tel", max_length=64, blank=True)
     bio = models.TextField("Biografie", blank=True)
     url = models.URLField("Website", blank=True)
@@ -143,6 +143,7 @@ class Event(BaseModel):
         ('cancel', 'abgesagt'),
     )
     status = models.CharField(choices=status_choice, max_length=10)
+    moodle_id = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
         ordering = ('start_date',)
@@ -170,14 +171,15 @@ class Event(BaseModel):
         if delta.days >= 14:
             raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
 
-        if not self.slug:
-            self.slug = slugify(self.name)
 
         
     def save(self, *args, **kwargs):
+        self.slug = slugify(self.name)
         add = not self.pk
         super(Event, self).save(*args, **kwargs)
         if add:
+            if not self.slug:
+                self.slug = slugify(self.name)
             if not self.label:
                 self.label = f"{self.eventformat.name[0].capitalize()}{self.start_date.year}-{str(self.id)}"
             kwargs['force_insert'] = False # create() uses this, which causes error.

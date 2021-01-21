@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     # lokale apps
     'events.apps.EventsConfig',
     'users.apps.UsersConfig',
+    'moodle.apps.MoodleConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -168,6 +170,10 @@ CELERY_BEAT_SCHEDULE = {
     'get_courses_from_moodle_every_minute': { 
          'task': 'events.tasks.get_courses_from_moodle', 
          'schedule': crontab(minute='*/1'),
-        },          
+        },
+     'get_and_save_courses_from_moodle_every_minute': { 
+         'task': 'events.tasks.get_and_save_courses_from_moodle', 
+         'schedule': crontab(minute='*/1'),
+     }
 }
 

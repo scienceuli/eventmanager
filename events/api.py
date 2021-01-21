@@ -29,3 +29,6 @@ def process_response(data):
             print('exception in data')
     return data
 
+def moodle_to_database():
+    pass
+
