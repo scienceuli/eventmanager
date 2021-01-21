@@ -78,7 +78,7 @@ def save_course_to_db(course_dict, trainer_dict):
     eventformat = EventFormat.objects.get(name="Online")
     speaker = EventSpeaker.objects.get(email=trainer_dict['trainer_email'])
     location = EventLocation.objects.get(title='FOBI Moodle')
-    obj, created = Event.objects.get_or_create(
+    obj, created = Event.objects.update_or_create(
         moodle_id=course_dict['moodle_id'],
         defaults={
             'category': category,
@@ -107,12 +107,27 @@ def save_course_to_db(course_dict, trainer_dict):
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
         courses = get_moodle_courses()
+        id_list_of_moodle_courses = []
         for course in courses:
-            print(course['id'])
-            print(course['fullname'])
-            print(course['shortname'])
-            print(course['categoryid'])
-            print(course['startdate'])
+            #print(course['id'])
+            id_list_of_moodle_courses.append(course['id'])
+            #print(course['fullname'])
+            #print(course['shortname'])
+            #print(course['categoryid'])
+            #print(course['startdate'])
+
+        # get all moodle courses from database
+        print(id_list_of_moodle_courses)
+        moodle_courses_in_db = Event.objects.filter(moodle_id__gt=0).values_list('moodle_id', flat=True)
+
+        moodle_id_list_from_db = list(moodle_courses_in_db)
+        print(moodle_id_list_from_db)
+
+        moodle_only_in_db_set = list(set(set(moodle_id_list_from_db) - set(id_list_of_moodle_courses)))
+        print(moodle_only_in_db_set)
+
+        # delete all courses only in db
+        Event.objects.filter(moodle_id__in=moodle_only_in_db_set).delete()
 
         for course in courses:
             print(f"Kurs: {course['fullname']}")
