@@ -102,8 +102,8 @@ class EventSpeaker(BaseModel):
 class Event(BaseModel):
     category = models.ForeignKey(EventCategory, verbose_name="Kategorie", on_delete=models.CASCADE)
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
-    name = models.CharField(max_length=255, unique=True)
-    slug = models.SlugField(max_length=255, null=False, unique=True)
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, null=False, unique=True, editable=False)
     label = models.CharField(max_length=64)
     description = RichTextUploadingField(verbose_name="Teaser")
     duration = models.CharField(verbose_name="Dauer", max_length=255, null=True, blank=True)
@@ -144,6 +144,7 @@ class Event(BaseModel):
     )
     status = models.CharField(choices=status_choice, max_length=10)
     moodle_id = models.PositiveSmallIntegerField(default=0)
+    students_number = models.PositiveSmallIntegerField(default=0, editable=False)
 
     class Meta:
         ordering = ('start_date',)
@@ -175,16 +176,17 @@ class Event(BaseModel):
         
     def save(self, *args, **kwargs):
         max_length = self._meta.get_field('slug').max_length
-        self.slug = slugify(self.name)[:max_length]
+        if not self.id:
+            self.slug = slugify(f"{self.name}-{self.moodle_id}")[:max_length]
         add = not self.pk
-        super(Event, self).save(*args, **kwargs)
+        #super(Event, self).save(*args, **kwargs)
         if add:
-            if not self.slug:
-                self.slug = slugify(self.name)[:max_length]
+            #if not self.slug:
+            #    self.slug = slugify(self.name)[:max_length]
             if not self.label:
                 self.label = f"{self.eventformat.name[0].capitalize()}{self.start_date.year}-{str(self.id)}"
             kwargs['force_insert'] = False # create() uses this, which causes error.
-            super(Event, self).save(*args, **kwargs)
+        super(Event, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('event-detail', kwargs={'slug': self.slug}) 

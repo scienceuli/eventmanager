@@ -54,6 +54,7 @@ class EventAdmin(admin.ModelAdmin):
         'start_date',
         'end_date',
         "get_number_of_members",
+        "students_number",
         "capacity",
         'eventformat',
         'category',

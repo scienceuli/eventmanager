@@ -99,6 +99,7 @@ def save_course_to_db(course_dict, trainer_dict):
             'end_date': course_dict['course_end_date'],
             'capacity': 20,
             'status': 'active',
+            'students_number': course_dict['moodle_students_counter'],
         }
     )
 
@@ -141,24 +142,33 @@ class Command(BaseCommand):
             course_dict['course_start_date'] = get_timestamp(course['startdate'])
             course_dict['course_end_date'] = get_timestamp(course['enddate'])
             course_dict['course_summary'] = course['summary']
+            # get course users
             course_users = get_moodle_course_enroled_users(course_id)
+            
             trainer_firstname=""
             trainer_lastname="NN"
             trainer_email="NN@nn.de"
             trainer_exists = False
+            #initialize number of students (Teilnehmer)
+            moodle_students_counter = 0
             for user in course_users:
                 role_id = safe_list_get(user['roles'], 0, 'roleid')
                 # print(f"role_id: {role_id}")
-                if role_id == 3:
+                if role_id == 3: # trainer
                     trainer_firstname = user['firstname']
                     trainer_lastname = user['lastname']
                     trainer_email = user['email']
                     trainer_exists = True
+                elif role_id == 5: # students
+                    moodle_students_counter += 1
+
             trainer_dict = {}
             trainer_dict['trainer_firstname'] = trainer_firstname
             trainer_dict['trainer_lastname'] = trainer_lastname
             trainer_dict['trainer_email'] = trainer_email
             trainer_dict['trainer_exists'] = trainer_exists
+
+            course_dict['moodle_students_counter'] = moodle_students_counter
 
             '''
             nur die Kurse aus den Bereichen in Planung(id = 3) und 
