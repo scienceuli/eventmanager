@@ -74,7 +74,7 @@ def save_trainer_to_db(trainer_dict):
         )
 
 def save_course_to_db(course_dict, trainer_dict):
-    category = EventCategory.objects.get(name='Moodle')
+    category = EventCategory.objects.get(name='Onlineseminare')
     eventformat = EventFormat.objects.get(name="Online")
     speaker = EventSpeaker.objects.get(email=trainer_dict['trainer_email'])
     location = EventLocation.objects.get(title='FOBI Moodle')
