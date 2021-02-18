@@ -10,14 +10,15 @@
 	<meta name="description" content="">
 	<meta name="keywords" content="">
 	<meta name="author" content="">
-
+	<link rel="preconnect" href="https://fonts.gstatic.com">
+	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="{% static 'css/styles.css' %}">
 </head>
 
 <body class="bg-grey-lightest font-sans leading-normal tracking-normal">
 
-	<nav class="flex flex-wrap items-center justify-between p-5 bg-red">
-		<img src="{% static 'images/image001.jpg' %}" class="object-contain h-24 object-left">
+	<nav class="flex flex-wrap items-center justify-between p-5 bg-white border-b-2 border-red">
+		<img src="{% static 'images/vfll_logo_rot_Bild.svg' %}" class="object-contain h-24 object-left">
 		<!-- logo -->
 		<!-- togglr button hamburger -->
 		<div class="flex md:hidden">
@@ -32,13 +33,13 @@
 		<!-- links -->
 		<div class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
 			<a href="{% url 'home' %}"
-				class="block md:inline-block text-white font-bold hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">VFLL
+				class="block md:inline-block text-red font-bold hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">VFLL
 				Fobi</a>
 			<a href="{% url 'event-list' %}"
-				class="block md:inline-block text-white hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">Alle
+				class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">Alle
 				Kurse</a>
 			<div
-				class="block md:inline-block text-white hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+				class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
 				<button style="transition:all .15s ease" type="button" onclick="openDropdown(event,'dropdown-id')">
 					Kurse nach Kategorien
 				</button>
