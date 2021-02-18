@@ -1,0 +1,132 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>{% block title %}{% endblock title %}</title>
+	<meta name="description" content="">
+	<meta name="keywords" content="">
+	<meta name="author" content="">
+
+	<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+
+<body class="bg-grey-lightest font-sans leading-normal tracking-normal">
+
+	<nav class="flex flex-wrap items-center justify-between p-5 bg-red">
+		<img src="{% static 'images/image001.jpg' %}" class="object-contain h-24 object-left">
+		<!-- logo -->
+		<!-- togglr button hamburger -->
+		<div class="flex md:hidden">
+			<button id="hamburger">
+				<img class="toggle block" src="https://img.icons8.com/fluent-systems-regular/2x/menu-squared-2.png"
+					width="40" height="40" />
+				<img class="toggle hidden" src="https://img.icons8.com/fluent-systems-regular/2x/close-window.png"
+					width="40" height="40" />
+			</button>
+		</div>
+
+		<!-- links -->
+		<div
+			class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
+			<a href="{% url 'home' %}"
+				class="block md:inline-block text-white font-bold hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">VFLL
+				Fobi</a>
+			<a href="{% url 'event-list' %}"
+				class="block md:inline-block text-white hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">Alle
+				Kurse</a>
+			<div
+				class="block md:inline-block text-white hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+				<button style="transition:all .15s ease" type="button" onclick="openDropdown(event,'dropdown-id')">
+					Kurse nach Kategorien
+				</button>
+				<div class="hidden bg-white  text-base z-50 float-left py-2 list-none text-left rounded shadow-lg mt-1"
+					style="min-width:12rem" id="dropdown-id">
+					{% for c in all_categories %}
+					<a href="{% url 'event-list' %}?cat={{ c.name }}"
+						class="text-sm py-2 px-4 font-normal block w-full whitespace-no-wrap bg-transparent text-gray-800">
+						{{ c.name }}
+					</a>
+					{% endfor %}
+
+				</div>
+			</div>
+			
+
+		</div>
+		{% block searchfield %}{% endblock %}
+		<!-- cta -->
+	</nav>
+
+	<!-- Messages-->
+
+
+
+
+
+	{% if messages %}
+	{% for message in messages %}
+	<div class="text-white px-6 py-4 border-0 rounded relative mb-4 bg-green-600">
+
+		<span class="text-xl inline-block mr-5 align-middle">
+			<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="none" viewBox="0 0 24 24"
+				stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+				class="feather feather-check-circle w-5 h-5 mx-2">
+				<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+				<polyline points="22 4 12 14.01 9 11.01"></polyline>
+			</svg>
+		</span>
+		<span class="inline-block align-middle mr-8">
+			{{ message }}
+		</span>
+		<button
+			class="absolute bg-transparent text-2xl font-semibold leading-none right-0 top-0 mt-4 mr-6 outline-none focus:outline-none"
+			onclick="closeAlert(event)">
+			<span>×</span>
+
+		</button>
+	</div>
+	{% endfor %}
+	{% endif %}
+
+
+
+
+	<!-- Main -->
+
+	{% block content %}
+	{% endblock %}
+
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js" charset="utf-8"></script>
+
+	<script src="{% static 'js/script.js' %}"></script>
+	<script>
+		function closeAlert(event) {
+			let element = event.target;
+			while (element.nodeName !== "BUTTON") {
+				element = element.parentNode;
+			}
+			element.parentNode.parentNode.removeChild(element.parentNode);
+		}
+	</script>
+
+
+	<script>
+		function openDropdown(event, dropdownID) {
+			let element = event.target;
+			while (element.nodeName !== "BUTTON") {
+				element = element.parentNode;
+			}
+			var popper = new Popper(element, document.getElementById(dropdownID), {
+				placement: 'bottom-start'
+			});
+			document.getElementById(dropdownID).classList.toggle("hidden");
+			document.getElementById(dropdownID).classList.toggle("block");
+		}
+	</script>
+</body>
+
+</html>

@@ -256,13 +256,26 @@ class EventImage(BaseModel):
     event = models.OneToOneField(Event, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='event_image/')
 
-class EventMember(BaseModel):
+class EventMember(AddressModel):
     '''
-    Teilnehmer sollen nicht verwaltet werden
-    d.h. nur anonyme Erfassung ohne Teilnehmerdaten
+    Teilnehmer werden verwaltet 
+    mit ihren Anmeldedaten
     '''
-    event = models.ForeignKey(Event, related_name="members", on_delete=models.CASCADE)
-    name = models.CharField(max_length=255)
+    event = models.ForeignKey(Event, verbose_name='Veranstaltung', related_name="members", on_delete=models.CASCADE)
+    name = models.CharField('Kurzbezeichnung', max_length=255)
+    firstname = models.CharField('Vorname', max_length=255, blank=True)
+    lastname = models.CharField('Nachname', max_length=255, blank=True)
+    email = models.EmailField("E-Mail", blank=True, max_length=255)
+    phone = models.CharField("Tel", max_length=64, blank=True)
+    vfll = models.BooleanField("VFLL-Mitglied", default=False)
+
+    memberships = models.CharField("Mitgliedschaften", max_length=64, blank=True)
+    attention = models.CharField('aufmerksamen geworden durch', max_length=64, blank=True)
+    attention_other = models.CharField('sonstige', max_length=64, blank=True)
+    education_bonus = models.BooleanField('Bildungsprämie', default=False)
+    message = models.TextField("Anmerkung", blank=True)
+    check = models.BooleanField(default=False)
+
     label = models.CharField(max_length=64)
     attend_status_choice = (
         ('registered', 'angemeldet'),
@@ -275,10 +288,12 @@ class EventMember(BaseModel):
     mail_to_admin = models.BooleanField("m > admin", default=False)
 
     class Meta:
+        verbose_name = 'TeilnehmerIn'
+        verbose_name_plural = 'TeilnehmerInnen'
         unique_together = ['event', 'name']
 
     def __str__(self):
-        return str(self.name)
+        return str(f"Anmeldung von {self.lastname}, {self.firstname}")
 
     def save(self, *args, **kwargs):
         add = not self.pk
@@ -289,3 +304,4 @@ class EventMember(BaseModel):
             kwargs['force_insert'] = False # create() uses this, which causes error.
             super(EventMember, self).save(*args, **kwargs)
     
+

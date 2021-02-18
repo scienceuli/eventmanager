@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     'ckeditor',
     'ckeditor_uploader',
     'easy_thumbnails',
+    'tailwind',
+
+    # tailwind theme app
+    'fobi_theme',
 
     # lokale apps
     'events.apps.EventsConfig',
@@ -176,4 +180,8 @@ CELERY_BEAT_SCHEDULE = {
          'schedule': crontab(minute='*/1'),
      }
 }
+
+# Tailwind css
+TAILWIND_APP_NAME = 'fobi_theme'
+
 

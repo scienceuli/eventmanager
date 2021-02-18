@@ -6,7 +6,6 @@ class BaseModel(models.Model):
 
     class Meta:
         abstract = True
-
     uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     date_created = models.DateTimeField(verbose_name="angelegt am", auto_now_add=True)
     date_modified = models.DateTimeField(verbose_name="geändert am", auto_now=True)

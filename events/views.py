@@ -56,7 +56,7 @@ def dashboard(request):
 
 class EventListView(ListView):
     model = Event
-    template_name = 'events/event_list.html'
+    template_name = 'events/event_list_tw.html'
     
     def get_context_data(self, **kwargs):
         # get moodle courses
@@ -96,7 +96,7 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
 class EventDetailView(LoginRequiredMixin, DetailView):
     login_url = 'login'
     model = Event
-    template_name = 'events/event_detail.html'
+    template_name = 'events/event_detail_tw.html'
     context_object_name = 'event'
 
 class EventDeleteView(LoginRequiredMixin, DeleteView):
@@ -134,8 +134,8 @@ def search_event(request):
            context = {
                'events_dict': events_dict
            }
-       return render(request, 'events/event_list.html', context)
-    return render(request, 'events/event_list.html')
+       return render(request, 'events/event_list_tw.html', context)
+    return render(request, 'events/event_list_tw.html')
 
 @login_required(login_url='login')
 def event_add_member(request, slug):
@@ -147,30 +147,69 @@ def event_add_member(request, slug):
     else:
         form = EventMemberForm(request.POST)
         if form.is_valid():
-            name = form.cleaned_data['name']
-            address = form.cleaned_data['address']
+            firstname = form.cleaned_data['firstname']
+            lastname = form.cleaned_data['lastname']
+
+            address_line = form.cleaned_data['address_line']
+            street = form.cleaned_data['street']
+            city = form.cleaned_data['city']
+            state = form.cleaned_data['state']
+            postcode = form.cleaned_data['postcode']
+
             email = form.cleaned_data['email']
             phone = form.cleaned_data['phone']
             message = form.cleaned_data['message']
+            vfll = form.cleaned_data['vfll']
+            memberships = form.cleaned_data['memberships']
+            attention = form.cleaned_data['attention']
+            attention_other = form.cleaned_data['attention_other']
+            education_bonus = form.cleaned_data['education_bonus']
+            check = form.cleaned_data['check']
+
+            # make name of this registration from event label and date
+
+            name = f"{event.label} | {timezone.now()}"
+
+            new_member = EventMember.objects.create(
+                name=name, 
+                event=event,
+                firstname=firstname,
+                lastname=lastname,
+                street=street,
+                address_line=address_line,
+                city=city,
+                postcode=postcode,
+                state=state,
+                email=email,
+                phone=phone,
+                message=message,
+                vfll=vfll,
+                memberships=memberships,
+                attention=attention,
+                attention_other=attention_other,
+                education_bonus=education_bonus,
+                check=check,
+                attend_status="registered",
+            )
 
             '''
-            Das Anmeldeobjekt wird zuerst gespeichert, um das Label
+            zusätzlich wird ein eindeutiges Label für diese Anmeldun kreiert, um das Label
             für Mailversand zu haben.
             Das wird in in models.py in der save method hinzugefügt
             '''
             
-            new_member_name = f"{event.label} | {timezone.now()}"
-            new_member = EventMember.objects.create(
-                name=new_member_name, 
-                event=event,
-                attend_status="registered"
-            )
             member_label = EventMember.objects.latest('date_created').label
 
+            # msil preparation
             subject=f"Anmeldung am Kurs {event.name}"
             formatting_dict = {
-                'name': name,
-                'address': address,
+                'firstname': firstname,
+                'lastname': lastname,
+                'address_line': address_line,
+                'street': street,
+                'city': city,
+                'postcode': postcode,
+                'state': state,
                 'email': email,
                 'phone': phone,
                 'event': event.name,
@@ -192,7 +231,7 @@ def event_add_member(request, slug):
                 return HttpResponse('Invalid header found.')
                 
             return redirect('event-detail', event.slug)
-    return render(request, "events/add_event_member.html", {'form': form, 'event': event})
+    return render(request, "events/add_event_member_tw.html", {'form': form, 'event': event})
 
 
 

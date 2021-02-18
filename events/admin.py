@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.utils.safestring import mark_safe
+from django.urls import reverse
 
 from mapbox_location_field.admin import MapAdmin
 
@@ -32,19 +34,46 @@ class EventAgendaInline(admin.StackedInline):
     extra = 0
     verbose_name = "Programm"
     verbose_name_plural = "Programme"
-    
 
+class EventMemberAdmin(admin.ModelAdmin):
+    fieldsets = (
+        ('Veranstaltung', {
+            'fields': ('event', 'name')
+        }),
+         ('TeilnehmerIn', {
+            'fields': ('firstname', 'lastname', 'email', 'phone')
+        }),
+        ('Anschrift', {
+            'fields': ('address_line', 'street', 'postcode', 'city', 'state')
+        }),
+        ('weitere Angaben', {
+            'classes': ('collapse',),
+            'fields': ('vfll', 'attention', 'attention_other', 'education_bonus'),
+        }),
+    )
+
+admin.site.register(EventMember, EventMemberAdmin)
 class EventMemberInline(admin.TabularInline):
     model = EventMember
     extra = 0
+    # show_change_link = False
     verbose_name = "Anmeldung"
     verbose_name_plural = "Anmeldungen"
-    readonly_fields = ('name', 'label')
+    fields = ('firstname', 'lastname', 'vfll', 'education_bonus', 'change_link',)
+    readonly_fields = ("firstname", 'lastname', 'change_link',)
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.is_past():
             return False
         return True
+
+    def change_link(self, obj):
+        return mark_safe('<a href="%s">Edit</a>' % \
+                        reverse('admin:events_eventmember_change',
+                        args=(obj.id,)))
+
+    change_link.short_description = 'Edit'
+
 
 class EventAdmin(admin.ModelAdmin):
     list_display = (
