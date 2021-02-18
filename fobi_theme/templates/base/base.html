@@ -30,8 +30,7 @@
 		</div>
 
 		<!-- links -->
-		<div
-			class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
+		<div class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
 			<a href="{% url 'home' %}"
 				class="block md:inline-block text-white font-bold hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">VFLL
 				Fobi</a>
@@ -58,6 +57,21 @@
 
 		</div>
 		{% block searchfield %}{% endblock %}
+
+		<!-- login / logout -->
+
+		<div class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
+			{% if user.is_authenticated %}
+			<a href="{% url 'logout' %}"
+				class="block md:inline-block text-white  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+				Logout</a>
+			{% else %}
+			<a href="{% url 'login' %}"
+				class="block md:inline-block text-white  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+				Login</a>
+			{% endif %}
+		</div>
+
 		<!-- cta -->
 	</nav>
 

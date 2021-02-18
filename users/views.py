@@ -29,7 +29,7 @@ def login_page(request):
             user = authenticate(username=username, password=password)
             if user:
                 login(request, user)
-                return redirect('dashboard')
+                return redirect('home')
     context = {
         'form': forms
     }
