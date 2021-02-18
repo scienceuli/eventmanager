@@ -30,7 +30,7 @@ module.exports = {
           pink: colors.fuchsia,
         },
         fontFamily: {
-          sans: ['Roboto', 'sans-serif'],
+          sans: ['Gidole', 'Roboto', 'sans-serif'],
           serif: ['Merriweather', 'serif'],
         },
         extend: {
