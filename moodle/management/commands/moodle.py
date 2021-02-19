@@ -103,7 +103,26 @@ def save_course_to_db(course_dict, trainer_dict):
         }
     )
 
+def get_user_by_email(email):
+    fname = 'core_user_get_users_by_field'
+    course_dict = {
+        'field': 'email',
+        'values[0]': email
+    }
+    user = call(fname, **course_dict)
+    return user
 
+def enrol_user_to_course(email, course):
+    #  check if user exists
+    fname = 'enrol_manual_enrol_users'
+    print(f"email: {email}")
+    user = get_user_by_email(email)
+    print(f"user: {user}")
+    
+    if user:
+        user_id = user[0]['id']
+        print(f"user_id: {user_id}")
+    
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
@@ -141,7 +160,11 @@ class Command(BaseCommand):
             course_dict['course_shortname'] = course['shortname']
             course_dict['course_start_date'] = get_timestamp(course['startdate'])
             course_dict['course_end_date'] = get_timestamp(course['enddate'])
-            course_dict['course_summary'] = course['summary']
+            if course['summary']:
+                course_dict['course_summary'] = course['summary']
+            else:
+                course_dict['course_summary'] = "wird noch ergänzt"
+
             # get course users
             course_users = get_moodle_course_enroled_users(course_id)
             

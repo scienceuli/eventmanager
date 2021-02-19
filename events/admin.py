@@ -4,6 +4,10 @@ from django.urls import reverse
 
 from mapbox_location_field.admin import MapAdmin
 
+# for inline actions, from 3rd party module
+from inline_actions.admin import InlineActionsMixin
+from inline_actions.admin import InlineActionsModelAdminMixin
+
 from .models import (
     EventCategory,
     EventFormat,
@@ -18,6 +22,8 @@ from .models import (
 from .email_template import (
     EmailTemplate
 )
+
+from moodle.management.commands.moodle import enrol_user_to_course
 
 # setting date format in admin page
 from django.conf.locale.de import formats as de_formats
@@ -53,14 +59,15 @@ class EventMemberAdmin(admin.ModelAdmin):
     )
 
 admin.site.register(EventMember, EventMemberAdmin)
-class EventMemberInline(admin.TabularInline):
+class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     model = EventMember
     extra = 0
     # show_change_link = False
     verbose_name = "Anmeldung"
     verbose_name_plural = "Anmeldungen"
-    fields = ('firstname', 'lastname', 'vfll', 'education_bonus', 'change_link',)
-    readonly_fields = ("firstname", 'lastname', 'change_link',)
+    fields = ('firstname', 'lastname', 'email', 'vfll', 'education_bonus', 'change_link',)
+    inline_actions = ['enrol_to_moodle_course']
+    readonly_fields = ('change_link',)
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.is_past():
@@ -74,8 +81,14 @@ class EventMemberInline(admin.TabularInline):
 
     change_link.short_description = 'Edit'
 
+    def enrol_to_moodle_course(self, request, obj, parent_obj=None):
+        enrol_user_to_course(obj.email, obj.event.moodle_id)
+        return True
 
-class EventAdmin(admin.ModelAdmin):
+    enrol_to_moodle_course.short_description = 'Einschreiben'
+
+
+class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     list_display = (
         'name', 
         'label',

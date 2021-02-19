@@ -1,27 +1,40 @@
 {% load static %}
 
 <!-- REQUIRED SCRIPTS -->
+
 <!-- jQuery -->
 <script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
-<!-- Bootstrap -->
-<script src="{% static 'plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-<!-- overlayScrollbars -->
-<script src="{% static 'plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js' %}"></script>
-<!-- AdminLTE App -->
-<script src="{% static 'js/adminlte.js' %}"></script>
 
-<!-- OPTIONAL SCRIPTS -->
-<script src="{% static 'js/demo.js' %}"></script>
+<!-- AJAX -->
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js" charset="utf-8"></script>
 
-<!-- PAGE PLUGINS -->
-<!-- jQuery Mapael -->
-<script src="{% static 'plugins/jquery-mousewheel/jquery.mousewheel.js' %}"></script>
-<script src="{% static 'plugins/raphael/raphael.min.js' %}"></script>
-<script src="{% static 'plugins/jquery-mapael/jquery.mapael.min.js' %}"></script>
-<script src="{% static 'plugins/jquery-mapael/maps/usa_states.min.js' %}"></script>
-<!-- ChartJS -->
-<script src="{% static 'plugins/chart.js/Chart.min.js' %}"></script>
+<!-- Close Button Messages -->
 
-<!-- PAGE SCRIPTS -->
-<script src="{% static 'js/pages/dashboard2.js' %}"></script>
+	<script src="{% static 'js/script.js' %}"></script>
+	<script>
+		function closeAlert(event) {
+			let element = event.target;
+			while (element.nodeName !== "BUTTON") {
+				element = element.parentNode;
+			}
+			element.parentNode.parentNode.removeChild(element.parentNode);
+		}
+	</script>
+
+<!-- Dropdown Menu Navbar -->
+
+	<script>
+		function openDropdown(event, dropdownID) {
+			let element = event.target;
+			while (element.nodeName !== "BUTTON") {
+				element = element.parentNode;
+			}
+			var popper = new Popper(element, document.getElementById(dropdownID), {
+				placement: 'bottom-start'
+			});
+			document.getElementById(dropdownID).classList.toggle("hidden");
+			document.getElementById(dropdownID).classList.toggle("block");
+		}
+	</script>
+

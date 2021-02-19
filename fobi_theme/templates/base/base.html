@@ -64,11 +64,11 @@
 		<div class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
 			{% if user.is_authenticated %}
 			<a href="{% url 'logout' %}"
-				class="block md:inline-block text-white  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+				class="block md:inline-block text-red  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
 				Logout</a>
 			{% else %}
 			<a href="{% url 'login' %}"
-				class="block md:inline-block text-white  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+				class="block md:inline-block text-red  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
 				Login</a>
 			{% endif %}
 		</div>
@@ -115,33 +115,12 @@
 	{% block content %}
 	{% endblock %}
 
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js" charset="utf-8"></script>
+	{% include 'base/js.html' %}
+	{% block extrascript %}
 
-	<script src="{% static 'js/script.js' %}"></script>
-	<script>
-		function closeAlert(event) {
-			let element = event.target;
-			while (element.nodeName !== "BUTTON") {
-				element = element.parentNode;
-			}
-			element.parentNode.parentNode.removeChild(element.parentNode);
-		}
-	</script>
+	{% endblock extrascript %}
 
-
-	<script>
-		function openDropdown(event, dropdownID) {
-			let element = event.target;
-			while (element.nodeName !== "BUTTON") {
-				element = element.parentNode;
-			}
-			var popper = new Popper(element, document.getElementById(dropdownID), {
-				placement: 'bottom-start'
-			});
-			document.getElementById(dropdownID).classList.toggle("hidden");
-			document.getElementById(dropdownID).classList.toggle("block");
-		}
-	</script>
+	
 </body>
 
 </html>

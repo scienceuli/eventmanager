@@ -303,5 +303,8 @@ class EventMember(AddressModel):
                 self.label = f"{self.event.label}-A{str(self.id)}"
             kwargs['force_insert'] = False # create() uses this, which causes error.
             super(EventMember, self).save(*args, **kwargs)
+        if not self.name:
+            self.name = f"{self.event.label} | {timezone.now()}"
+            super(EventMember, self).save(*args, **kwargs)
     
 

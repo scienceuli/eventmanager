@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'ckeditor_uploader',
     'easy_thumbnails',
     'tailwind',
+    'inline_actions',
 
     # tailwind theme app
     'fobi_theme',
