@@ -84,7 +84,6 @@ admin.site.register(EventMember, EventMemberAdmin)
 class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     model = EventMember
     extra = 0
-    change_list_template = "admin/my_change_list.html"
     formset = InlineWithoutDelete
     # ref for inline actions: https://github.com/escaped/django-inline-actions
     inline_actions = []
