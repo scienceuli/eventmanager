@@ -1,6 +1,7 @@
 import requests
 import json
 import datetime
+import itertools
 
 from django.conf import settings
 
@@ -102,7 +103,7 @@ def save_course_to_db(course_dict, trainer_dict):
             'students_number': course_dict['moodle_students_counter'],
         }
     )
-    # when course is created, ebroled users can be sotred
+    # when course is created, enroled users can be sotred
     save_course_enroled_users_to_db(course_dict['moodle_id'], obj)
 
 def save_course_enroled_users_to_db(course_id, event):
@@ -140,13 +141,26 @@ def get_user_by_email(email):
         'values[0]': email
     }
     user = call(fname, **course_dict)
+    print(f"user: {user}")
+    return user
+
+#TODO: merge get_user_by_email and get_user_by_username to one function
+def get_user_by_username(username):
+    fname = 'core_user_get_users_by_field'
+    course_dict = {
+        'field': 'username',
+        'values[0]': username
+    }
+    user = call(fname, **course_dict)
+    print(f"user: {user}")
     return user
 
 def enrol_user_to_course(firstname, lastname, email, course):
     #  check if user exists
     user = get_user_by_email(email)
+    print(f"{email}")
     
-    if user:
+    if len(user) > 0:
         # user_id = user[0]['id']
         #print(f"user_id: {user_id}")
         fname = 'enrol_manual_enrol_users'
@@ -159,7 +173,17 @@ def enrol_user_to_course(firstname, lastname, email, course):
     else:
         # create new user in moodle
         fname = 'core_user_create_users'
-        username = lastname.lower() # standard username
+        # create unique username
+        username_candidate = username_original = lastname.lower() # standard username
+        for i in itertools.count(1):
+            # check if username_candidate in moodle exists
+            user = get_user_by_username(username_candidate)
+            if len(user) == 0:
+                break
+            username_candidate = '{}-{}'.format(username_original, i)
+
+        username = username_candidate
+
         course_dict = {
             'users[0][username]': username,
             'users[0][createpassword]': 1,
