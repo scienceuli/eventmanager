@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'events.apps.EventsConfig',
     'users.apps.UsersConfig',
     'moodle.apps.MoodleConfig',
+    'bugz.apps.BugzConfig',
 
 ]
 
