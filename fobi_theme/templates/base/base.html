@@ -32,10 +32,12 @@
 
 		<!-- links -->
 		<div class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
+			
 			<a href="{% url 'home' %}"
 				class="block md:inline-block text-red font-bold hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">VFLL
 				Fobi</a>
-			<a href="{% url 'event-list' %}"
+				
+				<a href="{% url 'event-list' %}"
 				class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">Alle
 				Kurse</a>
 			<div
@@ -70,6 +72,13 @@
 			<a href="{% url 'login' %}"
 				class="block md:inline-block text-red  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
 				Login</a>
+			{% endif %}
+			{% if user.is_superuser %}
+			
+				<a class="block md:inline-block  text-red  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none"
+				 href="{% url 'admin:index' %}">
+				 <img src="{% static 'images/cogwheel.svg' %}" class="mt-1 w-4 align-bottom">
+			</a>
 			{% endif %}
 		</div>
 

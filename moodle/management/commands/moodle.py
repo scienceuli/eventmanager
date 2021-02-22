@@ -9,7 +9,7 @@ from events.exception import MoodleException
 
 from django.core.management.base import BaseCommand
 
-from events.models import EventSpeaker, EventLocation, EventCategory, EventFormat, Event
+from events.models import EventSpeaker, EventLocation, EventCategory, EventFormat, Event, EventMember
 
 def get_timestamp(timestamp):
     try:
@@ -102,6 +102,36 @@ def save_course_to_db(course_dict, trainer_dict):
             'students_number': course_dict['moodle_students_counter'],
         }
     )
+    # when course is created, ebroled users can be sotred
+    save_course_enroled_users_to_db(course_dict['moodle_id'], obj)
+
+def save_course_enroled_users_to_db(course_id, event):
+    '''
+    creates or updates or deletes enroled users from moodle in db
+    users_dict: contains users data: firstname, lastname, email
+    no bulk method used, which would be more efficient but harder to code
+    updating moodle users is only background process per celery so efficiency  does not matter
+    at this point
+    '''
+    # get users of course 
+    users_list = get_moodle_course_enroled_users(course_id)
+    for user_dict in users_list:
+        user = EventMember.objects.filter(event__moodle_id=course_id).update_or_create(
+            email=user_dict['email'],
+            defaults={
+                'event': event,
+                'firstname': user_dict['firstname'],
+                'lastname': user_dict['lastname'],
+                'moodle_id': user_dict['id'],
+                'enroled': True
+            }
+        )
+    # all users that are still in database associated to the coourse but removed in moodle are deleted
+    # idea from: https://stackoverflow.com/questions/58412462/delete-multiple-django-objects-via-orm
+    users_to_delete = EventMember.objects.filter(event=event, moodle_id__gt=0).exclude(moodle_id__in=[user_dict['id'] for user_dict in users_list])
+    print(f"users to delete: {users_to_delete}")
+    #users_to_delete.delete()
+
 
 def get_user_by_email(email):
     fname = 'core_user_get_users_by_field'
@@ -112,16 +142,55 @@ def get_user_by_email(email):
     user = call(fname, **course_dict)
     return user
 
-def enrol_user_to_course(email, course):
+def enrol_user_to_course(firstname, lastname, email, course):
     #  check if user exists
-    fname = 'enrol_manual_enrol_users'
-    print(f"email: {email}")
     user = get_user_by_email(email)
-    print(f"user: {user}")
     
     if user:
-        user_id = user[0]['id']
-        print(f"user_id: {user_id}")
+        # user_id = user[0]['id']
+        #print(f"user_id: {user_id}")
+        fname = 'enrol_manual_enrol_users'
+        course_dict = {
+            'enrolments[0][roleid]': 5,
+            'enrolments[0][userid]': user[0]['id'],
+            'enrolments[0][courseid]': course
+        }
+        call(fname, **course_dict)
+    else:
+        # create new user in moodle
+        fname = 'core_user_create_users'
+        username = lastname.lower() # standard username
+        course_dict = {
+            'users[0][username]': username,
+            'users[0][createpassword]': 1,
+            'users[0][firstname]': firstname,
+            'users[0][lastname]': lastname,
+            'users[0][email]': email
+        }
+        new_user = call(fname, **course_dict)
+        user_id = new_user[0]['id']
+        # update user in db with moodle_id
+        EventMember.objects.filter(email=email).update(moodle_id=user_id)
+        fname = 'enrol_manual_enrol_users'
+        course_dict = {
+            'enrolments[0][roleid]': 5,
+            'enrolments[0][userid]': user_id,
+            'enrolments[0][courseid]': course
+        }
+        call(fname, **course_dict)
+
+
+def unenrol_user_from_course(user, course):
+    '''
+    unenrol user from moodle course
+    '''
+    fname = 'enrol_manual_unenrol_users'
+    course_dict = {
+        'enrolments[0][userid]': user,
+        'enrolments[0][courseid]': course,
+    }
+    call(fname, **course_dict)
+
     
 
 class Command(BaseCommand):
@@ -137,20 +206,20 @@ class Command(BaseCommand):
             #print(course['startdate'])
 
         # get all moodle courses from database
-        print(id_list_of_moodle_courses)
+        #print(id_list_of_moodle_courses)
         moodle_courses_in_db = Event.objects.filter(moodle_id__gt=0).values_list('moodle_id', flat=True)
 
         moodle_id_list_from_db = list(moodle_courses_in_db)
-        print(moodle_id_list_from_db)
+        #print(moodle_id_list_from_db)
 
         moodle_only_in_db_set = list(set(set(moodle_id_list_from_db) - set(id_list_of_moodle_courses)))
-        print(moodle_only_in_db_set)
+        #print(moodle_only_in_db_set)
 
         # delete all courses only in db
         Event.objects.filter(moodle_id__in=moodle_only_in_db_set).delete()
 
         for course in courses:
-            print(f"Kurs: {course['fullname']}")
+            #print(f"Kurs: {course['fullname']}")
             course_id = course['id']
             course_cat_id = course['categoryid']
 
@@ -201,8 +270,8 @@ class Command(BaseCommand):
                 save_trainer_to_db(trainer_dict)
                 save_course_to_db(course_dict, trainer_dict)
 
-            print(course_dict)
-            print(trainer_dict)
+            #print(course_dict)
+            #print(trainer_dict)
             
             
             #print(f"Trainer: {trainer}")

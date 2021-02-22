@@ -286,6 +286,8 @@ class EventMember(AddressModel):
     )
     attend_status = models.CharField(choices=attend_status_choice, max_length=10)
     mail_to_admin = models.BooleanField("m > admin", default=False)
+    moodle_id = models.PositiveIntegerField("MoodleID", default=0)
+    enroled = models.BooleanField(">m", default=False)
 
     class Meta:
         verbose_name = 'TeilnehmerIn'

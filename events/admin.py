@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.urls import reverse
 
+from django.forms.models import BaseInlineFormSet
+
 from mapbox_location_field.admin import MapAdmin
 
 # for inline actions, from 3rd party module
@@ -23,13 +25,21 @@ from .email_template import (
     EmailTemplate
 )
 
-from moodle.management.commands.moodle import enrol_user_to_course
+from moodle.management.commands.moodle import enrol_user_to_course, unenrol_user_from_course
 
 # setting date format in admin page
 from django.conf.locale.de import formats as de_formats
 
 de_formats.DATETIME_FORMAT = "d.m.y H:i"
 
+
+class InlineWithoutDelete(BaseInlineFormSet): 
+    '''
+    is needed to provide Inlines without Delete Checkbox
+    '''
+    def __init__(self, *args, **kwargs): 
+        super(InlineWithoutDelete, self).__init__(*args, **kwargs) 
+        self.can_delete = False 
 
 class EventImageInline(admin.StackedInline):
     model = EventImage
@@ -42,6 +52,16 @@ class EventAgendaInline(admin.StackedInline):
     verbose_name_plural = "Programme"
 
 class EventMemberAdmin(admin.ModelAdmin):
+
+    list_display = ['lastname', 'firstname', 'email', 'event']
+    list_filter = ['event',]
+    search_fields = (
+        'lastname',
+        'firstname',
+        'email'
+    )
+
+    #change_list_template = "admin/event_member_list.html"
     fieldsets = (
         ('Veranstaltung', {
             'fields': ('event', 'name')
@@ -58,16 +78,22 @@ class EventMemberAdmin(admin.ModelAdmin):
         }),
     )
 
+
+
 admin.site.register(EventMember, EventMemberAdmin)
 class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     model = EventMember
     extra = 0
+    change_list_template = "admin/my_change_list.html"
+    formset = InlineWithoutDelete
+    # ref for inline actions: https://github.com/escaped/django-inline-actions
+    inline_actions = []
     # show_change_link = False
     verbose_name = "Anmeldung"
     verbose_name_plural = "Anmeldungen"
-    fields = ('firstname', 'lastname', 'email', 'vfll', 'education_bonus', 'change_link',)
-    inline_actions = ['enrol_to_moodle_course']
-    readonly_fields = ('change_link',)
+    fields = ('firstname', 'lastname', 'email', 'vfll', 'education_bonus', 'change_link', 'enroled', 'moodle_id')
+    #inline_actions = ['enrol_to_moodle_course']
+    readonly_fields = ('change_link','enroled', 'moodle_id')
 
     def has_add_permission(self, request, obj=None):
         if obj and obj.is_past():
@@ -81,11 +107,37 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
 
     change_link.short_description = 'Edit'
 
+    def get_inline_actions(self, request, obj=None):
+        actions = super(EventMemberInline, self).get_inline_actions(request, obj)
+        if obj and obj.event.moodle_id > 0:
+            if obj.enroled == False:
+                actions.append('enrol_to_moodle_course')
+            elif obj.enroled == True:
+                actions.append('unenrol_from_moodle_course')
+        elif obj and obj.event.moodle_id == 0:
+            actions.append('delete_user')
+        return actions
+
     def enrol_to_moodle_course(self, request, obj, parent_obj=None):
-        enrol_user_to_course(obj.email, obj.event.moodle_id)
+        obj.enroled = True
+        obj.save()
+        enrol_user_to_course(obj.firstname, obj.lastname, obj.email, obj.event.moodle_id)
         return True
 
     enrol_to_moodle_course.short_description = 'Einschreiben'
+
+    def unenrol_from_moodle_course(self, request, obj, parent_obj=None):
+        obj.enroled = False
+        obj.save()
+        unenrol_user_from_course(obj.moodle_id, obj.event.moodle_id)
+
+    unenrol_from_moodle_course.short_description = "Ausschreiben"
+
+
+
+    def delete_user(self, request, obj, parent_obj):
+        obj.delete()
+    delete_user.short_description = "Löschen"
 
 
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
