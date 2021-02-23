@@ -35,7 +35,7 @@ class Task(BaseModel):
         (3, 'fertig')
     ]
     project = models.ForeignKey(Project, on_delete=models.CASCADE, default=1)
-    user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
+    created_by = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     title = models.CharField("Titel", max_length=100)
     description = models.TextField(verbose_name="Beschreibung", max_length=2000)
     task_type = models.PositiveSmallIntegerField("Typ", choices=TASK_TYPE_CHOICES, default=1)
@@ -45,5 +45,16 @@ class Task(BaseModel):
 
     def __str__(self):
         return self.title
+
+class Comment(BaseModel):
+    task = models.ForeignKey(Task, verbose_name="Kommentar", on_delete=models.CASCADE)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    title = models.CharField("Titel", max_length=100)
+    description = models.TextField(verbose_name="Beschreibung", max_length=2000)
+
+    def __str__(self):
+        return f"Kommentar von {self.created_by.username} am {self.date_created}" 
+
 
     
