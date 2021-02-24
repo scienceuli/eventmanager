@@ -10,6 +10,8 @@ from mapbox_location_field.admin import MapAdmin
 from inline_actions.admin import InlineActionsMixin
 from inline_actions.admin import InlineActionsModelAdminMixin
 
+from .actions import export_as_xls
+
 from .models import (
     EventCategory,
     EventFormat,
@@ -77,6 +79,7 @@ class EventMemberAdmin(admin.ModelAdmin):
             'fields': ('vfll', 'attention', 'attention_other', 'education_bonus'),
         }),
     )
+    actions = [export_as_xls]
 
 
 
