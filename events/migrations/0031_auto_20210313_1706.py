@@ -20,7 +20,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='event',
             name='open_date',
-            field=models.DateTimeField(auto_now_add=True, verbose_name='Anmeldefrist Beginn'),
+            field=models.DateTimeField(auto_now_add=True, null=True, verbose_name='Anmeldefrist Beginn'),
         ),
         migrations.AlterField(
             model_name='event',
