@@ -26,7 +26,6 @@ kombu==5.0.2
 lazy-object-proxy==1.4.3
 mccabe==0.6.1
 openpyxl==3.0.6
-Pillow==8.1.0
 prompt-toolkit==3.0.10
 pylint==2.6.0
 python-crontab==2.5.1

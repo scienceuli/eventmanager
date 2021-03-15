@@ -1,6 +1,11 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+from django.utils.http import urlencode
+from django.utils.html import format_html
 from django.urls import reverse
+
+
+from django.db.models import Min, Max
 
 from django.forms.models import BaseInlineFormSet
 
@@ -10,12 +15,15 @@ from mapbox_location_field.admin import MapAdmin
 from inline_actions.admin import InlineActionsMixin
 from inline_actions.admin import InlineActionsModelAdminMixin
 
+from fieldsets_with_inlines import FieldsetsInlineMixin
+
 from .actions import export_as_xls
 
 from .models import (
     EventCategory,
     EventFormat,
     Event,
+    EventDay,
     EventImage,
     EventSpeaker,
     EventLocation,
@@ -53,6 +61,17 @@ class EventAgendaInline(admin.StackedInline):
     verbose_name = "Programm"
     verbose_name_plural = "Programme"
 
+class EventDayAdmin(admin.ModelAdmin):
+    list_display = ['start_date', 'start_time', 'end_time']
+
+admin.register(EventDay, EventDayAdmin)
+
+class EventDayInline(admin.StackedInline):
+    model = EventDay
+    extra = 0
+    verbose_name = "Veranstaltungstag"
+    verbose_name_plural = "Veranstaltungstage"
+
 class EventMemberAdmin(admin.ModelAdmin):
 
     list_display = ['lastname', 'firstname', 'email', 'event']
@@ -84,6 +103,7 @@ class EventMemberAdmin(admin.ModelAdmin):
 
 
 admin.site.register(EventMember, EventMemberAdmin)
+
 class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     model = EventMember
     extra = 0
@@ -147,20 +167,53 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         'name', 
         'label',
         "registration_over",
-        'start_date',
-        'end_date',
-        "get_number_of_members",
-        "students_number",
+        'get_start_date',
+        'get_end_date',
+        "view_members_link",
         "capacity",
         'eventformat',
         'category',
         'status'
     )
     list_filter = ('eventformat', 'category', 'status')
-    ordering = ('start_date', 'name')
+    ordering = ('name',)
     search_fields = ('=name',)
     readonly_fields = ('uuid', 'label', 'slug', 'moodle_id', 'date_created', 'date_modified')
-    inlines = (EventAgendaInline, EventImageInline, EventMemberInline)
+    inlines = (EventDayInline, EventAgendaInline, EventImageInline, EventMemberInline)
+
+    def get_queryset(self, request):
+        queryset = super().get_queryset(request)
+        queryset = queryset.annotate(
+            _start_date_min=Min("event_days__start_date"),
+            _start_date_max=Max("event_days__start_date"),
+        )
+        
+        return queryset
+
+    def get_start_date(self, obj):
+        return obj._start_date_min.strftime("%d.%m.%y")
+
+    get_start_date.admin_order_field = '_start_date_min'
+    get_start_date.short_description = 'Beginn'
+
+    def get_end_date(self, obj):
+        return obj._start_date_max.strftime("%d.%m.%y")
+
+    get_end_date.admin_order_field = '_start_date_max'
+    get_end_date.short_description = 'Ende'
+
+    def view_members_link(self, obj):
+        count = obj.get_number_of_members()
+        url = (
+            reverse("admin:events_eventmember_changelist")
+            + "?"
+            + urlencode({'event__id': f"{obj.id}"})
+        )
+        return format_html('<a href="{}">{}</a>', url, count)
+
+    view_members_link.short_description = 'Teilnehmer*innen'
+
+    
 
 admin.site.register(EventCategory)
 admin.site.register(EventFormat)

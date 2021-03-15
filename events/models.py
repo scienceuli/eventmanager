@@ -98,7 +98,6 @@ class EventSpeaker(BaseModel):
             last_name=self.last_name
         ).strip()
 
-
 class Event(BaseModel):
     category = models.ForeignKey(EventCategory, verbose_name="Kategorie", on_delete=models.CASCADE)
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
@@ -125,13 +124,11 @@ class Event(BaseModel):
     total_costs = RichTextField(verbose_name="Gesamtkosten", null=True, blank=True, config_name='short')
     registration = RichTextField(verbose_name="Anmeldung", config_name='short')
     notes = RichTextField(verbose_name="Hinweise", null=True, blank=True, config_name='short')
-    start_date = models.DateTimeField(verbose_name="Beginn")
-    end_date = models.DateTimeField(verbose_name="Ende")
+    start_date = models.DateTimeField(verbose_name="Beginn", help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
+    end_date = models.DateTimeField(verbose_name="Ende", help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
     open_date = models.DateTimeField(
         verbose_name="Anmeldefrist Beginn",
-        null=True,
-        blank=True,
-        # default=timezone.datetime(2020, 1, 1),
+        auto_now_add=True,
     )
     close_date = models.DateTimeField(
         verbose_name="Anmeldefrist Ende", null=True, blank=True
@@ -162,15 +159,15 @@ class Event(BaseModel):
         - Nachfrage bei mehr als 14 Tagen Dauer
         - 
         """
-        if self.start_date < timezone.now():
+        if self.start_date and self.start_date < timezone.now():
             raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
 
-        if self.start_date >= self.end_date:
+        if self.start_date and self.end_date and self.start_date >= self.end_date:
             raise ValidationError("Das Startdatum muss vor dem Enddatum liegen!")
-
-        delta = self.end_date - self.start_date
-        if delta.days >= 14:
-            raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
+        if self.start_date and self.end_date:
+            delta = self.end_date - self.start_date
+            if delta.days >= 14:
+                raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
 
 
         
@@ -217,6 +214,8 @@ class Event(BaseModel):
     registration_over = property(is_past_hinweis)
 
     def get_number_of_members(self):
+        if self.moodle_id > 0: #
+            return self.students_number # falls Moodle-Kurs
         return self.members.count()
 
     get_number_of_members.short_description = "Teilnehmer"
@@ -235,6 +234,30 @@ class Event(BaseModel):
 
 
 
+class EventDay(BaseModel):
+    event = models.ForeignKey(Event, related_name="event_days", on_delete=models.CASCADE)
+    start_date = models.DateField(verbose_name="Datum", help_text='Datum: Picker verwenden oder in der Form tt.mm.jj')
+    start_time = models.TimeField(verbose_name="Beginn", help_text='hh:mm')
+    end_time = models.TimeField(verbose_name="Ende", help_text='hh:mm')
+
+
+    def __str__(self):
+        return self.start_date.strftime("%d.%m.%y")
+
+    def clean(self):
+        """
+        die im Admin Bereich eingegebenen Daten werden geprüft:
+        - start_date darf nicht in der Vergangenheit liegen
+        - end_date muss nach dem start_date liegen
+        - Nachfrage bei mehr als 14 Tagen Dauer
+        - 
+        """
+        if self.start_date and self.start_date < timezone.now().date():
+            raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
+
+        if self.start_time and self.end_time and self.start_time >= self.end_time:
+            raise ValidationError("Die Startzeit muss vor der Endzeit liegen!")
+        
 
 class EventAgenda(BaseModel):
     event = models.ForeignKey(Event, related_name="agendas", on_delete=models.CASCADE)

@@ -31,6 +31,8 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'jet.dashboard',
+    'jet',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -45,6 +47,7 @@ INSTALLED_APPS = [
     'easy_thumbnails',
     'tailwind',
     'inline_actions',
+    'fieldsets_with_inlines',
 
     # tailwind theme app
     'fobi_theme',
@@ -185,5 +188,8 @@ CELERY_BEAT_SCHEDULE = {
 
 # Tailwind css
 TAILWIND_APP_NAME = 'fobi_theme'
+
+# for JET WORKING PROPERLY
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 
