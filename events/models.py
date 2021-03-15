@@ -128,7 +128,7 @@ class Event(BaseModel):
     end_date = models.DateTimeField(verbose_name="Ende", help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
     open_date = models.DateTimeField(
         verbose_name="Anmeldefrist Beginn",
-        null=True
+        null=True,
         auto_now_add=True,
     )
     close_date = models.DateTimeField(
