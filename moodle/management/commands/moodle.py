@@ -9,6 +9,7 @@ from events.warnings import Warning
 from events.exception import MoodleException
 
 from django.core.management.base import BaseCommand
+from django.core.exceptions import ObjectDoesNotExist
 
 from events.models import EventSpeaker, EventLocation, EventCategory, EventFormat, Event, EventMember
 
@@ -75,10 +76,17 @@ def save_trainer_to_db(trainer_dict):
         )
 
 def save_course_to_db(course_dict, trainer_dict):
-    category = EventCategory.objects.get(name='Onlineseminare')
-    eventformat = EventFormat.objects.get(name="Online")
-    speaker = EventSpeaker.objects.get(email=trainer_dict['trainer_email'])
-    location = EventLocation.objects.get(title='FOBI Moodle')
+    category, _ = EventCategory.objects.get_or_create(name='Onlineseminare')
+    eventformat, _ = EventFormat.objects.get_or_create(name="Online")
+    try:
+        speaker = EventSpeaker.objects.get(email=trainer_dict['trainer_email'])
+    except EventSpeaker.DoesNotExist:
+        speaker = EventSpeaker.objects.create(
+            first_name=trainer_dict['trainer_firstname'],
+            last_name=trainer_dict['trainer_lastname'],
+            email=trainer_dict['trainer_email']
+            )
+    location, _ = EventLocation.objects.get_or_create(title='FOBI Moodle')
     obj, created = Event.objects.update_or_create(
         moodle_id=course_dict['moodle_id'],
         defaults={
@@ -103,7 +111,7 @@ def save_course_to_db(course_dict, trainer_dict):
             'students_number': course_dict['moodle_students_counter'],
         }
     )
-    # when course is created, enroled users can be sotred
+    # when course is created, enroled users can be stored
     save_course_enroled_users_to_db(course_dict['moodle_id'], obj)
 
 def save_course_enroled_users_to_db(course_id, event):

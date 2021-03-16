@@ -191,17 +191,29 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         return queryset
 
     def get_start_date(self, obj):
-        if obj._start_date_min:
-            return obj._start_date_min.strftime("%d.%m.%y")
-        return "-"
+        """
+        wenn das Event ein Moodle-Kurs ist,
+        werden start_date und end_date angezeigt.
+        Beide Daten werden (Stand 16.3.21) in Moodle gepflegt
+        """
+        if obj.moodle_id > 0:
+            return obj.start_date
+        else:
+            if obj._start_date_min:
+                return obj._start_date_min.strftime("%d.%m.%y")
+            return "-"
 
     get_start_date.admin_order_field = '_start_date_min'
     get_start_date.short_description = 'Beginn'
 
     def get_end_date(self, obj):
-        if obj._start_date_max:
-            return obj._start_date_max.strftime("%d.%m.%y")
-        return "-"
+        # siehe Bem. zu get_start_date
+        if obj.moodle_id > 0:
+            return obj.end_date
+        else:
+            if obj._start_date_max:
+                return obj._start_date_max.strftime("%d.%m.%y")
+            return "-"
 
     get_end_date.admin_order_field = '_start_date_max'
     get_end_date.short_description = 'Ende'
