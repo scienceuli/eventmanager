@@ -191,13 +191,17 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         return queryset
 
     def get_start_date(self, obj):
-        return obj._start_date_min.strftime("%d.%m.%y")
+        if obj._start_date_min:
+            return obj._start_date_min.strftime("%d.%m.%y")
+        return "-"
 
     get_start_date.admin_order_field = '_start_date_min'
     get_start_date.short_description = 'Beginn'
 
     def get_end_date(self, obj):
-        return obj._start_date_max.strftime("%d.%m.%y")
+        if _start_date_max:
+            return obj._start_date_max.strftime("%d.%m.%y")
+        return "-"
 
     get_end_date.admin_order_field = '_start_date_max'
     get_end_date.short_description = 'Ende'
