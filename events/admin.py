@@ -199,7 +199,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     get_start_date.short_description = 'Beginn'
 
     def get_end_date(self, obj):
-        if _start_date_max:
+        if obj._start_date_max:
             return obj._start_date_max.strftime("%d.%m.%y")
         return "-"
 
