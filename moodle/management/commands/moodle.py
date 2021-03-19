@@ -139,7 +139,7 @@ def save_course_enroled_users_to_db(course_id, event):
     # idea from: https://stackoverflow.com/questions/58412462/delete-multiple-django-objects-via-orm
     users_to_delete = EventMember.objects.filter(event=event, moodle_id__gt=0).exclude(moodle_id__in=[user_dict['id'] for user_dict in users_list])
     print(f"Event: {event.name}, users to delete: {users_to_delete}")
-    #users_to_delete.delete()
+    users_to_delete.delete()
 
 
 def get_user_by_email(email):
