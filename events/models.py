@@ -40,6 +40,10 @@ class EventLocation(AddressModel):
     title = models.CharField("Name", max_length=128)
     url = models.URLField(verbose_name="Veranstaltungsort Website", blank=True,)
 
+    class Meta:
+        verbose_name = "Veranstaltungsort"
+        verbose_name_plural = "Veranstaltungsorte"
+
     def __str__(self):
         return self.title
 
@@ -72,9 +76,7 @@ class EventLocation(AddressModel):
                 address += self.get_country_display()
         return address
 
-    class Meta:
-        verbose_name = "Veranstaltungsort"
-        verbose_name_plural = "Veranstaltungsorte"
+    
 
 
 class EventSpeaker(BaseModel):
@@ -109,14 +111,14 @@ class Event(BaseModel):
     target_group = models.CharField(verbose_name="Zielgruppe", max_length=255, )
     prerequisites = RichTextUploadingField(verbose_name="Voraussetzungen", max_length=255, config_name='short')
     objectives = RichTextUploadingField(verbose_name="Lernziele", config_name='short')
-    speaker = models.ForeignKey(EventSpeaker, verbose_name="Referent/-in", on_delete=models.DO_NOTHING, related_name="speaker_events")
+    speaker = models.ForeignKey(EventSpeaker, verbose_name="Referent/-in", null=True, on_delete=models.SET_NULL, related_name="speaker_events")
     methods = models.CharField(verbose_name="Methoden", max_length=255, null=True, blank=True)
 
-    select_scheduled_status = (
+    SCHEDULED_STATUS_CHOICES = (
         ('yet to scheduled', 'noch offen'),
         ('scheduled', 'terminiert')
     )
-    scheduled_status = models.CharField(max_length=25, choices=select_scheduled_status)
+    scheduled_status = models.CharField(max_length=25, choices=SCHEDULED_STATUS_CHOICES)
     location = models.ForeignKey(EventLocation, null=True, on_delete=models.DO_NOTHING, related_name='location_events')
     fees = RichTextField(verbose_name="Gebühren", config_name='short')
     catering = RichTextField(verbose_name="Verpflegung", null=True, blank=True, config_name='short')
@@ -135,13 +137,14 @@ class Event(BaseModel):
         verbose_name="Anmeldefrist Ende", null=True, blank=True
     )
     capacity = models.PositiveIntegerField()
-    status_choice = (
+    STATUS_CHOICES = (
         ('active', 'aktiv'),
         ('deleted', 'verschoben'),
         ('cancel', 'abgesagt'),
     )
-    status = models.CharField(choices=status_choice, max_length=10)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=10)
     moodle_id = models.PositiveSmallIntegerField(default=0)
+    moodle_course_created = models.BooleanField(default=False)
     students_number = models.PositiveSmallIntegerField(default=0, editable=False)
 
     class Meta:
@@ -241,6 +244,10 @@ class EventDay(BaseModel):
     start_time = models.TimeField(verbose_name="Beginn", help_text='hh:mm')
     end_time = models.TimeField(verbose_name="Ende", help_text='hh:mm')
 
+    class Meta:
+        ordering = ('start_date',)
+        verbose_name = "Veranstaltungstag"
+        verbose_name_plural = "Veranstaltungstage"
 
     def __str__(self):
         return self.start_date.strftime("%d.%m.%y")
@@ -276,9 +283,24 @@ class EventAgenda(BaseModel):
     def __str__(self):
         return self.session_name
 
+
 class EventImage(BaseModel):
     event = models.OneToOneField(Event, on_delete=models.CASCADE)
     image = models.ImageField(upload_to='event_image/')
+
+MEMBER_ROLE_CHOICES = (
+    (1, 'Manager*in'),
+    (3, 'Trainer*in'),
+    (5, 'Teilnehmer*in'),
+)
+
+class MemberRole(BaseModel):
+    roleid = models.PositiveSmallIntegerField(choices=MEMBER_ROLE_CHOICES)
+
+    def __str__(self):
+        return self.get_roleid_display()
+
+
 
 class EventMember(AddressModel):
     '''
@@ -301,21 +323,22 @@ class EventMember(AddressModel):
     check = models.BooleanField(default=False)
 
     label = models.CharField(max_length=64)
-    attend_status_choice = (
+    ATTEND_STATUS_CHOICES = (
         ('registered', 'angemeldet'),
         ('waiting', 'Warteliste'),
         ('attending', 'nimmt teil'),
         ('absent', 'nicht erschienen'),
         ('cancelled', 'abgesagt'),
     )
-    attend_status = models.CharField(choices=attend_status_choice, max_length=10)
+    attend_status = models.CharField(choices=ATTEND_STATUS_CHOICES, max_length=10)
     mail_to_admin = models.BooleanField("m > admin", default=False)
     moodle_id = models.PositiveIntegerField("MoodleID", default=0)
+    roles = models.ManyToManyField(MemberRole, through='EventMemberRole')
     enroled = models.BooleanField(">m", default=False)
 
     class Meta:
-        verbose_name = 'TeilnehmerIn'
-        verbose_name_plural = 'TeilnehmerInnen'
+        verbose_name = 'Teilnehmer*in'
+        verbose_name_plural = 'Teilnehmer*innen'
         unique_together = ['event', 'name']
 
     def __str__(self):
@@ -332,5 +355,14 @@ class EventMember(AddressModel):
         if not self.name:
             self.name = f"{self.event.label} | {timezone.now()}"
             super(EventMember, self).save(*args, **kwargs)
+
+class EventMemberRole(BaseModel):
+    eventmember = models.ForeignKey(EventMember, on_delete=models.CASCADE)
+    memberrole = models.ForeignKey(MemberRole, on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Rolle"
+        verbose_name_plural = "Rollen"
+
     
 

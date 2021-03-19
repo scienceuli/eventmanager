@@ -2,12 +2,13 @@ from django.contrib import admin
 from django.utils.safestring import mark_safe
 from django.utils.http import urlencode
 from django.utils.html import format_html
-from django.urls import reverse
-
-
+from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse, path
+from django import forms
 from django.db.models import Min, Max
-
 from django.forms.models import BaseInlineFormSet
+
+import io, csv
 
 from mapbox_location_field.admin import MapAdmin
 
@@ -19,6 +20,8 @@ from fieldsets_with_inlines import FieldsetsInlineMixin
 
 from .actions import export_as_xls
 
+from .validators import csv_content_validator
+
 from .models import (
     EventCategory,
     EventFormat,
@@ -29,13 +32,14 @@ from .models import (
     EventLocation,
     EventAgenda,
     EventMember,
+    EventMemberRole,
 )
 
 from .email_template import (
     EmailTemplate
 )
 
-from moodle.management.commands.moodle import enrol_user_to_course, unenrol_user_from_course
+from moodle.management.commands.moodle import enrol_user_to_course, unenrol_user_from_course, create_moodle_course
 
 # setting date format in admin page
 from django.conf.locale.de import formats as de_formats
@@ -72,6 +76,20 @@ class EventDayInline(admin.StackedInline):
     verbose_name = "Veranstaltungstag"
     verbose_name_plural = "Veranstaltungstage"
 
+class CsvImportForm(forms.Form):
+    '''
+    For for importing Course Participants
+    '''
+    csv_file = forms.FileField(
+        label='CSV-Datei für Import auswählen:',
+        validators=[csv_content_validator],
+        )
+
+
+class EventMemberRoleInline(admin.TabularInline):
+    model = EventMemberRole
+    extra = 0
+
 class EventMemberAdmin(admin.ModelAdmin):
 
     list_display = ['lastname', 'firstname', 'email', 'event']
@@ -81,13 +99,14 @@ class EventMemberAdmin(admin.ModelAdmin):
         'firstname',
         'email'
     )
+    inlines = [EventMemberRoleInline,]
 
-    #change_list_template = "admin/event_member_list.html"
+    change_list_template = "admin/event_member_list.html"
     fieldsets = (
         ('Veranstaltung', {
             'fields': ('event', 'name')
         }),
-         ('TeilnehmerIn', {
+        ('Name/Email/Tel', {
             'fields': ('firstname', 'lastname', 'email', 'phone')
         }),
         ('Anschrift', {
@@ -99,6 +118,63 @@ class EventMemberAdmin(admin.ModelAdmin):
         }),
     )
     actions = [export_as_xls]
+
+   
+
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path('import-csv/', self.import_csv),
+        ]
+        return my_urls + urls
+
+
+    def import_csv(self, request):
+        print(request.GET.get('event__id','None'))
+        if request.method == "POST":
+            csv_file = request.FILES["csv_file"]
+
+            # let's check if it is a csv file
+            if not csv_file.name.endswith('.csv'):
+                messages.error(request, 'Keine CSV-Datei')
+
+            data_set = csv_file.read().decode('UTF-8')
+            # setup a stream which is when we loop through each line we are able to handle a data in a stream
+            io_string = io.StringIO(data_set)
+            next(io_string)
+
+            bulk_create_list = []
+
+            for row in csv.reader(io_string, delimiter=';'):
+                # Here's how the row list looks like:
+                # ['firstname', 'lastname' 'email']
+                # username will be calculated when exported to moodle
+                # preparing bulk crate
+                bulk_create_list.append(EventMember(
+                    firstname=row[0],
+                    lastname=row[1], 
+                    email=row[2])
+                )
+
+                print(row[0])
+                print(row[1])
+                print(row[2])
+                print(request.GET.get('event__id','None'))
+
+            self.message_user(request, "CSV-Datei wurde importiert")
+            # EventMember
+            return redirect("..")
+
+        form = CsvImportForm()
+        context = {"form": form,
+            'message': 'Reihenfolge der Spalten in der CSV-Datei: firstname, lastname, email'
+            }
+        return render(
+            request, "admin/csv_form.html", context
+        )
+
+
+
 
 
 
@@ -180,6 +256,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     search_fields = ('=name',)
     readonly_fields = ('uuid', 'label', 'slug', 'moodle_id', 'date_created', 'date_modified')
     inlines = (EventDayInline, EventAgendaInline, EventImageInline, EventMemberInline)
+    inline_actions = []
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -228,6 +305,22 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         return format_html('<a href="{}">{}</a>', url, count)
 
     view_members_link.short_description = 'Teilnehmer*innen'
+
+    def get_inline_actions(self, request, obj=None):
+        actions = super(EventAdmin, self).get_inline_actions(request, obj)
+        if obj.moodle_id == 0 and obj.category.name == 'Onlineseminare':
+            actions.append('create_course_in_moodle')
+        return actions
+
+
+    def create_course_in_moodle(self, request, obj, parent_obj=None):
+        obj.moodle_course_created = True
+        obj.save()
+        category = 3 # wird in Kurse in Planung angelegt
+        create_moodle_course(obj.name, obj.slug, category)
+
+    create_course_in_moodle.short_description = ">M"
+       
 
     
 

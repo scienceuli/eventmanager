@@ -11,7 +11,15 @@ from events.exception import MoodleException
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 
-from events.models import EventSpeaker, EventLocation, EventCategory, EventFormat, Event, EventMember
+from events.models import EventSpeaker, EventLocation, EventCategory, EventFormat, Event, EventMember, MemberRole, EventMemberRole
+
+# Roles Dict
+roles_dict = {
+    'MANAGER_ROLE_ID': 1,
+    'TRAINER_ROLE_ID': 3,
+    'STUDENT_ROLE_ID': 5
+}
+
 
 def get_timestamp(timestamp):
     try:
@@ -123,9 +131,16 @@ def save_course_enroled_users_to_db(course_id, event):
     at this point
     '''
     # get users of course 
-    users_list = get_moodle_course_enroled_users(course_id)
+    users_and_teacher_list = get_moodle_course_enroled_users(course_id)
+
+    # only users wíth roleid = STUDENT_ROLE_ID are real users 
+    users_list = [item for item in users_and_teacher_list if any(d['roleid'] == roles_dict['STUDENT_ROLE_ID'] for d in item['roles'])]
+
+    # users with roleid = TRAINER_ROLE_ID are trainers
+    trainers_list = [item for item in users_and_teacher_list if any(d['roleid'] == roles_dict['TRAINER_ROLE_ID'] for d in item['roles'])]
+ 
     for user_dict in users_list:
-        user = EventMember.objects.filter(event__moodle_id=course_id).update_or_create(
+        user, _ = EventMember.objects.filter(event__moodle_id=course_id).update_or_create(
             email=user_dict['email'],
             defaults={
                 'event': event,
@@ -135,6 +150,21 @@ def save_course_enroled_users_to_db(course_id, event):
                 'enroled': True
             }
         )
+        # in a second step update or create role assignments by use of the m2m through table
+
+        # create necessary Roles if not existent
+        # 1 = manager, 3 = teacher (Trainer), 5 = student (Teilnehmer)
+
+        for v in roles_dict.values():
+            role, _ = MemberRole.objects.get_or_create(roleid=v)
+
+        for role in user_dict['roles']:
+            print(f"Rolle: {role['roleid']}, usermoodleid: {user.moodle_id}")
+            #myuser = EventMember.objects.get(moodle_id=user.moodle_id, event=event)
+            print(user.id)
+            role_obj = MemberRole.objects.get(roleid=role['roleid'])
+            event_member_role, _ = EventMemberRole.objects.get_or_create(eventmember=user, memberrole=role_obj)
+
     # all users that are still in database associated to the course but removed in moodle are deleted
     # idea from: https://stackoverflow.com/questions/58412462/delete-multiple-django-objects-via-orm
     users_to_delete = EventMember.objects.filter(event=event, moodle_id__gt=0).exclude(moodle_id__in=[user_dict['id'] for user_dict in users_list])
@@ -288,6 +318,7 @@ class Command(BaseCommand):
             trainer_exists = False
             #initialize number of students (Teilnehmer)
             moodle_students_counter = 0
+            moodle_trainer_counter = 0
             for user in course_users:
                 role_id = safe_list_get(user['roles'], 0, 'roleid')
                 # print(f"role_id: {role_id}")
@@ -296,6 +327,7 @@ class Command(BaseCommand):
                     trainer_lastname = user['lastname']
                     trainer_email = user['email']
                     trainer_exists = True
+                    moodle_trainer_counter +=1
                 elif role_id == 5: # students
                     moodle_students_counter += 1
 
