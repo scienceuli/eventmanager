@@ -135,10 +135,10 @@ def save_course_enroled_users_to_db(course_id, event):
                 'enroled': True
             }
         )
-    # all users that are still in database associated to the coourse but removed in moodle are deleted
+    # all users that are still in database associated to the course but removed in moodle are deleted
     # idea from: https://stackoverflow.com/questions/58412462/delete-multiple-django-objects-via-orm
     users_to_delete = EventMember.objects.filter(event=event, moodle_id__gt=0).exclude(moodle_id__in=[user_dict['id'] for user_dict in users_list])
-    print(f"users to delete: {users_to_delete}")
+    print(f"Event: {event.name}, users to delete: {users_to_delete}")
     #users_to_delete.delete()
 
 
@@ -223,7 +223,20 @@ def unenrol_user_from_course(user, course):
     }
     call(fname, **course_dict)
 
-    
+def create_moodle_course(fullname, shortname, categoryid):
+    '''
+    creates Moodle Course with minimal necessary data
+    '''
+    #TODO: check if course already exists
+    fname = 'core_course_create_courses'
+    course_dict = {
+        'courses[0][fullname]': fullname,
+        'courses[0][shortname]': shortname,
+        'courses[0][categoryid]': categoryid,
+    }
+    call(fname, **course_dict)
+
+
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):
