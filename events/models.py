@@ -126,8 +126,8 @@ class Event(BaseModel):
     total_costs = RichTextField(verbose_name="Gesamtkosten", null=True, blank=True, config_name='short')
     registration = RichTextField(verbose_name="Anmeldung", config_name='short')
     notes = RichTextField(verbose_name="Hinweise", null=True, blank=True, config_name='short')
-    start_date = models.DateTimeField(verbose_name="Beginn", help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
-    end_date = models.DateTimeField(verbose_name="Ende", help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
+    start_date = models.DateTimeField(verbose_name="Beginn", null=True, help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
+    end_date = models.DateTimeField(verbose_name="Ende", null=True, help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
     open_date = models.DateTimeField(
         verbose_name="Anmeldefrist Beginn",
         null=True,
