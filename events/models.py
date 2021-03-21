@@ -168,10 +168,10 @@ class Event(BaseModel):
 
         if self.start_date and self.end_date and self.start_date >= self.end_date:
             raise ValidationError("Das Startdatum muss vor dem Enddatum liegen!")
-        if self.start_date and self.end_date:
-            delta = self.end_date - self.start_date
-            if delta.days >= 14:
-                raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
+        #if self.start_date and self.end_date:
+        #    delta = self.end_date - self.start_date
+        #    if delta.days >= 14:
+        #        raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
 
         
     def save(self, *args, **kwargs):
