@@ -60,12 +60,14 @@ class EventListView(ListView):
     
     def get_context_data(self, **kwargs):
         # get moodle courses
-        fname = 'core_course_get_courses'
-        courses_list = call(fname)
+        #fname = 'core_course_get_courses'
+        #courses_list = call(fname)
 
         # events from database
         context = super().get_context_data(**kwargs)
-        event_queryset = Event.objects.order_by('start_date')
+        event_queryset_unsorted = Event.objects.all() # unsorted
+        
+        event_queryset = sorted(event_queryset_unsorted, key=lambda t: t.get_first_day_start_date())
         
         if self.request.GET.get('cat'):
             event_queryset = event_queryset.filter(category__name=self.request.GET.get('cat'))
@@ -73,9 +75,9 @@ class EventListView(ListView):
         # Version 1
         events_dict = {}
 
-        for year, group in itertools.groupby(event_queryset, lambda e: e.start_date.strftime('%Y')):
+        for year, group in itertools.groupby(event_queryset, lambda e: e.get_first_day_start_date().strftime('%Y')):
             events_dict[year] = {}
-            for month, inner_group in itertools.groupby(group, lambda e: e.start_date.strftime('%B')):
+            for month, inner_group in itertools.groupby(group, lambda e: e.get_first_day_start_date().strftime('%B')):
                 events_dict[year][month] = list(inner_group)
 
         print(events_dict)

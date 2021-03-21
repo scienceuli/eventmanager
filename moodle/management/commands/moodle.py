@@ -1,6 +1,6 @@
 import requests
 import json
-import datetime
+import datetime, pytz
 import itertools
 
 from django.conf import settings
@@ -11,7 +11,7 @@ from events.exception import MoodleException
 from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 
-from events.models import EventSpeaker, EventLocation, EventCategory, EventFormat, Event, EventMember, MemberRole, EventMemberRole
+from events.models import EventSpeaker, EventSpeakerThrough, EventLocation, EventCategory, EventFormat, Event, EventMember, MemberRole, EventMemberRole
 
 # Roles Dict
 roles_dict = {
@@ -73,27 +73,11 @@ def get_moodle_course_enroled_users(course_id):
     course_enrolled_users = call(fname, **course_dict)
     return course_enrolled_users
 
-def save_trainer_to_db(trainer_dict):
-    if trainer_dict['trainer_exists']:
-        obj, created = EventSpeaker.objects.get_or_create(
-            email=trainer_dict['trainer_email'],
-            defaults={
-                'first_name': trainer_dict['trainer_firstname'],
-                'last_name': trainer_dict['trainer_lastname'],
-            } 
-        )
 
-def save_course_to_db(course_dict, trainer_dict):
+def save_course_to_db(course_dict):
     category, _ = EventCategory.objects.get_or_create(name='Onlineseminare')
     eventformat, _ = EventFormat.objects.get_or_create(name="Online")
-    try:
-        speaker = EventSpeaker.objects.get(email=trainer_dict['trainer_email'])
-    except EventSpeaker.DoesNotExist:
-        speaker = EventSpeaker.objects.create(
-            first_name=trainer_dict['trainer_firstname'],
-            last_name=trainer_dict['trainer_lastname'],
-            email=trainer_dict['trainer_email']
-            )
+   
     location, _ = EventLocation.objects.get_or_create(title='FOBI Moodle')
     obj, created = Event.objects.update_or_create(
         moodle_id=course_dict['moodle_id'],
@@ -106,7 +90,6 @@ def save_course_to_db(course_dict, trainer_dict):
             'target_group': 'siehe Moodle', 
             'prerequisites': 'siehe Moodle',
             'objectives': 'siehe Moodle',
-            'speaker': speaker,
             'scheduled_status': 'scheduled',
             'location': location,
             'fees': 'siehe Moodle', 
@@ -116,7 +99,6 @@ def save_course_to_db(course_dict, trainer_dict):
             'end_date': course_dict['course_end_date'],
             'capacity': 20,
             'status': 'active',
-            'students_number': course_dict['moodle_students_counter'],
         }
     )
     # when course is created, enroled users can be stored
@@ -171,6 +153,19 @@ def save_course_enroled_users_to_db(course_id, event):
     print(f"Event: {event.name}, users to delete: {users_to_delete}")
     users_to_delete.delete()
 
+    # trainers
+    # get or create trainer in terms of email 
+    for trainer_dict in trainers_list:
+        obj, created = EventSpeaker.objects.update_or_create(
+            email=trainer_dict['email'],
+            defaults={
+                'first_name': trainer_dict['firstname'],
+                'last_name': trainer_dict['lastname'],
+            } 
+        )
+        # update EventSpeakerThrough table
+        trainer, _ = EventSpeakerThrough.objects.get_or_create(event=event, eventspeaker=obj)
+     
 
 def get_user_by_email(email):
     fname = 'core_user_get_users_by_field'
@@ -242,6 +237,7 @@ def enrol_user_to_course(firstname, lastname, email, course):
         call(fname, **course_dict)
 
 
+
 def unenrol_user_from_course(user, course):
     '''
     unenrol user from moodle course
@@ -253,18 +249,32 @@ def unenrol_user_from_course(user, course):
     }
     call(fname, **course_dict)
 
-def create_moodle_course(fullname, shortname, categoryid):
+def create_moodle_course(fullname, shortname, categoryid, first_day, last_day):
     '''
     creates Moodle Course with minimal necessary data
     '''
     #TODO: check if course already exists
     fname = 'core_course_create_courses'
+    # combine date and time objects to datetime object
+    tz = pytz.timezone('Europe/Berlin')
+    startdatetime = datetime.datetime.combine(first_day.start_date, first_day.start_time)
+    enddatetime = datetime.datetime.combine(last_day.start_date, last_day.end_time)
+    # convert datetime objects to timestamp
+    
+    timestamp_start = int(startdatetime.timestamp())
+    timestamp_end = int(enddatetime.timestamp())
+    #timestamp_end = datetime.datetime.timestamp(enddatetime)
     course_dict = {
         'courses[0][fullname]': fullname,
         'courses[0][shortname]': shortname,
         'courses[0][categoryid]': categoryid,
+        'courses[0][startdate]': timestamp_start,
+        'courses[0][enddate]': timestamp_end,
     }
-    call(fname, **course_dict)
+    print(course_dict)
+    new_course = call(fname, **course_dict)
+    return new_course[0].get('id', 0) # moodle id of the new course
+
 
 
 
@@ -311,41 +321,13 @@ class Command(BaseCommand):
 
             # get course users
             course_users = get_moodle_course_enroled_users(course_id)
-            
-            trainer_firstname=""
-            trainer_lastname="NN"
-            trainer_email="NN@nn.de"
-            trainer_exists = False
-            #initialize number of students (Teilnehmer)
-            moodle_students_counter = 0
-            moodle_trainer_counter = 0
-            for user in course_users:
-                role_id = safe_list_get(user['roles'], 0, 'roleid')
-                # print(f"role_id: {role_id}")
-                if role_id == 3: # trainer
-                    trainer_firstname = user['firstname']
-                    trainer_lastname = user['lastname']
-                    trainer_email = user['email']
-                    trainer_exists = True
-                    moodle_trainer_counter +=1
-                elif role_id == 5: # students
-                    moodle_students_counter += 1
-
-            trainer_dict = {}
-            trainer_dict['trainer_firstname'] = trainer_firstname
-            trainer_dict['trainer_lastname'] = trainer_lastname
-            trainer_dict['trainer_email'] = trainer_email
-            trainer_dict['trainer_exists'] = trainer_exists
-
-            course_dict['moodle_students_counter'] = moodle_students_counter
 
             '''
             nur die Kurse aus den Bereichen in Planung(id = 3) und 
             Fortbildungen (id=4) werden gespeichert
             '''
             if course_cat_id == 3 or course_cat_id == 4:
-                save_trainer_to_db(trainer_dict)
-                save_course_to_db(course_dict, trainer_dict)
+                save_course_to_db(course_dict)
 
             #print(course_dict)
             #print(trainer_dict)

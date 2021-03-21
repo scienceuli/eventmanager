@@ -29,6 +29,7 @@ from .models import (
     EventDay,
     EventImage,
     EventSpeaker,
+    EventSpeakerThrough,
     EventLocation,
     EventAgenda,
     EventMember,
@@ -173,11 +174,6 @@ class EventMemberAdmin(admin.ModelAdmin):
             request, "admin/csv_form.html", context
         )
 
-
-
-
-
-
 admin.site.register(EventMember, EventMemberAdmin)
 
 class EventMemberInline(InlineActionsMixin, admin.TabularInline):
@@ -238,6 +234,34 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     delete_user.short_description = "Löschen"
 
 
+class EventSpeakerAdmin(admin.ModelAdmin):
+    list_display = ('last_name', 'first_name',)
+    ordering = ('last_name', 'first_name',)
+    search_fields = ('=last_name', '=first_name',)  # case insensitive searching
+    readonly_fields = ('date_created', 'date_modified')
+    fieldsets = (
+        ('Name', {
+            'fields': (('first_name', 'last_name',),)
+        }),
+        ('Kontakt', {
+            'fields': ('email', 'phone',)
+        }),
+        ('Über', {
+            'fields': ('bio',  ('url', 'social_url',), 'image',)
+        }),
+        ('Änderungen', {
+            'fields': ('date_created', 'date_modified'),
+            'classes': ('collapse',),
+        }),
+    )
+    
+admin.site.register(EventSpeaker, EventSpeakerAdmin)
+
+class EventSpeakerThroughInline(admin.TabularInline):
+    model = EventSpeakerThrough
+    extra = 0
+
+
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     list_display = (
         'name', 
@@ -255,7 +279,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     ordering = ('name',)
     search_fields = ('=name',)
     readonly_fields = ('uuid', 'label', 'slug', 'moodle_id', 'date_created', 'date_modified')
-    inlines = (EventDayInline, EventAgendaInline, EventImageInline, EventMemberInline)
+    inlines = (EventDayInline, EventSpeakerThroughInline, EventAgendaInline, EventImageInline, EventMemberInline)
     inline_actions = []
 
     def get_queryset(self, request):
@@ -317,7 +341,10 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         obj.moodle_course_created = True
         obj.save()
         category = 3 # wird in Kurse in Planung angelegt
-        create_moodle_course(obj.name, obj.slug, category)
+        new_course_id = create_moodle_course(obj.name, obj.slug, category, obj.get_first_day(), obj.get_last_day())
+        obj.moodle_id = new_course_id
+        obj.save()
+
 
     create_course_in_moodle.short_description = ">M"
        
@@ -328,29 +355,6 @@ admin.site.register(EventCategory)
 admin.site.register(EventFormat)
 admin.site.register(Event, EventAdmin)
 
-
-class EventSpeakerAdmin(admin.ModelAdmin):
-    list_display = ('last_name', 'first_name',)
-    ordering = ('last_name', 'first_name',)
-    search_fields = ('=last_name', '=first_name',)  # case insensitive searching
-    readonly_fields = ('date_created', 'date_modified')
-    fieldsets = (
-        ('Name', {
-            'fields': (('first_name', 'last_name',),)
-        }),
-        ('Kontakt', {
-            'fields': ('email', 'phone',)
-        }),
-        ('Über', {
-            'fields': ('bio',  ('url', 'social_url',), 'image',)
-        }),
-        ('Änderungen', {
-            'fields': ('date_created', 'date_modified'),
-            'classes': ('collapse',),
-        }),
-    )
-    
-admin.site.register(EventSpeaker, EventSpeakerAdmin)
 
 class EventLocationAdmin(admin.ModelAdmin):
     list_display = ('title', 'city', )

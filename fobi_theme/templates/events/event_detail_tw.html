@@ -35,7 +35,16 @@
     <div class="container max-w-6xl mx-auto">
         <div class="flex">
             <span class="text-left font-bold text-red text-xl">{{ event.category }}</span>
-            <span class="text-left pl-2 text-xl">{{ event.start_date|date:"l, d. F Y"}} - {{ event.end_date|date:"l, d.F Y" }}</span>
+            <span class="text-left pl-2 text-xl">
+                
+                {% with event.event_days.all|first as first %}
+                {{ first.start_date|date:"l, d. F Y"}} 
+                {% endwith %}
+                {% if event.event_days.all|length > 1 %}
+                - {{ event.get_last_day.start_date|date:"l, d.F Y" }}
+                {% endif %}
+                
+            </span>
         </div>
         <div class="flex py-2">
             <span class="text-left font-bold text-3xl">{{ event.name }}</span>
@@ -43,9 +52,14 @@
 
         <div class="grid w-2/3 grid-cols-1 md:grid-cols-2 bg-gray-200 pr-6 border-red border-2">
             <div class="py-8 px-8">
-                <p class="text-left font-light text-xs">Datum und Uhrzeit</p>
-                <p class="text-left text-sm">{{ event.start_date|date:"D, d. M Y, H:i"}} - <br />
-                    {{ event.end_date|date:"D, d. M Y, H:i" }}</p>
+                <p class="text-left font-light text-xs">Termine</p>
+
+            <p class="text-left text-sm">
+                {% for day in event.event_days.all %}
+                {{ day.start_date|date:"D, d. M Y"}} {{day.start_time|date:"H:i"}}-{{day.end_time|date:"H:i"}}
+                {% if not forloop.last %} <br />{% endif %}
+                {% endfor %}
+                    </p>
                 <p class="text-left font-light text-xs pt-2">Ort</p>
                 <p class="text-left text-sm">{{ event.location.city }}</p>
             </div>
@@ -70,7 +84,11 @@
         <div class="flex flex-col w-2/3 pt-8">
             <div class="flex text-left">{{ event.description|safe }}</div>
 
-            <div class="pt-2"><span class="font-bold">Referent*in:</span> {{ event.speaker }}</div>
+            <div class="pt-2"><span class="font-bold">Referent*in{% if event.speaker.all|length > 1 %}nen{% endif %}:</span> 
+             {% for speaker in event.speaker.all %}
+                {{ speaker }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </div>
 
 
 
