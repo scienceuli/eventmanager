@@ -111,7 +111,7 @@ class Event(BaseModel):
     target_group = models.CharField(verbose_name="Zielgruppe", max_length=255, )
     prerequisites = RichTextUploadingField(verbose_name="Voraussetzungen", max_length=255, config_name='short')
     objectives = RichTextUploadingField(verbose_name="Lernziele", config_name='short')
-    speaker = models.ForeignKey(EventSpeaker, verbose_name="Referent/-in", null=True, on_delete=models.SET_NULL, related_name="speaker_events")
+    speaker = models.ManyToManyField(EventSpeaker, verbose_name="Referent*innen", through='EventSpeakerThrough')
     methods = models.CharField(verbose_name="Methoden", max_length=255, null=True, blank=True)
 
     SCHEDULED_STATUS_CHOICES = (
@@ -163,7 +163,7 @@ class Event(BaseModel):
         - Nachfrage bei mehr als 14 Tagen Dauer
         - 
         """
-        if self.start_date and self.start_date < timezone.now():
+        if not self.pk and self.start_date and self.start_date < timezone.now():
             raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
 
         if self.start_date and self.end_date and self.start_date >= self.end_date:
@@ -172,7 +172,6 @@ class Event(BaseModel):
             delta = self.end_date - self.start_date
             if delta.days >= 14:
                 raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
-
 
         
     def save(self, *args, **kwargs):
@@ -236,6 +235,35 @@ class Event(BaseModel):
             return True
         return False
 
+    def get_first_day(self):
+        try:
+            return self.event_days.all().order_by('start_date')[0]
+           
+        except IndexError:
+            pass
+
+    def get_first_day_start_date(self):
+        try:
+            return self.event_days.all().order_by('start_date')[0].start_date
+           
+        except IndexError:
+            pass
+    
+    def get_last_day(self):
+        try:
+            return self.event_days.all().order_by('-start_date')[0]
+           
+        except IndexError:
+            pass
+
+
+class EventSpeakerThrough(BaseModel):
+    eventspeaker = models.ForeignKey(EventSpeaker, verbose_name='Referent*in', on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, verbose_name='Veranstaltung', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Referent*in"
+        verbose_name_plural = "Referent*innen"
 
 
 class EventDay(BaseModel):
@@ -260,8 +288,8 @@ class EventDay(BaseModel):
         - Nachfrage bei mehr als 14 Tagen Dauer
         - 
         """
-        if self.start_date and self.start_date < timezone.now().date():
-            raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
+        #if self.start_date and self.start_date < timezone.now().date():
+        #    raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
 
         if self.start_time and self.end_time and self.start_time >= self.end_time:
             raise ValidationError("Die Startzeit muss vor der Endzeit liegen!")
