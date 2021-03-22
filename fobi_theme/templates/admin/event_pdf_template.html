@@ -26,15 +26,20 @@
           font-weight:lighter;
   width: auto;
 }
+.imageright {
+    float: right;
+}
 
 
     </style>
 </head>
 
 <body style="padding: 5em; font-family: 'Noto Sans JP', sans-serif; font-weight: lighter;">
+    <img src="{% static 'images/vfll_logo_rot_Bild.jpg' %}" width="100px" class="imageright">
     <h1 style="">Ausschreibung</h1>
+    
 
-<h2 style="color: red;">{{ event.name }}</h2>
+<h2 style="padding-top:90px; color: red;">{{ event.name }}</h2>
 
 <table>
 <tr><td></td><td>{{ event.description|safe }}</td></tr>
