@@ -1,4 +1,6 @@
 from django.db import models
+from datetime import datetime
+from datetime import date
 from django.utils import timezone
 from django.urls import reverse
 from django.template.defaultfilters import slugify
@@ -163,7 +165,8 @@ class Event(BaseModel):
         - Nachfrage bei mehr als 14 Tagen Dauer
         - 
         """
-        pass
+        if not self.pk and self.close_date and self.close_date < timezone.now():
+            raise ValidationError("Die Anmeldfrist liegt in der Vergangenheit!")
         #if not self.pk and self.start_date and self.start_date < timezone.now():
         #    raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
 
@@ -185,23 +188,22 @@ class Event(BaseModel):
             #if not self.slug:
             #    self.slug = slugify(self.name)[:max_length]
             if not self.label:
-                self.label = f"{self.eventformat.name[0].capitalize()}{self.start_date.year}-{str(self.id)}"
+                last_id = Event.objects.latest('id').id
+                self.label = f"{self.eventformat.name[0].capitalize()}-{date.today().year}-{str(last_id+1)}"
             kwargs['force_insert'] = False # create() uses this, which causes error.
         super(Event, self).save(*args, **kwargs)
 
     def get_absolute_url(self):
         return reverse('event-detail', kwargs={'slug': self.slug}) 
 
-
     def is_yet_open_for_registration(self):
-        return not self.open_date or self.open_date < timezone.now()
+        return not self.open_date or self.open_date < timezone.now().date
 
     def get_end_of_registration(self):
-        return self.close_date if self.close_date else self.start_date
-
+        return self.close_date.date() if self.close_date else self.get_first_day_start_date()
 
     def is_past(self):
-        if timezone.now() > self.get_end_of_registration():
+        if date.today() > self.get_end_of_registration():
             return True
         return False
 
@@ -249,6 +251,13 @@ class Event(BaseModel):
            
         except IndexError:
             pass
+
+    def get_year(self):
+        try:
+            return self.event_days.all().order_by('start_date')[0].start_date.year
+           
+        except IndexError:
+            pass
     
     def get_last_day(self):
         try:
@@ -289,8 +298,8 @@ class EventDay(BaseModel):
         - Nachfrage bei mehr als 14 Tagen Dauer
         - 
         """
-        #if self.start_date and self.start_date < timezone.now().date():
-        #    raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
+        if not self.pk and self.start_date and self.start_date < timezone.now().date():
+            raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
 
         if self.start_time and self.end_time and self.start_time >= self.end_time:
             raise ValidationError("Die Startzeit muss vor der Endzeit liegen!")
