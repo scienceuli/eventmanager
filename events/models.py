@@ -203,7 +203,7 @@ class Event(BaseModel):
         return self.close_date.date() if self.close_date else self.get_first_day_start_date()
 
     def is_past(self):
-        if date.today() > self.get_end_of_registration():
+        if self.get_end_of_registration() and date.today() > self.get_end_of_registration():
             return True
         return False
 
