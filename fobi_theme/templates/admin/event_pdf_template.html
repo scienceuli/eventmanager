@@ -64,7 +64,7 @@
 <tr><td>Termin</td>
 <td>
     {% for day in event.event_days.all %}
-                {{ day.start_date|date:"D, d. M Y"}} {{day.start_time|date:"H:i"}}-{{day.end_time|date:"H:i"}}
+                {{ day.start_date|date:"d. F Y"}} {{day.start_time|date:"H:i"}}-{{day.end_time|date:"H:i"}}
                 {% if not forloop.last %} <br />{% endif %}
                 {% endfor %}
 </td></tr>
