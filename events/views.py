@@ -34,6 +34,8 @@ from .utils import send_email
 
 import itertools
 
+from wkhtmltopdf.views import PDFTemplateResponse
+
 import locale
 # for German locale
 locale.setlocale(locale.LC_TIME, "de_DE") 
@@ -251,3 +253,26 @@ def moodle(request):
 def get_moodle_data(request):
     get_and_save_courses_from_moodle.delay()
     return HttpResponse('moodle Daten aktualisiert')
+
+
+def admin_event_pdf(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    context = {
+        'event': event
+    }
+    response = PDFTemplateResponse(
+        request=request,
+        context=context,
+        template='admin/event_pdf_template.html',
+        filename="event.pdf",
+        show_content_in_browser=True,
+        cmd_options={
+            'encoding': 'utf8',
+            'quiet': True,
+            'orientation': 'portrait',
+        }
+    )
+
+    return response
+    
+

@@ -233,12 +233,16 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         obj.delete()
     delete_user.short_description = "Löschen"
 
+class EventSpeakerThroughInline(admin.TabularInline):
+    model = EventSpeakerThrough
+    extra = 0
 
 class EventSpeakerAdmin(admin.ModelAdmin):
     list_display = ('last_name', 'first_name',)
     ordering = ('last_name', 'first_name',)
     search_fields = ('=last_name', '=first_name',)  # case insensitive searching
     readonly_fields = ('date_created', 'date_modified')
+    inlines = (EventSpeakerThroughInline,)
     fieldsets = (
         ('Name', {
             'fields': (('first_name', 'last_name',),)
@@ -257,12 +261,18 @@ class EventSpeakerAdmin(admin.ModelAdmin):
     
 admin.site.register(EventSpeaker, EventSpeakerAdmin)
 
-class EventSpeakerThroughInline(admin.TabularInline):
-    model = EventSpeakerThrough
-    extra = 0
+
+# generating link to event pdf 
+def admin_event_pdf(obj):
+    return mark_safe('<a href="{}">Pdf</a>'.format(
+        reverse('admin-event-pdf', args=[obj.id])
+    ))
+
+admin_event_pdf.short_description = 'Pdf'
 
 
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
+
     list_display = (
         'name', 
         'label',
@@ -273,7 +283,8 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "capacity",
         'eventformat',
         'category',
-        'status'
+        'status',
+        admin_event_pdf
     )
     list_filter = ('eventformat', 'category', 'status')
     ordering = ('name',)
