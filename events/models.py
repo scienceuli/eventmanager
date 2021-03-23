@@ -220,9 +220,10 @@ class Event(BaseModel):
     registration_over = property(is_past_hinweis)
 
     def get_number_of_members(self):
-        if self.moodle_id > 0: #
-            return self.students_number # falls Moodle-Kurs
-        return self.members.count()
+        '''
+        gibt die Anzahl der Teilnehmer und der eingeschriebenen Moodle-User zurück
+        '''
+        return f"{self.members.count()} ({self.students_number})"
 
     get_number_of_members.short_description = "Teilnehmer"
 

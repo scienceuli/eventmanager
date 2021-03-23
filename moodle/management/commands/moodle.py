@@ -275,6 +275,18 @@ def create_moodle_course(fullname, shortname, categoryid, first_day, last_day):
     print(f"neuer kurs response: {response}")
     return response
 
+def delete_moodle_course(moodleid):
+    '''
+    deletes Moodle Course with given id
+    '''
+    print(f"course zu löschen: {moodleid}")
+    fname = 'core_course_delete_courses'
+    course_dict = {
+        'courseids[0]': moodleid,
+    }
+    response = call(fname, **course_dict)
+    return response
+
 
 class Command(BaseCommand):
     def handle(self, *args, **kwargs):

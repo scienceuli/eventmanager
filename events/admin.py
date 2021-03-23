@@ -40,7 +40,7 @@ from .email_template import (
     EmailTemplate
 )
 
-from moodle.management.commands.moodle import enrol_user_to_course, unenrol_user_from_course, create_moodle_course
+from moodle.management.commands.moodle import enrol_user_to_course, unenrol_user_from_course, create_moodle_course, delete_moodle_course
 
 # setting date format in admin page
 from django.conf.locale.de import formats as de_formats
@@ -291,6 +291,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     ordering = ('name',)
     search_fields = ('=name',)
     readonly_fields = ('uuid', 'label', 'slug', 'moodle_id', 'moodle_course_created', 'date_created', 'date_modified')
+    #readonly_fields = ('uuid', 'label', 'slug', 'date_created', 'date_modified')
     exclude = ('start_date', 'end_date',)
     inlines = (EventDayInline, EventSpeakerThroughInline, EventAgendaInline, EventImageInline, EventMemberInline)
     inline_actions = []
@@ -359,6 +360,8 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         actions = super(EventAdmin, self).get_inline_actions(request, obj)
         if obj.moodle_id == 0 and obj.category.name == 'Onlineseminare':
             actions.append('create_course_in_moodle')
+        if not obj.moodle_id == 0 and obj.category.name == 'Onlineseminare' and not obj.members.exists():
+            actions.append('delete_course_in_moodle')
         return actions
 
 
@@ -388,7 +391,33 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     create_course_in_moodle.short_description = ">M"
 
     def delete_course_in_moodle(self, request, obj, parent_obj=None):
-        pass
+        if obj.moodle_id == 0:
+            self.message_user(request, "Kurs ist kein Moodle-Kurs und kann nicht gelöscht werden", messages.ERROR)
+            return None
+        elif obj.members.exists():
+            self.message_user(request, "Kurs hat Teilnehmer und kann nicht gelöscht werden", messages.ERROR)
+            return None
+        else:
+            response = delete_moodle_course(obj.moodle_id)
+
+        if type(response) == dict:
+            print(response)
+            if 'warnings' in response and not response['warnings']:
+                self.message_user(request, f"Moodle-Kurs mit ID {obj.moodle_id} wurde gelöscht, im EventManager ist er aber weiterhin vorhanden.", messages.SUCCESS)
+                obj.moodle_id = 0
+                obj.moodle_course_created = False
+                obj.save()
+            if 'exception' in response or 'errorcode' in response:
+                self.message_user(
+                    request, 
+                    f"Moodle-Kurs konnte nicht gelöscht werden: {response.get('exception', '')}, {response.get('errorcode','')}, {response.get('message','')}", messages.ERROR)
+        else:
+            return None
+            
+    
+    delete_course_in_moodle.short_description = "xM"
+            
+            
        
 
     
