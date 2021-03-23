@@ -363,10 +363,13 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
 
     def create_course_in_moodle(self, request, obj, parent_obj=None):
-        obj.moodle_course_created = True
-        obj.save()
+        #obj.save()
         category = 3 # wird in Kurse in Planung angelegt
-        response = create_moodle_course(obj.name, obj.slug, category, obj.get_first_day(), obj.get_last_day())
+        if not obj.get_first_day():
+            self.message_user(request, "Kurs hat kein Startdatum und kann nicht angelegt werden", messages.ERROR)
+            return None
+        else:
+            response = create_moodle_course(obj.name, obj.slug, category, obj.get_first_day(), obj.get_last_day())
         if type(response) == dict:
             if 'warnings' in response and response['warnings']:
                 self.message_user(request, response['warnings'], messages.WARNING)
@@ -377,11 +380,15 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         else:
             new_course_id = response[0].get('id', 0) # moodle id of the new course
             obj.moodle_id = new_course_id
+            obj.moodle_course_created = True
             obj.save()
             self.message_user(request, f"neuer Moodle-Kurs mit ID {new_course_id} angelegt", messages.SUCCESS)
 
 
     create_course_in_moodle.short_description = ">M"
+
+    def delete_course_in_moodle(self, request, obj, parent_obj=None):
+        pass
        
 
     
