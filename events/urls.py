@@ -16,7 +16,12 @@ from .views import (
     get_moodle_data
 )
 
+# sentry test
+def trigger_error(request):
+    division_by_zero = 1 / 0
+
 urlpatterns = [
+    path('sentry-debug/', trigger_error), # sentry test
     path('', home, name='home'),
     path('dashboard/', dashboard, name='dashboard'),
     path('event_list/', EventListView.as_view(), name='event-list'),
