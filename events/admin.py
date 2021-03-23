@@ -1,4 +1,4 @@
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.safestring import mark_safe
 from django.utils.http import urlencode
 from django.utils.html import format_html
@@ -272,6 +272,7 @@ admin_event_pdf.short_description = 'Pdf'
 
 
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
+    change_list_template = "admin/event_change_list.html"
 
     list_display = (
         'name', 
@@ -365,9 +366,19 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         obj.moodle_course_created = True
         obj.save()
         category = 3 # wird in Kurse in Planung angelegt
-        new_course_id = create_moodle_course(obj.name, obj.slug, category, obj.get_first_day(), obj.get_last_day())
-        obj.moodle_id = new_course_id
-        obj.save()
+        response = create_moodle_course(obj.name, obj.slug, category, obj.get_first_day(), obj.get_last_day())
+        if type(response) == dict:
+            if 'warnings' in response and response['warnings']:
+                self.message_user(request, response['warnings'], messages.WARNING)
+            if 'exception' in response or 'errorcode' in response:
+                self.message_user(
+                    request, 
+                    f"Moodle-Kurs konnte nicht angelegt werden: {response.get('exception', '')}, {response.get('errorcode','')}, {response.get('message','')}", messages.ERROR)
+        else:
+            new_course_id = response[0].get('id', 0) # moodle id of the new course
+            obj.moodle_id = new_course_id
+            obj.save()
+            self.message_user(request, f"neuer Moodle-Kurs mit ID {new_course_id} angelegt", messages.SUCCESS)
 
 
     create_course_in_moodle.short_description = ">M"

@@ -237,7 +237,6 @@ def enrol_user_to_course(firstname, lastname, email, course):
         call(fname, **course_dict)
 
 
-
 def unenrol_user_from_course(user, course):
     '''
     unenrol user from moodle course
@@ -272,10 +271,9 @@ def create_moodle_course(fullname, shortname, categoryid, first_day, last_day):
         'courses[0][enddate]': timestamp_end,
     }
     print(course_dict)
-    new_course = call(fname, **course_dict)
-    return new_course[0].get('id', 0) # moodle id of the new course
-
-
+    response = call(fname, **course_dict)
+    print(f"neuer kurs response: {response}")
+    return response
 
 
 class Command(BaseCommand):
