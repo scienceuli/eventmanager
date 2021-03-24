@@ -108,7 +108,7 @@ class Event(BaseModel):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, null=False, unique=True, editable=False)
     label = models.CharField(max_length=64)
-    description = RichTextUploadingField(verbose_name="Teaser")
+    description = RichTextUploadingField(verbose_name="Teaser", config_name='short')
     duration = models.CharField(verbose_name="Dauer", max_length=255, null=True, blank=True)
     target_group = models.CharField(verbose_name="Zielgruppe", max_length=255, )
     prerequisites = RichTextUploadingField(verbose_name="Voraussetzungen", max_length=255, config_name='short')
