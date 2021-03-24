@@ -121,7 +121,6 @@ class EventMemberAdmin(admin.ModelAdmin):
     actions = [export_as_xls]
 
    
-
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
@@ -228,7 +227,6 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     unenrol_from_moodle_course.short_description = "Ausschreiben"
 
 
-
     def delete_user(self, request, obj, parent_obj):
         obj.delete()
     delete_user.short_description = "Löschen"
@@ -273,6 +271,7 @@ admin_event_pdf.short_description = 'Pdf'
 
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     change_list_template = "admin/event_change_list.html"
+    change_form_template = "admin/event_change_form.html"
 
     list_display = (
         'name', 
