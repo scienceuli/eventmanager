@@ -14,9 +14,25 @@ class MoodleUserAdmin(admin.ModelAdmin):
     actions = ['add_to_event']
 
     def add_to_event(self, request, queryset):
+        '''
+        ordnet die Teilnehmer-Auswahl einer Veranstaltung zu,
+        die Teilnehmer werden aber noch nicht eingeschrieben.
+        Die Action dient lediglich als Copy-Action bekannter Moodle-User-Daten
+        zu einer Veranstaltung.
+        '''
         if 'apply' in request.POST:
             event_id = request.POST["event"]
             event = Event.objects.get(id=event_id)
+            # Teilnehmer anlegen 
+            # der queryset enthält die ausgewählten User, also:
+            for user in queryset:
+                event.members.update_or_create(email=user.email,
+                defaults={
+                    'firstname': user.firstname,
+                    'lastname': user.lastname
+                })
+            # alert zu dieser Aktion
+            self.message_user(request, f"{len(queryset)} Teilnehmer*in(nen) wurde(n) der Veranstaltung {event.name} hinzugefügt.")
             return HttpResponseRedirect(request.get_full_path())
 
         form = EventForm(initial={'_selected_action': queryset.values_list('id', flat=True)})
