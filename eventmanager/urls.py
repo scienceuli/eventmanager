@@ -26,9 +26,9 @@ from django.conf import settings
 from events.views import admin_event_pdf
 
 urlpatterns = [
-    #path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
-    #path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLS
-    path('grappelli/', include('grappelli.urls')), # grappelli URLS
+    path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
+    path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLS
+    #path('grappelli/', include('grappelli.urls')), # grappelli URLS
     path('admin/', admin.site.urls),
     path('login/', user_views.login_page, name='login'),
     path('logout/', user_views.logout_page, name='logout'),
