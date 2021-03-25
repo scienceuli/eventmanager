@@ -12,6 +12,7 @@ from django.core.management.base import BaseCommand
 from django.core.exceptions import ObjectDoesNotExist
 
 from events.models import EventSpeaker, EventSpeakerThrough, EventLocation, EventCategory, EventFormat, Event, EventMember, MemberRole, EventMemberRole
+from moodle.models import MoodleUser
 
 # Roles Dict
 roles_dict = {
@@ -132,6 +133,17 @@ def save_course_enroled_users_to_db(course_id, event):
                 'enroled': True
             }
         )
+
+        # payload : fill extra table with moodle users
+        moodle_user, _ = MoodleUser.objects.update_or_create(
+            email=user_dict['email'],
+            defaults={
+                'firstname': user_dict['firstname'],
+                'lastname': user_dict['lastname'],
+                'moodle_id': user_dict['id'],
+            }
+        )
+
         # in a second step update or create role assignments by use of the m2m through table
 
         # create necessary Roles if not existent
@@ -188,7 +200,7 @@ def get_user_by_username(username):
     print(f"user: {user}")
     return user
 
-def enrol_user_to_course(firstname, lastname, email, course):
+def enrol_user_to_course(email, courseid, roleid, firstname=None, lastname=None):
     #  check if user exists
     user = get_user_by_email(email)
     print(f"{email}")
@@ -198,9 +210,9 @@ def enrol_user_to_course(firstname, lastname, email, course):
         #print(f"user_id: {user_id}")
         fname = 'enrol_manual_enrol_users'
         course_dict = {
-            'enrolments[0][roleid]': 5,
+            'enrolments[0][roleid]': roleid,
             'enrolments[0][userid]': user[0]['id'],
-            'enrolments[0][courseid]': course
+            'enrolments[0][courseid]': courseid
         }
         call(fname, **course_dict)
     else:
@@ -230,25 +242,25 @@ def enrol_user_to_course(firstname, lastname, email, course):
         EventMember.objects.filter(email=email).update(moodle_id=user_id)
         fname = 'enrol_manual_enrol_users'
         course_dict = {
-            'enrolments[0][roleid]': 5,
+            'enrolments[0][roleid]': roleid,
             'enrolments[0][userid]': user_id,
-            'enrolments[0][courseid]': course
+            'enrolments[0][courseid]': courseid
         }
         call(fname, **course_dict)
 
 
-def unenrol_user_from_course(user, course):
+def unenrol_user_from_course(user, courseid):
     '''
     unenrol user from moodle course
     '''
     fname = 'enrol_manual_unenrol_users'
     course_dict = {
         'enrolments[0][userid]': user,
-        'enrolments[0][courseid]': course,
+        'enrolments[0][courseid]': courseid,
     }
     call(fname, **course_dict)
 
-def create_moodle_course(fullname, shortname, categoryid, first_day, last_day):
+def create_moodle_course(fullname, shortname, categoryid, speakers, first_day, last_day):
     '''
     creates Moodle Course with minimal necessary data
     '''
@@ -273,6 +285,10 @@ def create_moodle_course(fullname, shortname, categoryid, first_day, last_day):
     print(course_dict)
     response = call(fname, **course_dict)
     print(f"neuer kurs response: {response}")
+    # falls Kurs angelegt wurde:
+    if response[0].get('id'):
+        speaker = create_or_update_trainer(response[0].get('id'), speakers)
+
     return response
 
 def delete_moodle_course(moodleid):
@@ -286,6 +302,20 @@ def delete_moodle_course(moodleid):
     }
     response = call(fname, **course_dict)
     return response
+
+def create_or_update_trainer(courseid, speakers):
+    '''
+    wenn ein Kurs in Moodle angelegt wird und Trainer hat,
+    muss gecheckt werden:
+    - gibt es den Trainer bereits in Moodle (Abgleich per E-Mail)?
+      => dann zuordnen
+    - es gibt den Trainer noch nicht => anlegen und zuordnen
+    Diese Unterscheidung macht die Funktion enrol_user_to_course
+    '''
+    for speaker in speakers:
+        enrol_user_to_course(speaker.email, courseid, roles_dict['TRAINER_ROLE_ID'], speaker.first_name, speaker.last_name)
+
+
 
 
 class Command(BaseCommand):

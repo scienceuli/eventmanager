@@ -214,7 +214,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     def enrol_to_moodle_course(self, request, obj, parent_obj=None):
         obj.enroled = True
         obj.save()
-        enrol_user_to_course(obj.firstname, obj.lastname, obj.email, obj.event.moodle_id)
+        enrol_user_to_course(obj.email, obj.event.moodle_id, 5, obj.firstname, obj.lastname) # 5: student
         return True
 
     enrol_to_moodle_course.short_description = 'Einschreiben'
@@ -371,7 +371,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             self.message_user(request, "Kurs hat kein Startdatum und kann nicht angelegt werden", messages.ERROR)
             return None
         else:
-            response = create_moodle_course(obj.name, obj.slug, category, obj.get_first_day(), obj.get_last_day())
+            response = create_moodle_course(obj.name, obj.slug, category, obj.speaker.all(), obj.get_first_day(), obj.get_last_day())
         if type(response) == dict:
             if 'warnings' in response and response['warnings']:
                 self.message_user(request, response['warnings'], messages.WARNING)
