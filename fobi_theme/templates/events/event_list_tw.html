@@ -32,17 +32,17 @@
 <section class="py-20 px-20 bg-white">
     <div class="container max-w-6xl mx-auto">
         {% for year, events_month_dict in events_dict.items %}
-        <h2 class="text-4xl py-5 font-bold tracking-tight text-left">{{ year }}</h2>
+        <h2 class="text-xl md:text-4xl py-5 font-bold tracking-tight text-left">{{ year }}</h2>
         
         {% for month, events in events_month_dict.items %}
-        <h3 class="text-3xl py-3 font-semibold tracking-tight text-left">{{ month }}</h3>
+        <h3 class="text-xl md:text-3xl py-3 font-semibold tracking-tight text-left">{{ month }}</h3>
 
         {% for event in events %}
 
         <!-- Two columns -->
         <div class="flex flex-wrap mb-4 border-b-2 py-1">
             <div class="w-full  md:w-1/3 mb-4">
-            <p class="text-center text-red text-6xl">{{ event.get_first_day.start_date|date:"d" }}</p>
+            <p class="text-center text-red text-2xl md:text-6xl">{{ event.get_first_day.start_date|date:"d" }}</p>
             <p class="text-center text-red text-sm">{{ event.get_first_day.start_date|date:"F" }}</p>
             
            

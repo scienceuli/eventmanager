@@ -72,7 +72,7 @@ class EventListView(ListView):
         event_queryset = sorted(event_queryset_unsorted, key=lambda t: t.get_first_day_start_date())
         
         if self.request.GET.get('cat'):
-            event_queryset = event_queryset.filter(category__name=self.request.GET.get('cat'))
+            event_queryset = sorted(event_queryset_unsorted.filter(category__name=self.request.GET.get('cat')), key=lambda t: t.get_first_day_start_date())
 
         # Version 1
         events_dict = {}

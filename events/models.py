@@ -197,7 +197,7 @@ class Event(BaseModel):
         return reverse('event-detail', kwargs={'slug': self.slug}) 
 
     def is_yet_open_for_registration(self):
-        return not self.open_date or self.open_date < timezone.now().date
+        return not self.open_date or self.open_date < timezone.now()
 
     def get_end_of_registration(self):
         return self.close_date.date() if self.close_date else self.get_first_day_start_date()
