@@ -335,7 +335,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             'fields': ('capacity', 'registration', 'close_date', 'scheduled_status', 'status', 'notes', )
         }),
         ('Moodle', {
-            'fields': ('moodle_id', 'moodle_course_created'),
+            'fields': ('moodle_id', 'moodle_course_created', 'moodle_new_user_flag',),
         }),
         ('Intern', {
             'fields': ('slug', 'uuid', 'date_created', 'date_modified'),
