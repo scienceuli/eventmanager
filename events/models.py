@@ -156,7 +156,7 @@ class Event(BaseModel):
     close_date = models.DateTimeField(
         verbose_name="Anmeldefrist Ende", null=True, blank=True
     )
-    capacity = models.PositiveIntegerField(verbose_name='Kapazität')
+    capacity = models.PositiveIntegerField(verbose_name='Kapazität', default=15)
     STATUS_CHOICES = (
         ('active', 'aktiv'),
         ('deleted', 'verschoben'),
