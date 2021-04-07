@@ -24,6 +24,7 @@
         border-bottom: 1pt solid black;
       }
       td+td {
+        vertical-align: top;
           font-weight:lighter;
   width: auto;
 }
@@ -57,6 +58,11 @@
 <tr><td>Programm</td>
 <td>
 {% for agenda in event.agendas.all %}
+<span>{{agenda.session_name}}</span>
+    {% if agenda.start_time %}
+    <span>({{agenda.start_time|date:"H:i"}}
+    {% if agenda.end_time %}-{{agenda.end_time|date:"H:i"}}{% endif %})</span>
+    {% endif %}
             {{ agenda.description|safe }}
             {% endfor %}
         </td></tr>
