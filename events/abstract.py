@@ -20,3 +20,5 @@ class AddressModel(BaseModel):
     city = models.CharField("Stadt", max_length=255, blank=True, null=True)
     state = models.CharField("Bundesland", max_length=255, blank=True, null=True)
     postcode = models.CharField("PLZ", max_length=64, blank=True, null=True)
+
+    

@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import F
 from datetime import datetime
 from datetime import date
 from django.utils import timezone
@@ -14,6 +15,8 @@ from .abstract import BaseModel, AddressModel
 class EventCategory(BaseModel):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField("Beschreibung", blank=True)
+    singular = models.CharField(max_length=255, null=True, blank=True,
+        help_text="wird im Frontend als Kategorie angezeigt")
 
     class Meta:
         ordering = ('name',)
@@ -71,11 +74,6 @@ class EventLocation(AddressModel):
             else:
                 address += self.state
 
-        if self.country:
-            if address:
-                address += ", " + self.get_country_display()
-            else:
-                address += self.get_country_display()
         return address
 
     
@@ -102,18 +100,38 @@ class EventSpeaker(BaseModel):
             last_name=self.last_name
         ).strip()
 
+class EventSponsor(BaseModel):
+    first_name = models.CharField("Vorname", blank=True, max_length=128)
+    last_name = models.CharField("Nachname", max_length=128)
+    email = models.EmailField("E-Mail", blank=True, max_length=255)
+    phone = models.CharField("Tel", max_length=64, blank=True)
+    url = models.URLField("Website", blank=True)
+    image = models.ImageField(upload_to='speaker/', blank=True)
+
+    class Meta:
+        ordering = ('last_name',)
+        verbose_name = "Pat*in"
+        verbose_name_plural = "Pat*innen"
+
+    def __str__(self):
+        return '{first_name} {last_name}'.format(
+            first_name=self.first_name,
+            last_name=self.last_name
+        ).strip()
+
 class Event(BaseModel):
     category = models.ForeignKey(EventCategory, verbose_name="Kategorie", on_delete=models.CASCADE)
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, null=False, unique=True, editable=False)
-    label = models.CharField(max_length=64)
+    label = models.CharField(max_length=64, verbose_name="Kurzname", unique=True, help_text="eindeutiger Kurzname")
     description = RichTextUploadingField(verbose_name="Teaser", config_name='short')
     duration = models.CharField(verbose_name="Dauer", max_length=255, null=True, blank=True)
     target_group = models.CharField(verbose_name="Zielgruppe", max_length=255, )
     prerequisites = RichTextUploadingField(verbose_name="Voraussetzungen", max_length=255, config_name='short')
     objectives = RichTextUploadingField(verbose_name="Lernziele", config_name='short')
     speaker = models.ManyToManyField(EventSpeaker, verbose_name="Referent*innen", through='EventSpeakerThrough')
+    sponsors = models.ManyToManyField(EventSponsor, verbose_name="Pate,Patin", through='EventSponsorThrough')
     methods = models.CharField(verbose_name="Methoden", max_length=255, null=True, blank=True)
 
     SCHEDULED_STATUS_CHOICES = (
@@ -121,7 +139,7 @@ class Event(BaseModel):
         ('scheduled', 'terminiert')
     )
     scheduled_status = models.CharField(max_length=25, choices=SCHEDULED_STATUS_CHOICES)
-    location = models.ForeignKey(EventLocation, null=True, on_delete=models.DO_NOTHING, related_name='location_events')
+    location = models.ForeignKey(EventLocation, verbose_name="Veranstaltungsort", null=True, on_delete=models.DO_NOTHING, related_name='location_events')
     fees = RichTextField(verbose_name="Gebühren", config_name='short')
     catering = RichTextField(verbose_name="Verpflegung", null=True, blank=True, config_name='short')
     lodging = RichTextField(verbose_name="Übernachtung", null=True, blank=True, config_name='short')
@@ -138,7 +156,7 @@ class Event(BaseModel):
     close_date = models.DateTimeField(
         verbose_name="Anmeldefrist Ende", null=True, blank=True
     )
-    capacity = models.PositiveIntegerField()
+    capacity = models.PositiveIntegerField(verbose_name='Kapazität')
     STATUS_CHOICES = (
         ('active', 'aktiv'),
         ('deleted', 'verschoben'),
@@ -147,6 +165,10 @@ class Event(BaseModel):
     status = models.CharField(choices=STATUS_CHOICES, max_length=10)
     moodle_id = models.PositiveSmallIntegerField(default=0)
     moodle_course_created = models.BooleanField(default=False)
+    moodle_new_user_flag = models.BooleanField(
+        verbose_name="E-Mail an neue Moodle-User",
+        default=False,
+        help_text="Hier kann für den Kurs festgelegt werden, ob neue Moodle-User die automatische Begrüßungsmail bekommen (default=False).")
     students_number = models.PositiveSmallIntegerField(default=0, editable=False)
 
     class Meta:
@@ -176,20 +198,22 @@ class Event(BaseModel):
         #    delta = self.end_date - self.start_date
         #    if delta.days >= 14:
         #        raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
+        if self.capacity < self.members.count():
+            raise ValidationError("Die Teilnehmer*innenzahl darf nicht größer als die Kapaizität sein.")
 
         
     def save(self, *args, **kwargs):
         max_length = self._meta.get_field('slug').max_length
+        last_id = Event.objects.latest('id').id
         if not self.id:
-            self.slug = slugify(f"{self.name}-{self.moodle_id}")[:max_length]
+            self.slug = slugify(f"{self.name}-{str(last_id+1)}")[:max_length]
         add = not self.pk
         #super(Event, self).save(*args, **kwargs)
         if add:
             #if not self.slug:
             #    self.slug = slugify(self.name)[:max_length]
             if not self.label:
-                last_id = Event.objects.latest('id').id
-                self.label = f"{self.eventformat.name[0].capitalize()}-{date.today().year}-{str(last_id+1)}"
+                self.label = f"{self.name.partition(' ')[0]}-{date.today().year}-{str(last_id+1)}"
             kwargs['force_insert'] = False # create() uses this, which causes error.
         super(Event, self).save(*args, **kwargs)
 
@@ -239,6 +263,13 @@ class Event(BaseModel):
             return True
         return False
 
+    def few_remaining_places(self):
+        count = self.members.count()
+        capacity = self.capacity if self.capacity is not None else sys.maxsize
+        if capacity - count <= 3:
+            return True
+        return False
+
     def get_first_day(self):
         try:
             return self.event_days.all().order_by('start_date')[0]
@@ -277,6 +308,15 @@ class EventSpeakerThrough(BaseModel):
         verbose_name_plural = "Referent*innen"
 
 
+class EventSponsorThrough(BaseModel):
+    eventsponsor = models.ForeignKey(EventSponsor, verbose_name='Pat*in', on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, verbose_name='Veranstaltung', on_delete=models.CASCADE)
+
+    class Meta:
+        verbose_name = "Pat*in"
+        verbose_name_plural = "Pat*innen"
+
+
 class EventDay(BaseModel):
     event = models.ForeignKey(Event, related_name="event_days", on_delete=models.CASCADE)
     start_date = models.DateField(verbose_name="Datum", help_text='Datum: Picker verwenden oder in der Form tt.mm.jj')
@@ -311,16 +351,21 @@ class EventAgenda(BaseModel):
     session_name = models.CharField(verbose_name="Programmteil", max_length=120, )
     start_time = models.TimeField(verbose_name="Beginn", null=True, blank=True)
     end_time = models.TimeField(verbose_name="Ende", null=True, blank=True)
+    position = models.PositiveSmallIntegerField(verbose_name="Reihenfolge", null=True, help_text="Reihenfolge der Programme in der Anezige")
     venue_name = models.CharField(verbose_name="wo", max_length=255, null=True, blank=True)
-    description = RichTextUploadingField(verbose_name="Programm")
+    description = RichTextField(verbose_name="Programm", config_name='short')
 
     class Meta:
-        ordering = ('start_time',)
+        ordering = ('position',)
         verbose_name = "Programm"
         verbose_name_plural = "Programme"
 
     def __str__(self):
         return self.session_name
+
+    def save(self, *args, **kwargs):
+        EventAgenda.objects.filter(position__gte=self.position).update(position=F('position') + 1)
+        super(EventAgenda, self).save(*args, **kwargs)
 
 
 class EventImage(BaseModel):

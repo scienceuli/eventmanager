@@ -58,3 +58,4 @@ def export_as_xls(self, request, queryset):
     wb.save(response)
     return response
 export_as_xls.short_description = "Export > Excel"
+

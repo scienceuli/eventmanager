@@ -21,6 +21,9 @@ roles_dict = {
     'STUDENT_ROLE_ID': 5
 }
 
+# test user
+test_user_list = [f"user{str(i)}@elearning-and-more.de" for i in range(1, 7)]
+
 
 def get_timestamp(timestamp):
     try:
@@ -200,7 +203,7 @@ def get_user_by_username(username):
     print(f"user: {user}")
     return user
 
-def enrol_user_to_course(email, courseid, roleid, firstname=None, lastname=None):
+def enrol_user_to_course(email, courseid, new_user_password_flag, roleid, firstname=None, lastname=None):
     #  check if user exists
     user = get_user_by_email(email)
     print(f"{email}")
@@ -229,13 +232,23 @@ def enrol_user_to_course(email, courseid, roleid, firstname=None, lastname=None)
 
         username = username_candidate
 
+        # if moodle_new_user_flag is set to True (default=False) a password is created an sent to new user
+        if new_user_password_flag or email in test_user_list:
+            createpassword = 1
+        else:
+            createpassword = 0
+
         course_dict = {
             'users[0][username]': username,
-            'users[0][createpassword]': 1,
+            'users[0][createpassword]': createpassword,
             'users[0][firstname]': firstname,
             'users[0][lastname]': lastname,
             'users[0][email]': email
         }
+
+        if createpassword == 0:
+            course_dict['users[0][password]'] = 'MoodleTest123#'
+            
         new_user = call(fname, **course_dict)
         user_id = new_user[0]['id']
         # update user in db with moodle_id

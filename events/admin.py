@@ -30,6 +30,8 @@ from .models import (
     EventImage,
     EventSpeaker,
     EventSpeakerThrough,
+    EventSponsor,
+    EventSponsorThrough,
     EventLocation,
     EventAgenda,
     EventMember,
@@ -214,7 +216,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     def enrol_to_moodle_course(self, request, obj, parent_obj=None):
         obj.enroled = True
         obj.save()
-        enrol_user_to_course(obj.email, obj.event.moodle_id, 5, obj.firstname, obj.lastname) # 5: student
+        enrol_user_to_course(obj.email, obj.event.moodle_id, obj.event.moodle_new_user_flag, 5, obj.firstname, obj.lastname) # 5: student
         return True
 
     enrol_to_moodle_course.short_description = 'Einschreiben'
@@ -233,6 +235,10 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
 
 class EventSpeakerThroughInline(admin.TabularInline):
     model = EventSpeakerThrough
+    extra = 0
+
+class EventSponsorThroughInline(admin.TabularInline):
+    model = EventSponsorThrough
     extra = 0
 
 class EventSpeakerAdmin(admin.ModelAdmin):
@@ -259,6 +265,29 @@ class EventSpeakerAdmin(admin.ModelAdmin):
     
 admin.site.register(EventSpeaker, EventSpeakerAdmin)
 
+class EventSponsorAdmin(admin.ModelAdmin):
+    list_display = ('last_name', 'first_name',)
+    ordering = ('last_name', 'first_name',)
+    search_fields = ('=last_name', '=first_name',)  # case insensitive searching
+    readonly_fields = ('date_created', 'date_modified')
+    inlines = (EventSponsorThroughInline,)
+    fieldsets = (
+        ('Name', {
+            'fields': (('first_name', 'last_name',),)
+        }),
+        ('Kontakt', {
+            'fields': ('email', 'phone',)
+        }),
+        ('Über', {
+            'fields': ('image',)
+        }),
+        ('Intern', {
+            'fields': ('date_created', 'date_modified'),
+            'classes': ('collapse',),
+        }),
+    )
+    
+admin.site.register(EventSponsor, EventSponsorAdmin)
 
 # generating link to event pdf 
 def admin_event_pdf(obj):
@@ -289,10 +318,32 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     list_filter = ('eventformat', 'category', 'status')
     ordering = ('name',)
     search_fields = ('=name',)
-    readonly_fields = ('uuid', 'label', 'slug', 'moodle_id', 'moodle_course_created', 'date_created', 'date_modified')
+    readonly_fields = ('uuid', 'slug', 'moodle_id', 'moodle_course_created', 'date_created', 'date_modified')
     #readonly_fields = ('uuid', 'label', 'slug', 'date_created', 'date_modified')
     exclude = ('start_date', 'end_date',)
-    inlines = (EventDayInline, EventSpeakerThroughInline, EventAgendaInline, EventImageInline, EventMemberInline)
+    fieldsets = (
+        ('Name, Kurztitel, Format', {
+            'fields': ('name', 'label', 'category', 'eventformat')
+        }),
+        ('Inhaltliche Angaben', {
+            'fields': ('description', 'target_group', 'prerequisites', 'objectives', 'methods', )
+        }),
+        ('Ort, Kosten, Dauer', {
+            'fields': ('location', 'duration', 'fees', 'catering', 'lodging', 'total_costs', )
+        }),
+        ('Kapazität, Anmeldung, Hinweise, Status', {
+            'fields': ('capacity', 'registration', 'close_date', 'scheduled_status', 'status', 'notes', )
+        }),
+        ('Moodle', {
+            'fields': ('moodle_id', 'moodle_course_created'),
+        }),
+        ('Intern', {
+            'fields': ('slug', 'uuid', 'date_created', 'date_modified'),
+            'classes': ('collapse',),
+        }),
+    )
+    inlines = (EventDayInline, EventSpeakerThroughInline, EventSponsorThroughInline, EventAgendaInline, EventImageInline, EventMemberInline)
+    actions = ('copy_event',)
     inline_actions = []
 
     def get_queryset(self, request):
@@ -371,7 +422,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             self.message_user(request, "Kurs hat kein Startdatum und kann nicht angelegt werden", messages.ERROR)
             return None
         else:
-            response = create_moodle_course(obj.name, obj.slug, category, obj.speaker.all(), obj.get_first_day(), obj.get_last_day())
+            response = create_moodle_course(obj.name, obj.label, category, obj.speaker.all(), obj.get_first_day(), obj.get_last_day())
         if type(response) == dict:
             if 'warnings' in response and response['warnings']:
                 self.message_user(request, response['warnings'], messages.WARNING)
@@ -415,6 +466,45 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             
     
     delete_course_in_moodle.short_description = "xM"
+
+    def copy_event(self, request, queryset):
+        #TODO: handling of fk's , ref: https://stackoverflow.com/questions/32234986/duplicate-django-model-instance-and-all-foreign-keys-pointing-to-it
+        for event in queryset:
+            # fk's to copy
+            old_agendas = event.agendas.all()
+            # m2m to copy
+            old_speakers = event.speaker.all()
+            event.pk = None
+            event.slug = None
+            event.label = None
+            event.save()
+            # many-to-one relationships are preserved when the parent object is copied,
+            # so they don't need to be copied separately.
+
+            # Many to many fields are relationships where many parent objects can be related to many
+            # child objects. Because of this the child objects don't need to be copied when we copy
+            # the parent, we just need to re-create the relationship to them on the copied parent.
+            event.speaker.set(old_speakers)
+
+            # fk's = One to many fields are backward relationships where many child objects are related to the
+            # parent. We create a dictionary with related objects and make a bulk create afterwards 
+            # to avoid calling fk.save() and hitting the database once per iteration of this loop
+            new_agendas = {}
+            for fk in old_agendas:
+                fk.pk = None
+                try:
+                # Use fk.__class__ here to avoid hard-coding the class name
+                    new_agendas[fk.__class__].append(fk)
+                except KeyError:
+                    new_agendas[fk.__class__] = [fk]
+
+            # Now we can issue just two calls to bulk_create,
+            # one for fkeys_a and one for fkeys_b
+            for cls, list_of_fks in new_agendas.items():
+                cls.objects.bulk_create(list_of_fks)
+
+    copy_event.short_description = "Copy Event"
+            
             
             
        

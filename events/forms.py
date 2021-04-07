@@ -71,12 +71,12 @@ class EventMemberForm(forms.Form):
 
     check = forms.BooleanField(
         widget=forms.CheckboxInput(attrs={'class' : 'form-radio'}),
-        required=True)
+        required=False)
 
 
-    def clean_check(self):
-        data = self.cleaned_data['check']
-        if not data:
-            raise ValidationError("Bitte bestätigen Sie die Einverständniserklärung.")
-
-        return data
+    #def clean_check(self):
+    #    data = self.cleaned_data['check']
+    #    if not data:
+    #        raise ValidationError("Bitte bestätigen Sie die Einverständniserklärung.")
+    #
+    #    return data
