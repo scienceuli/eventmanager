@@ -477,6 +477,11 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             event.pk = None
             event.slug = None
             event.label = None
+            event.moodle_id = 0
+            event.moodle_course_created = False
+            event.moodle_new_user_flag = False
+            event.students_number = 0
+
             event.save()
             # many-to-one relationships are preserved when the parent object is copied,
             # so they don't need to be copied separately.
