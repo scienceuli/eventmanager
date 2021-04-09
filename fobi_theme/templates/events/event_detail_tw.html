@@ -71,7 +71,7 @@
                 <p class="text-left text-sm">{{ event.eventformat }}</p>
                 {% if event.total_costs %}
                 <p class="text-left font-semibold text-red pt-2 text-xs">Gesamtkosten</p>
-                <div class="text-left text-sm">{{ event.total_costs | safe }}</div>
+                <div class="text-left text-sm">{{ event.total_costs|safe }}</div>
                 
                 {% endif %}
                 {% if not event.is_full %}
