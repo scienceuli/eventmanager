@@ -332,10 +332,10 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             'fields': ('location', 'duration', 'fees', 'catering', 'lodging', 'total_costs', )
         }),
         ('Kapazität, Anmeldung, Hinweise, Status', {
-            'fields': ('capacity', 'registration', 'close_date', 'scheduled_status', 'status', 'notes', )
+            'fields': ('capacity', 'registration', 'close_date', 'status', 'notes', )
         }),
         ('Moodle', {
-            'fields': ('moodle_id', 'moodle_course_created', 'moodle_new_user_flag',),
+            'fields': ('moodle_course_type', 'moodle_id', 'moodle_course_created', 'moodle_new_user_flag',),
         }),
         ('Intern', {
             'fields': ('slug', 'uuid', 'date_created', 'date_modified'),
@@ -417,7 +417,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     def create_course_in_moodle(self, request, obj, parent_obj=None):
         #obj.save()
-        category = 3 # wird in Kurse in Planung angelegt
+        category = obj.moodle_course_type # wird in defaultmäßig als Fortbildung angelegt
         if not obj.get_first_day():
             self.message_user(request, "Kurs hat kein Startdatum und kann nicht angelegt werden", messages.ERROR)
             return None

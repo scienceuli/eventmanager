@@ -80,9 +80,18 @@ def get_moodle_course_enroled_users(course_id):
 
 def save_course_to_db(course_dict):
     category, _ = EventCategory.objects.get_or_create(name='Onlineseminare')
-    eventformat, _ = EventFormat.objects.get_or_create(name="Online")
-   
-    location, _ = EventLocation.objects.get_or_create(title='FOBI Moodle')
+
+    try:
+        location = Event.objects.get(moodle_id=course_dict['moodle_id']).location
+    except:
+        location, _ = EventLocation.objects.get_or_create(title='FOBI Moodle') 
+
+    try:
+        eventformat = Event.objects.get(moodle_id=course_dict['moodle_id']).eventformat
+    except:
+        eventformat, _ = EventFormat.objects.get_or_create(name="Online")  
+
+    #print(f"location: {location}")
     obj, created = Event.objects.update_or_create(
         moodle_id=course_dict['moodle_id'],
         defaults={

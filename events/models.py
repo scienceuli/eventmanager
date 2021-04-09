@@ -138,7 +138,7 @@ class Event(BaseModel):
         ('yet to scheduled', 'noch offen'),
         ('scheduled', 'terminiert')
     )
-    scheduled_status = models.CharField(max_length=25, choices=SCHEDULED_STATUS_CHOICES)
+    scheduled_status = models.CharField(max_length=25, choices=SCHEDULED_STATUS_CHOICES, default='scheduled')
     location = models.ForeignKey(EventLocation, verbose_name="Veranstaltungsort", null=True, on_delete=models.DO_NOTHING, related_name='location_events')
     fees = RichTextField(verbose_name="Gebühren", config_name='short')
     catering = RichTextField(verbose_name="Verpflegung", null=True, blank=True, config_name='short')
@@ -158,13 +158,19 @@ class Event(BaseModel):
     )
     capacity = models.PositiveIntegerField(verbose_name='Kapazität', default=15)
     STATUS_CHOICES = (
-        ('active', 'aktiv'),
+        ('active', 'findet statt'),
         ('deleted', 'verschoben'),
         ('cancel', 'abgesagt'),
     )
-    status = models.CharField(choices=STATUS_CHOICES, max_length=10)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=10, default='active')
     moodle_id = models.PositiveSmallIntegerField(default=0)
     moodle_course_created = models.BooleanField(default=False)
+    
+    MOODLE_COURSE_TYPE_CHOICES = (
+        (3, 'in Planung'),
+        (4, 'Fortbildungen'),
+    )
+    moodle_course_type = models.PositiveSmallIntegerField(verbose_name='Moodle Kurstyp', choices=MOODLE_COURSE_TYPE_CHOICES, default=4)
     moodle_new_user_flag = models.BooleanField(
         verbose_name="E-Mail an neue Moodle-User",
         default=False,
@@ -187,8 +193,8 @@ class Event(BaseModel):
         - Nachfrage bei mehr als 14 Tagen Dauer
         - 
         """
-        if not self.pk and self.close_date and self.close_date < timezone.now():
-            raise ValidationError("Die Anmeldfrist liegt in der Vergangenheit!")
+        #if not self.pk and self.close_date and self.close_date < timezone.now():
+        #    raise ValidationError("Die Anmeldfrist liegt in der Vergangenheit!")
         #if not self.pk and self.start_date and self.start_date < timezone.now():
         #    raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
 
