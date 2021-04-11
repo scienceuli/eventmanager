@@ -7,7 +7,7 @@
     .list-interpunct > li:before {
       content: '・';
       float: left;
-      margin: 0 0 0 -0.9em;
+      margin: 0 0 0 0;
       width: 0.9em;
       color: red;
     }
@@ -22,6 +22,6 @@
 
   @layer base {
       ul {
-          @apply list-interpunct;
+          @apply list-disc list-inside;
       }
   }
