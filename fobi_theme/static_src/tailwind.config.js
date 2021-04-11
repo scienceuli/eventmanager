@@ -23,7 +23,8 @@ module.exports = {
         colors: {
           gray: colors.coolGray,
           blue: colors.lightBlue,
-          red: '#ff0000',
+          vfllred: '#ed1c24',
+          red: colors.red,
           white: colors.white,
           green: colors.emerald,
           success: '#6B8E23',

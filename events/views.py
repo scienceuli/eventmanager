@@ -100,7 +100,7 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
 class EventDetailView(LoginRequiredMixin, DetailView):
     login_url = 'login'
     model = Event
-    template_name = 'events/event_detail_tw.html'
+    template_name = 'events/event_detail_V2.html'
     context_object_name = 'event'
 
 class EventDeleteView(LoginRequiredMixin, DeleteView):
