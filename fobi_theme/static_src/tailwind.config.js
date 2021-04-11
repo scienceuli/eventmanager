@@ -42,6 +42,9 @@ module.exports = {
           borderRadius: {
             '4xl': '2rem',
           }
+        },
+        listStyleType: {
+          disc: 'disc',
         }
       },
     variants: {
