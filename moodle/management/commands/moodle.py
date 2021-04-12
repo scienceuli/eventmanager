@@ -336,7 +336,10 @@ def create_or_update_trainer(courseid, moodle_new_user_flag, speakers):
     Diese Unterscheidung macht die Funktion enrol_user_to_course
     '''
     for speaker in speakers:
-        enrol_user_to_course(speaker.email, courseid, moodle_new_user_flag, roles_dict['TRAINER_ROLE_ID'], speaker.first_name, speaker.last_name)
+        if speaker.email:
+            enrol_user_to_course(speaker.email, courseid, moodle_new_user_flag, roles_dict['TRAINER_ROLE_ID'], speaker.first_name, speaker.last_name)
+
+      
 
 
 

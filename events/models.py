@@ -17,9 +17,10 @@ class EventCategory(BaseModel):
     description = models.TextField("Beschreibung", blank=True)
     singular = models.CharField(max_length=255, null=True, blank=True,
         help_text="wird im Frontend als Kategorie angezeigt")
+    position = models.PositiveSmallIntegerField(default=1)
 
     class Meta:
-        ordering = ('name',)
+        ordering = ('position',)
         verbose_name = "Kategorie"
         verbose_name_plural = "Kategorien"
 

@@ -30,6 +30,23 @@
         
         <div class="grid grid-cols-4 gap-8 mt-10 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-12 sm:px-8 xl:px-0">
 
+            
+            <div class="flex flex-col items-center justify-between col-span-4 px-8 py-12 space-y-4 bg-gray-100 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+                <div class="p-3 text-white bg-vfllred rounded-full">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 " viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M8 9l3 3l-3 3" />
+                        <line x1="13" y1="15" x2="16" y2="15" />
+                        <rect x="3" y="4" width="18" height="16" rx="2" />
+                    </svg>
+                </div>
+                <h4 class="text-xl font-medium text-gray-700 text-center">
+                    <a href="{% url 'event-list' %}">Alle Kurse</a>
+                    
+                </h4>
+                <p class="text-base text-center text-gray-500">Text Text Text</p>
+            </div>
+            
             {% for c in all_categories %}
             
 
@@ -51,21 +68,7 @@
 
             {% endfor %}
 
-            <div class="flex flex-col items-center justify-between col-span-4 px-8 py-12 space-y-4 bg-gray-100 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
-                <div class="p-3 text-white bg-vfllred rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 " viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M8 9l3 3l-3 3" />
-                        <line x1="13" y1="15" x2="16" y2="15" />
-                        <rect x="3" y="4" width="18" height="16" rx="2" />
-                    </svg>
-                </div>
-                <h4 class="text-xl font-medium text-gray-700 text-center">
-                    <a href="{% url 'event-list' %}">Alle Kurse</a>
-                    
-                </h4>
-                <p class="text-base text-center text-gray-500">Text Text Text</p>
-            </div>
+            
 
 
 
