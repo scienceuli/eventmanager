@@ -215,7 +215,7 @@ def get_user_by_username(username):
 def enrol_user_to_course(email, courseid, new_user_password_flag, roleid, firstname=None, lastname=None):
     #  check if user exists
     user = get_user_by_email(email)
-    print(f"{email}")
+    print(f"email trainer: {email}")
     
     if len(user) > 0:
         # user_id = user[0]['id']
@@ -282,7 +282,7 @@ def unenrol_user_from_course(user, courseid):
     }
     call(fname, **course_dict)
 
-def create_moodle_course(fullname, shortname, categoryid, speakers, first_day, last_day):
+def create_moodle_course(fullname, shortname, moodle_new_user_flag, categoryid, speakers, first_day, last_day):
     '''
     creates Moodle Course with minimal necessary data
     '''
@@ -306,10 +306,11 @@ def create_moodle_course(fullname, shortname, categoryid, speakers, first_day, l
     }
     print(course_dict)
     response = call(fname, **course_dict)
-    print(f"neuer kurs response: {response}")
+    #print(f"neuer kurs response: {response}")
     # falls Kurs angelegt wurde:
     if response[0].get('id'):
-        speaker = create_or_update_trainer(response[0].get('id'), speakers)
+        print(f"neuer kurs response: {response[0].get('id')}")
+        speaker = create_or_update_trainer(response[0].get('id'), moodle_new_user_flag, speakers)
 
     return response
 
@@ -325,7 +326,7 @@ def delete_moodle_course(moodleid):
     response = call(fname, **course_dict)
     return response
 
-def create_or_update_trainer(courseid, speakers):
+def create_or_update_trainer(courseid, moodle_new_user_flag, speakers):
     '''
     wenn ein Kurs in Moodle angelegt wird und Trainer hat,
     muss gecheckt werden:
@@ -335,7 +336,7 @@ def create_or_update_trainer(courseid, speakers):
     Diese Unterscheidung macht die Funktion enrol_user_to_course
     '''
     for speaker in speakers:
-        enrol_user_to_course(speaker.email, courseid, roles_dict['TRAINER_ROLE_ID'], speaker.first_name, speaker.last_name)
+        enrol_user_to_course(speaker.email, courseid, moodle_new_user_flag, roles_dict['TRAINER_ROLE_ID'], speaker.first_name, speaker.last_name)
 
 
 

@@ -422,7 +422,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             self.message_user(request, "Kurs hat kein Startdatum und kann nicht angelegt werden", messages.ERROR)
             return None
         else:
-            response = create_moodle_course(obj.name, obj.label, category, obj.speaker.all(), obj.get_first_day(), obj.get_last_day())
+            response = create_moodle_course(obj.name, obj.label, obj.moodle_new_user_flag, category, obj.speaker.all(), obj.get_first_day(), obj.get_last_day())
         if type(response) == dict:
             if 'warnings' in response and response['warnings']:
                 self.message_user(request, response['warnings'], messages.WARNING)
