@@ -16,9 +16,10 @@
 
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+	<script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
 </head>
 
-<body class="bg-grey-lightest font-sans leading-normal tracking-normal">
+<body x-data="{ showModal1: false }" class="bg-grey-lightest font-sans leading-normal tracking-normal">
 
 	<nav class="flex flex-wrap items-center justify-between p-5 bg-white border-b-2 border-red">
 		<img src="{% static 'images/vfll_logo_rot_Bild.svg' %}" class="object-contain h-24 object-left">
