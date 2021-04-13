@@ -61,35 +61,19 @@
         </div>
         <div class="flex w-full flex-col relative">
         <div class="absolute flex flex-col justify-end items-end top-0 right-0">
-            <!-- Anmeldung -->
+            <!-- Hinweis Restplätze ausgebucht -->
+            {% if event.is_full or event.few_remaining_places %}
             <div class="item z-30 bg-gray-200 border-vfllred border-2 shadow-md ">
-                <div class="p-6">
-                    {% if not event.is_full %}
-                                <p class="text-left font-semibold text-vfllred  pt-2">Freie Plätze</p>
-                                <p class="text-left">{{ event.get_number_of_free_places }} von {{ event.capacity }}
-                                    {% if event.few_remeining_places %}
-                                    <span class="font-bold">&nbsp;&nbsp;Nur noch wenige Restplätze!</span>
-                                    {% endif %}
-                                </p>
-                                {% if event.is_open_for_registration %}
-                                <div class="flex pt-2">
-                                    <div class="rounded-full w-28  px-4 text-white bg-vfllred">
-                                        <a class='bg-vfllred' href="{% url 'event-add-member' event.slug %}">Anmelden
-                                        </a>
-                                    </div>
-                                </div>
-                                {% endif %}
-                                {% else %}
-                                <div class="flex text-vfllred font-bold pt-2">
-                                    Leider ausgebucht!
-                                </div>
-                                {% endif %}
+                {% if event.is_full %}
+                <div class="flex text-vfllred font-bold pt-2">
+                    Leider ausgebucht!
                 </div>
+                {% else %}
+                <div class="flex text-vfllred font-bold pt-2">Nur noch wenige Restplätze!</div>
+                {% endif %}
             </div>
-            <!-- Ende Anmeldung-->
-          
-
-            
+            {% endif %}
+            <!-- Ende Hinweis-->
             
         </div>
     <!-- Termin -->
@@ -193,12 +177,18 @@
                 <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Referent*in{% if event.speaker.all|length > 1 %}nen{% endif %}</h2>
                 <p class="leading-relaxed">
                     {% for speaker in event.speaker.all %}
-
-
-                    <button class="active:text-vfllred" type="button" onclick="toggleModal('modal-id')">
-                        {{speaker}}
+                    {% if speaker.email or speaker.url or speaker.bio %}
+                    <button class="hover:text-vfllred inline-block" onclick="toggleModal('modal-id-{{forloop.counter}}')">
+                        {{speaker}}{% if not forloop.last %}, {% endif %}
                       </button>
-                      <div class="hidden overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none justify-center items-center" id="modal-id">
+                      {% else %}
+                      <span class="">
+                        {{speaker}}{% if not forloop.last %}, {% endif %}
+                      </span>
+                      {% endif %}
+                      {% endfor %}
+                      {% for speaker in event.speaker.all %}
+                      <div class="hidden overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none justify-center items-center" id="modal-id-{{forloop.counter}}">
                         <div class="relative w-auto my-6 mx-auto max-w-3xl">
                           <!--content-->
                           <div class="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
@@ -215,12 +205,17 @@
                             </div>
                             <!--body-->
                             <div class="relative p-6 flex-auto">
+                                {% if speaker.image %}
+                                <div class="absolute top-0 right-0">
+                                    <img src="{{speaker.image.url}}" class="rounded-full w-28 h-28 object-cover border-solid border-gray-500 border-2 ml-4 mr-4 -mt-14">
+                                </div>
+                                {% endif %}
                                 <p> 
                                     {% if speaker.email %}
                                     <span>{{ speaker.email }}</span>
                                     {% endif %}
                                     {% if speaker.url %}
-                                    <span> | {{ speaker.url }} </span>
+                                    <span>{% if speaker.email %} | {% endif %}<a href="{{ speaker.url }}">{{ speaker.url }}</a></span>
                                     {% endif %}
                                     {% if speaker.bio %}
                               <p class="my-4 text-blueGray-500 text-lg leading-relaxed">
@@ -230,7 +225,7 @@
                             </div>
                             <!--footer-->
                             <div class="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
-                              <button class="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150" type="button" onclick="toggleModal('modal-id')">
+                              <button class="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150" type="button" onclick="toggleModal('modal-id-{{forloop.counter}}')">
                                 Schließen
                               </button>
                               
@@ -239,18 +234,10 @@
                         </div>
                       </div>
                       <div class="hidden opacity-25 fixed inset-0 z-40 bg-black" id="modal-id-backdrop"></div>
-                      <script type="text/javascript">
-                        function toggleModal(modalID){
-                          document.getElementById(modalID).classList.toggle("hidden");
-                          document.getElementById(modalID + "-backdrop").classList.toggle("hidden");
-                          document.getElementById(modalID).classList.toggle("flex");
-                          document.getElementById(modalID + "-backdrop").classList.toggle("flex");
-                        }
-                      </script>
-
-                {% if not forloop.last %}, {% endif %}
+                      
                 {% endfor %}
                 </p>
+                <p class="text-sm">(Namen anklicken für mehr Infos)</p>
             </div>
         </div>
     </div>
@@ -399,6 +386,42 @@
     {% endif %}
     <!-- Ende Kontakt , mehr Infos -->
 
+    <!-- Anmeldung -->
+    {% if event.registration %}
+    <div class="flex relative pb-8 sm:items-center md:w-2/3 mx-auto">
+
+
+        <div class="flex-grow flex sm:items-center items-start flex-col sm:flex-row">
+
+
+            <div class="h-full w-16 absolute inset-0 flex items-center justify-center">
+                <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
+            </div>
+            <div
+                class="flex-shrink-0 w-16 h-16 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                <span class="text-3xl"><i class="fas fa-envelope"></i></span>
+            </div>
+            <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
+                <h2 class="font-medium title-font text-vfllred mb-1 text-xl">Anmeldung</h2>
+                <p class="leading-relaxed">
+                    {{ event.registration|safe }}
+                </p>
+            </div>
+            {% if event.is_open_for_registration %}
+            <div class="flex pt-2">
+                <div class="rounded-full w-32  px-4 text-white bg-vfllred">
+                    <a class='bg-vfllred text-lg' href="{% url 'event-add-member' event.slug %}">Anmelden
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Ende Anmeldung -->
+
+
     <!-- Beschreibung -->
 
     <div class="pt-8 flex-col w-2/3 mx-auto">{{ event.description|safe }}</div>
@@ -446,10 +469,6 @@
 
 </div>
 
-
-  
-
-
     </div>
 </div>
 </section>
@@ -458,3 +477,14 @@
 
  
 {% endblock content %}
+
+{% block extrascript %}
+<script type="text/javascript">
+    function toggleModal(modalID){
+      document.getElementById(modalID).classList.toggle("hidden");
+      document.getElementById(modalID + "-backdrop").classList.toggle("hidden");
+      document.getElementById(modalID).classList.toggle("flex");
+      document.getElementById(modalID + "-backdrop").classList.toggle("flex");
+    }
+  </script>
+{% endblock extrascript %}
