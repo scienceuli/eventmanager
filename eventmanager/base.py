@@ -158,6 +158,8 @@ CKEDITOR_CONFIGS = {
         'toolbar_Short':
             [
                 ['Bold', 'Italic', 'Link', 'Unlink', 'NumberedList','BulletedList',],
+                ['FontSize'],
+                ['TextColor', 'BGColor'],
             ],
     }
 }
