@@ -299,6 +299,18 @@ def unenrol_user_from_course(user, courseid):
     }
     call(fname, **course_dict)
 
+def assign_roles_to_enroled_user(course_id, user_id, role_id_list):
+    print(f"roles: {role_id_list}")
+    for role_id in role_id_list:
+        course_dict = {
+            'enrolments[0][userid]': user_id,
+            'enrolments[0][courseid]': course_id,
+            'enrolments[0][roleid]': role_id,
+        }
+        fname = 'enrol_manual_enrol_users'
+        response = call(fname, **course_dict)
+        print(response)
+
 def create_moodle_course(fullname, shortname, teaser, moodle_new_user_flag, categoryid, speakers, first_day, last_day):
     '''
     creates Moodle Course with minimal necessary data

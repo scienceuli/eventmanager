@@ -36,13 +36,14 @@ from .models import (
     EventAgenda,
     EventMember,
     EventMemberRole,
+    MemberRole,
 )
 
 from .email_template import (
     EmailTemplate
 )
 
-from moodle.management.commands.moodle import enrol_user_to_course, unenrol_user_from_course, create_moodle_course, delete_moodle_course
+from moodle.management.commands.moodle import enrol_user_to_course, unenrol_user_from_course, create_moodle_course, delete_moodle_course, assign_roles_to_enroled_user
 
 # setting date format in admin page
 from django.conf.locale.de import formats as de_formats
@@ -209,13 +210,16 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
                 actions.append('enrol_to_moodle_course')
             elif obj.enroled == True:
                 actions.append('unenrol_from_moodle_course')
+                actions.append('update_role_to_moodle_course')
         elif obj and obj.event.moodle_id == 0:
             actions.append('delete_user')
         return actions
 
     def enrol_to_moodle_course(self, request, obj, parent_obj=None):
         obj.enroled = True
+        obj.roles.add(MemberRole.objects.get(roleid=5))
         obj.save()
+        # get 
         enrol_user_to_course(obj.email, obj.event.moodle_id, obj.event.moodle_new_user_flag, 5, obj.firstname, obj.lastname) # 5: student
         return True
 
@@ -227,6 +231,13 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         unenrol_user_from_course(obj.moodle_id, obj.event.moodle_id)
 
     unenrol_from_moodle_course.short_description = "Ausschreiben"
+
+    def update_role_to_moodle_course(self, request, obj, parent_obj=None):
+        # list of role ids
+        role_id_list = [item.roleid for item in obj.roles.all()]
+        assign_roles_to_enroled_user(obj.event.moodle_id, obj.moodle_id, role_id_list)
+
+    update_role_to_moodle_course.short_description = 'UR'
 
 
     def delete_user(self, request, obj, parent_obj):
