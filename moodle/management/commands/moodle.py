@@ -244,6 +244,8 @@ def enrol_user_to_course(email, courseid, new_user_password_flag, roleid, firstn
             for k in umlaute_dict.keys():
                 string_with_umlaute = string_with_umlaute.replace(k, umlaute_dict[k])
 
+            return string_with_umlaute
+
         # create unique username
         username_candidate = username_original = convert_umlaute(lastname.lower()) # standard username
 
