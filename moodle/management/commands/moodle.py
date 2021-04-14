@@ -299,7 +299,7 @@ def unenrol_user_from_course(user, courseid):
     }
     call(fname, **course_dict)
 
-def create_moodle_course(fullname, shortname, moodle_new_user_flag, categoryid, speakers, first_day, last_day):
+def create_moodle_course(fullname, shortname, teaser, moodle_new_user_flag, categoryid, speakers, first_day, last_day):
     '''
     creates Moodle Course with minimal necessary data
     '''
@@ -317,6 +317,7 @@ def create_moodle_course(fullname, shortname, moodle_new_user_flag, categoryid, 
     course_dict = {
         'courses[0][fullname]': fullname,
         'courses[0][shortname]': shortname,
+        'courses[0][summary]': teaser,
         'courses[0][categoryid]': categoryid,
         'courses[0][startdate]': timestamp_start,
         'courses[0][enddate]': timestamp_end,
