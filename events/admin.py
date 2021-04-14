@@ -192,10 +192,10 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     #inline_actions = ['enrol_to_moodle_course']
     readonly_fields = ('change_link','enroled', 'moodle_id')
 
-    def has_add_permission(self, request, obj=None):
-        if obj and obj.is_past():
-            return False
-        return True
+    #def has_add_permission(self, request, obj=None):
+    #    if obj and obj.is_past():
+    #        return False
+    #    return True
 
     def change_link(self, obj):
         return mark_safe('<a href="%s">Edit</a>' % \
