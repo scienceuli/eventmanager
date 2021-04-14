@@ -59,3 +59,7 @@ def export_as_xls(self, request, queryset):
     return response
 export_as_xls.short_description = "Export > Excel"
 
+
+def import_from_csv(self, request, queryset):
+    print(queryset)
+

@@ -18,7 +18,7 @@ from inline_actions.admin import InlineActionsModelAdminMixin
 
 from fieldsets_with_inlines import FieldsetsInlineMixin
 
-from .actions import export_as_xls
+from .actions import export_as_xls, import_from_csv
 
 from .validators import csv_content_validator
 
@@ -88,6 +88,7 @@ class CsvImportForm(forms.Form):
         label='CSV-Datei für Import auswählen:',
         validators=[csv_content_validator],
         )
+    event = forms.ModelChoiceField(queryset=Event.objects.all())
 
 
 class EventMemberRoleInline(admin.TabularInline):
@@ -122,21 +123,22 @@ class EventMemberAdmin(admin.ModelAdmin):
             'fields': ('vfll', 'attention', 'attention_other', 'education_bonus'),
         }),
     )
-    actions = [export_as_xls]
+    actions = [export_as_xls, import_from_csv]
 
    
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
-            path('import-csv/', self.import_csv),
+            path(f'import-csv/', self.import_csv),
         ]
         return my_urls + urls
 
 
     def import_csv(self, request):
-        print(request.GET.get('event__id','None'))
         if request.method == "POST":
             csv_file = request.FILES["csv_file"]
+            event_id = request.POST['event']
+            print(f"event: {event_id}")
 
             # let's check if it is a csv file
             if not csv_file.name.endswith('.csv'):
@@ -151,27 +153,28 @@ class EventMemberAdmin(admin.ModelAdmin):
 
             for row in csv.reader(io_string, delimiter=';'):
                 # Here's how the row list looks like:
-                # ['firstname', 'lastname' 'email']
+                # ['firstname', 'lastname', 'email']
                 # username will be calculated when exported to moodle
                 # preparing bulk crate
                 bulk_create_list.append(EventMember(
                     firstname=row[0],
                     lastname=row[1], 
-                    email=row[2])
-                )
+                    email=row[2],
+                    event=Event.objects.get(id=event_id)))
+
 
                 print(row[0])
                 print(row[1])
                 print(row[2])
-                print(request.GET.get('event__id','None'))
 
+            objs = EventMember.objects.bulk_create(bulk_create_list)
             self.message_user(request, "CSV-Datei wurde importiert")
             # EventMember
             return redirect("..")
 
         form = CsvImportForm()
         context = {"form": form,
-            'message': 'Reihenfolge der Spalten in der CSV-Datei: firstname, lastname, email'
+            'message': 'CSV-Datei MIT Kopfzeile, Bezeichnung und Reihenfolge der Spalten in der CSV-Datei: firstname; lastname; email'
             }
         return render(
             request, "admin/csv_form.html", context
