@@ -21,6 +21,8 @@ roles_dict = {
     'STUDENT_ROLE_ID': 5
 }
 
+
+
 # test user
 test_user_list = [f"user{str(i)}@elearning-and-more.de" for i in range(1, 7)]
 
@@ -230,8 +232,21 @@ def enrol_user_to_course(email, courseid, new_user_password_flag, roleid, firstn
     else:
         # create new user in moodle
         fname = 'core_user_create_users'
+
+        # function for replacing umlaute
+        def convert_umlaute(string_with_umlaute):
+            umlaute_dict = {
+                'ä': 'ae',
+                'ü': 'ue',
+                'ö': 'oe',
+                'ß': 'ss'
+            }
+            for k in umlaute_dict.keys():
+                string_with_umlaute = string_with_umlaute.replace(k, umlaute_dict[k])
+
         # create unique username
-        username_candidate = username_original = lastname.lower() # standard username
+        username_candidate = username_original = convert_umlaute(lastname.lower()) # standard username
+
         for i in itertools.count(1):
             # check if username_candidate in moodle exists
             user = get_user_by_username(username_candidate)
