@@ -103,6 +103,7 @@ class EventMemberAdmin(admin.ModelAdmin):
         'firstname',
         'email'
     )
+    readonly_fields = ['name',]
     inlines = [EventMemberRoleInline,]
 
     change_list_template = "admin/event_member_list.html"
@@ -211,7 +212,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
             elif obj.enroled == True:
                 actions.append('unenrol_from_moodle_course')
                 actions.append('update_role_to_moodle_course')
-        elif obj and obj.event.moodle_id == 0:
+        if obj and obj.enroled == False:
             actions.append('delete_user')
         return actions
 
@@ -223,14 +224,14 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         enrol_user_to_course(obj.email, obj.event.moodle_id, obj.event.moodle_new_user_flag, 5, obj.firstname, obj.lastname) # 5: student
         return True
 
-    enrol_to_moodle_course.short_description = 'Einschreiben'
+    enrol_to_moodle_course.short_description = 'T>M'
 
     def unenrol_from_moodle_course(self, request, obj, parent_obj=None):
         obj.enroled = False
         obj.save()
         unenrol_user_from_course(obj.moodle_id, obj.event.moodle_id)
 
-    unenrol_from_moodle_course.short_description = "Ausschreiben"
+    unenrol_from_moodle_course.short_description = "TxM"
 
     def update_role_to_moodle_course(self, request, obj, parent_obj=None):
         # list of role ids
@@ -242,7 +243,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
 
     def delete_user(self, request, obj, parent_obj):
         obj.delete()
-    delete_user.short_description = "Löschen"
+    delete_user.short_description = "DEL"
 
 class EventSpeakerThroughInline(admin.TabularInline):
     model = EventSpeakerThrough

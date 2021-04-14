@@ -399,7 +399,7 @@ class EventMember(AddressModel):
     mit ihren Anmeldedaten
     '''
     event = models.ForeignKey(Event, verbose_name='Veranstaltung', related_name="members", on_delete=models.CASCADE)
-    name = models.CharField('Kurzbezeichnung', max_length=255)
+    name = models.CharField('Kurzbezeichnung', max_length=255, null=True, blank=True)
     firstname = models.CharField('Vorname', max_length=255, blank=True)
     lastname = models.CharField('Nachname', max_length=255, blank=True)
     email = models.EmailField("E-Mail", blank=True, max_length=255)
