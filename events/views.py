@@ -127,7 +127,10 @@ class EventCategoryCreateView(LoginRequiredMixin, CreateView):
 def search_event(request):
     if request.method == 'POST':
        data = request.POST['search']
-       event_queryset = Event.objects.filter(name__icontains=data)
+       
+       event_queryset_unsorted = Event.objects.all().exclude(event_days=None).filter(name__icontains=data) # unsorted
+        
+       event_queryset = sorted(event_queryset_unsorted, key=lambda t: t.get_first_day_start_date())
        
        events_dict = {}
        
