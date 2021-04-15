@@ -131,13 +131,15 @@ def search_event(request):
        
        events_dict = {}
        
-       for year, group in itertools.groupby(event_queryset, lambda e: e.start_date.strftime('%Y')):
-           events_dict[year] = {}
-           for month, inner_group in itertools.groupby(group, lambda e: e.start_date.strftime('%B')):
-               events_dict[year][month] = list(inner_group)
-           context = {
-               'events_dict': events_dict
-           }
+       for year, group in itertools.groupby(event_queryset, lambda e: e.get_first_day_start_date().strftime('%Y')):
+            events_dict[year] = {}
+            for month, inner_group in itertools.groupby(group, lambda e: e.get_first_day_start_date().strftime('%B')):
+                events_dict[year][month] = list(inner_group)
+       context = {
+            'events_dict': events_dict
+       }
+
+
        return render(request, 'events/event_list_tw.html', context)
     return render(request, 'events/event_list_tw.html')
 
