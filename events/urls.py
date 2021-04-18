@@ -13,7 +13,8 @@ from .views import (
     home,
     dashboard,
     event_add_member,
-    get_moodle_data
+    get_moodle_data,
+    EventApi
 )
 
 # sentry test
@@ -35,5 +36,6 @@ urlpatterns = [
     path('search_event/', search_event, name='search-event'),
     path('moodle_list/', moodle, name='moodle-list'),
     path('get_moodle_data/', get_moodle_data, name='get-moodle-data'),
+    path('events-api/', EventApi.as_view(), name='Event'),
 ]
 

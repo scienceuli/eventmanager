@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
 
     # third party
     'crispy_forms',
@@ -198,5 +199,15 @@ X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 # GRAPPELLI setting
 GRAPPELLI_ADMIN_TITLE = 'FOBI Eventmanager'
+
+
+# REST FRAMEWORK
+# REST_FRAMEWORK = {
+#     # Use Django's standard `django.contrib.auth` permissions,
+#     # or allow read-only access for unauthenticated users.
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+#     ]
+#}
 
 

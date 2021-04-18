@@ -3,6 +3,13 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
 
+from rest_framework.views import APIView
+from rest_framework import permissions, status
+from rest_framework.decorators import (api_view,
+                                       permission_classes,
+                                       throttle_classes,)
+from rest_framework.response import Response
+
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
@@ -30,6 +37,8 @@ from .forms import EventMemberForm
 
 from .api import call
 
+from .serializers import EventSerializer
+
 from .utils import send_email
 
 import itertools
@@ -39,7 +48,6 @@ from wkhtmltopdf.views import PDFTemplateResponse
 import locale
 # for German locale
 locale.setlocale(locale.LC_TIME, "de_DE") 
-
 
 def home(request):
     return render(request, 'events/home.html')
@@ -281,3 +289,16 @@ def admin_event_pdf(request, event_id):
     return response
     
 
+class EventApi(APIView):
+    def get(self,request,format=None):
+        if request.GET.get('start'):
+            start = request.GET.get('start')
+        else:
+            start="2021-01-01"
+        if request.GET.get('end'):
+            end=request.GET.get('end')
+        else:
+            end="2021-12-01"
+        events = Event.objects.exclude(event_days=None).filter(first_day__gt=start,first_day__lt=end)
+        serializer = EventSerializer(events,many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

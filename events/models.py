@@ -157,6 +157,7 @@ class Event(BaseModel):
     close_date = models.DateTimeField(
         verbose_name="Anmeldefrist Ende", null=True, blank=True
     )
+    first_day = models.DateField(null=True, blank=True)
     capacity = models.PositiveIntegerField(verbose_name='Kapazität', default=15)
     STATUS_CHOICES = (
         ('active', 'findet statt'),
@@ -209,20 +210,7 @@ class Event(BaseModel):
             raise ValidationError("Die Teilnehmer*innenzahl darf nicht größer als die Kapaizität sein.")
 
         
-    def save(self, *args, **kwargs):
-        max_length = self._meta.get_field('slug').max_length
-        last_id = Event.objects.latest('id').id
-        if not self.id:
-            self.slug = slugify(f"{self.name}-{str(last_id+1)}")[:max_length]
-        add = not self.pk
-        #super(Event, self).save(*args, **kwargs)
-        if add:
-            #if not self.slug:
-            #    self.slug = slugify(self.name)[:max_length]
-            if not self.label:
-                self.label = f"{self.name.partition(' ')[0]}-{date.today().year}-{str(last_id+1)}"
-            kwargs['force_insert'] = False # create() uses this, which causes error.
-        super(Event, self).save(*args, **kwargs)
+    
 
     def get_absolute_url(self):
         return reverse('event-detail', kwargs={'slug': self.slug}) 
@@ -304,6 +292,23 @@ class Event(BaseModel):
            
         except IndexError:
             pass
+
+    def save(self, *args, **kwargs):
+        max_length = self._meta.get_field('slug').max_length
+        last_id = Event.objects.latest('id').id
+        if not self.id:
+            self.slug = slugify(f"{self.name}-{str(last_id+1)}")[:max_length]
+        add = not self.pk
+        #super(Event, self).save(*args, **kwargs)
+        if add:
+            #if not self.slug:
+            #    self.slug = slugify(self.name)[:max_length]
+            if not self.label:
+                self.label = f"{self.name.partition(' ')[0]}-{date.today().year}-{str(last_id+1)}"
+            kwargs['force_insert'] = False # create() uses this, which causes error.
+    
+        self.first_day = self.get_first_day_start_date()
+        super(Event, self).save(*args, **kwargs)
 
 
 class EventSpeakerThrough(BaseModel):
