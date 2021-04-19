@@ -299,6 +299,6 @@ class EventApi(APIView):
             end=request.GET.get('end')
         else:
             end="2021-12-01"
-        events = Event.objects.exclude(event_days=None).filter(first_day__gt=start,first_day__lt=end)
+        events = Event.objects.exclude(event_days=None).filter(first_day__gt=start,first_day__lt=end).order_by('first_day')
         serializer = EventSerializer(events,many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
