@@ -174,9 +174,13 @@ class Event(BaseModel):
     )
     moodle_course_type = models.PositiveSmallIntegerField(verbose_name='Moodle Kurstyp', choices=MOODLE_COURSE_TYPE_CHOICES, default=4)
     moodle_new_user_flag = models.BooleanField(
-        verbose_name="E-Mail an neue Moodle-User",
+        verbose_name="Autom. E-Mail an neue Moodle-User",
         default=False,
         help_text="Hier kann für den Kurs festgelegt werden, ob neue Moodle-User die automatische Begrüßungsmail bekommen (default=False).")
+    moodle_standard_password = models.CharField(
+        max_length=24, 
+        verbose_name="Moodle Standard-Passwort",
+        default="VfllMoodle123#")
     students_number = models.PositiveSmallIntegerField(default=0, editable=False)
 
     class Meta:

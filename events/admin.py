@@ -224,7 +224,16 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         obj.roles.add(MemberRole.objects.get(roleid=5))
         obj.save()
         # get 
-        enrol_user_to_course(obj.email, obj.event.moodle_id, obj.event.moodle_new_user_flag, 5, obj.firstname, obj.lastname) # 5: student
+        response = enrol_user_to_course(obj.email, obj.event.moodle_id, obj.event.moodle_new_user_flag, obj.event.moodle_standard_password, 5, obj.firstname, obj.lastname) # 5: student
+        if type(response) == dict:
+            if 'warnings' in response and response['warnings']:
+                messages.warning(request, response['warnings'])
+            if 'exception' in response or 'errorcode' in response:
+                messages.error(
+                    request, 
+                    f"Teilnehmer*in konnte nicht eingeschrieben werden: {response.get('exception', '')}, {response.get('errorcode','')}, {response.get('message','')}")
+        else:
+            messages.success(request, f"Teilnehmer*in wurde in den Moodle-Kurs eingeschrieben")
         return True
 
     enrol_to_moodle_course.short_description = 'T>M'
@@ -350,7 +359,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             'fields': ('capacity', 'registration', 'close_date', 'status', 'notes', )
         }),
         ('Moodle', {
-            'fields': ('moodle_course_type', 'moodle_id', 'moodle_course_created', 'moodle_new_user_flag',),
+            'fields': ('moodle_course_type', 'moodle_id', 'moodle_course_created', 'moodle_new_user_flag', 'moodle_standard_password',),
         }),
         ('Intern', {
             'fields': ('slug', 'uuid', 'date_created', 'date_modified'),
@@ -442,7 +451,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             for speaker in speakers:
                 if speaker.last_name and not speaker.email:
                     self.message_user(request, f"Referent*in {speaker.last_name} hat keine E-Mail-Adresse und wird deshalb dem Kurs in Moodle nicht zugeordnet", messages.WARNING)
-            response = create_moodle_course(obj.name, obj.label, obj.description, obj.moodle_new_user_flag, category, speakers, obj.get_first_day(), obj.get_last_day())
+            response = create_moodle_course(obj.name, obj.label, obj.description, obj.moodle_new_user_flag, obj.moodle_standard_password, category, speakers, obj.get_first_day(), obj.get_last_day())
         if type(response) == dict:
             if 'warnings' in response and response['warnings']:
                 self.message_user(request, response['warnings'], messages.WARNING)

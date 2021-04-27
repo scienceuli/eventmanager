@@ -214,7 +214,7 @@ def get_user_by_username(username):
     print(f"user: {user}")
     return user
 
-def enrol_user_to_course(email, courseid, new_user_password_flag, roleid, firstname=None, lastname=None):
+def enrol_user_to_course(email, courseid, new_user_password_flag, moodle_standard_password, roleid, firstname=None, lastname=None):
     #  check if user exists
     user = get_user_by_email(email)
     print(f"email trainer: {email}")
@@ -273,7 +273,7 @@ def enrol_user_to_course(email, courseid, new_user_password_flag, roleid, firstn
         }
 
         if createpassword == 0:
-            course_dict['users[0][password]'] = 'MoodleTest123#'
+            course_dict['users[0][password]'] = moodle_standard_password
             
         new_user = call(fname, **course_dict)
         user_id = new_user[0]['id']
@@ -285,7 +285,9 @@ def enrol_user_to_course(email, courseid, new_user_password_flag, roleid, firstn
             'enrolments[0][userid]': user_id,
             'enrolments[0][courseid]': courseid
         }
-        call(fname, **course_dict)
+        response = call(fname, **course_dict)
+        print(response)
+        return response
 
 
 def unenrol_user_from_course(user, courseid):
@@ -311,7 +313,7 @@ def assign_roles_to_enroled_user(course_id, user_id, role_id_list):
         response = call(fname, **course_dict)
         print(response)
 
-def create_moodle_course(fullname, shortname, teaser, moodle_new_user_flag, categoryid, speakers, first_day, last_day):
+def create_moodle_course(fullname, shortname, teaser, moodle_new_user_flag, moodle_standard_password, categoryid, speakers, first_day, last_day):
     '''
     creates Moodle Course with minimal necessary data
     '''
@@ -340,7 +342,7 @@ def create_moodle_course(fullname, shortname, teaser, moodle_new_user_flag, cate
     # falls Kurs angelegt wurde:
     if response[0].get('id'):
         print(f"neuer kurs response: {response[0].get('id')}")
-        speaker = create_or_update_trainer(response[0].get('id'), moodle_new_user_flag, speakers)
+        speaker = create_or_update_trainer(response[0].get('id'), moodle_new_user_flag, moodle_standard_password, speakers)
 
     return response
 
@@ -356,7 +358,7 @@ def delete_moodle_course(moodleid):
     response = call(fname, **course_dict)
     return response
 
-def create_or_update_trainer(courseid, moodle_new_user_flag, speakers):
+def create_or_update_trainer(courseid, moodle_new_user_flag, moodle_standard_password, speakers):
     '''
     wenn ein Kurs in Moodle angelegt wird und Trainer hat,
     muss gecheckt werden:
@@ -367,7 +369,7 @@ def create_or_update_trainer(courseid, moodle_new_user_flag, speakers):
     '''
     for speaker in speakers:
         if speaker.email:
-            enrol_user_to_course(speaker.email, courseid, moodle_new_user_flag, roles_dict['TRAINER_ROLE_ID'], speaker.first_name, speaker.last_name)
+            enrol_user_to_course(speaker.email, courseid, moodle_new_user_flag, moodle_standard_password, roles_dict['TRAINER_ROLE_ID'], speaker.first_name, speaker.last_name)
 
       
 
