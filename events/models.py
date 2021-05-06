@@ -140,7 +140,7 @@ class Event(BaseModel):
         ('scheduled', 'terminiert')
     )
     scheduled_status = models.CharField(max_length=25, choices=SCHEDULED_STATUS_CHOICES, default='scheduled')
-    location = models.ForeignKey(EventLocation, verbose_name="Veranstaltungsort", null=True, on_delete=models.DO_NOTHING, related_name='location_events')
+    location = models.ForeignKey(EventLocation, verbose_name="Veranstaltungsort", null=True, on_delete=models.SET_NULL, related_name='location_events')
     fees = RichTextField(verbose_name="Gebühren", config_name='short')
     catering = RichTextField(verbose_name="Verpflegung", null=True, blank=True, config_name='short')
     lodging = RichTextField(verbose_name="Übernachtung", null=True, blank=True, config_name='short')
