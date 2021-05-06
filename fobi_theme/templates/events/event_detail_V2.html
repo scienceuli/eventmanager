@@ -58,24 +58,26 @@
             <div class="flex py-2">
                 <span class="text-left font-bold text-3xl">{{ event.name }}</span>
             </div>
+
+            <div class="flex py-2">
+                <!-- Hinweis Restplätze ausgebucht -->
+                {% if event.is_full or event.few_remaining_places %}
+                
+                    {% if event.is_full %}
+                    <div class="text-xl text-left text-vfllred italic font-bold pt-1">
+                        Leider ausgebucht!
+                    </div>
+                    {% else %}
+                    <div class="text-xl text-left text-vfllred italic font-bold pt-1">Nur noch wenige Restplätze!</div>
+                    {% endif %}
+                
+                {% endif %}
+                <!-- Ende Hinweis-->
+                
+            </div>
         </div>
         <div class="flex w-full flex-col relative">
-        <div class="absolute flex flex-col justify-end items-end top-0 right-0">
-            <!-- Hinweis Restplätze ausgebucht -->
-            {% if event.is_full or event.few_remaining_places %}
-            <div class="item z-30 bg-gray-200 border-vfllred border-2 shadow-md ">
-                {% if event.is_full %}
-                <div class="flex text-vfllred font-bold pt-2">
-                    Leider ausgebucht!
-                </div>
-                {% else %}
-                <div class="flex text-vfllred font-bold pt-2">Nur noch wenige Restplätze!</div>
-                {% endif %}
-            </div>
-            {% endif %}
-            <!-- Ende Hinweis-->
-            
-        </div>
+
     <!-- Termin -->
     
     <div class="flex relative pb-8 sm:items-center md:w-2/3 mx-auto">
@@ -404,7 +406,14 @@
             <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
                 <h2 class="font-medium title-font text-vfllred mb-1 text-xl">Anmeldung</h2>
                 <p class="leading-relaxed">
+                    {% if event.is_full %}
+                    <span class="text-vfllred italic">Leider ausgebucht!</span>
+                    {% else %}
+                    {% if event.few_remaining_places %}
+                    <span class="text-vfllred italic">Nur noch wenige Restplätze!<br/></span>
+                    {% endif %}
                     {{ event.registration|safe }}
+                    {% endif %}
                 </p>
             </div>
             {% if event.is_open_for_registration %}
