@@ -341,7 +341,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     )
     list_filter = ('eventformat', 'category', 'status')
     ordering = ('name',)
-    search_fields = ('=name',)
+    search_fields = ('name',)
     readonly_fields = ('uuid', 'slug', 'moodle_id', 'moodle_course_created', 'date_created', 'date_modified')
     #readonly_fields = ('uuid', 'label', 'slug', 'date_created', 'date_modified')
     exclude = ('start_date', 'end_date',)
