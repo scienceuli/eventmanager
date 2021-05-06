@@ -145,7 +145,7 @@ class Event(BaseModel):
     catering = RichTextField(verbose_name="Verpflegung", null=True, blank=True, config_name='short')
     lodging = RichTextField(verbose_name="Übernachtung", null=True, blank=True, config_name='short')
     total_costs = RichTextField(verbose_name="Gesamtkosten", null=True, blank=True, config_name='short')
-    registration = RichTextField(verbose_name="Anmeldung", config_name='short')
+    registration = RichTextField(verbose_name="Anmeldung", config_name='short', blank=True)
     notes = RichTextField(verbose_name="Hinweise", null=True, blank=True, config_name='short')
     start_date = models.DateTimeField(verbose_name="Beginn", null=True, help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
     end_date = models.DateTimeField(verbose_name="Ende", null=True, help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
