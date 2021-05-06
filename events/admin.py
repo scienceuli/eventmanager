@@ -51,6 +51,12 @@ from django.conf.locale.de import formats as de_formats
 de_formats.DATETIME_FORMAT = "d.m.y H:i"
 
 
+class EventCategoryAdmin(admin.ModelAdmin):
+    model = EventCategory
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
 class InlineWithoutDelete(BaseInlineFormSet): 
     '''
     is needed to provide Inlines without Delete Checkbox
@@ -347,7 +353,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     exclude = ('start_date', 'end_date',)
     fieldsets = (
         ('Name, Kurztitel, Format', {
-            'fields': ('name', 'label', 'category', 'eventformat')
+            'fields': ('name', 'label', 'category', 'eventformat', 'frontend_flag')
         }),
         ('Inhaltliche Angaben', {
             'fields': ('description', 'target_group', 'prerequisites', 'objectives', 'methods', )
@@ -356,7 +362,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             'fields': ('location', 'duration', 'fees', 'catering', 'lodging', 'total_costs', )
         }),
         ('Kapazität, Anmeldung, Hinweise, Status', {
-            'fields': ('capacity', 'registration', 'close_date', 'status', 'notes', )
+            'fields': ('capacity', 'registration', 'registration_recipient', 'close_date', 'status', 'notes', )
         }),
         ('Moodle', {
             'fields': ('moodle_course_type', 'moodle_id', 'moodle_course_created', 'moodle_new_user_flag', 'moodle_standard_password',),
@@ -545,7 +551,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     
 
-admin.site.register(EventCategory)
+admin.site.register(EventCategory, EventCategoryAdmin)
 admin.site.register(EventFormat)
 admin.site.register(Event, EventAdmin)
 

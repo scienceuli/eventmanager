@@ -217,7 +217,7 @@ def event_add_member(request, slug):
             
             member_label = EventMember.objects.latest('date_created').label
 
-            # msil preparation
+            # mail preparation
             subject=f"Anmeldung am Kurs {event.name}"
             formatting_dict = {
                 'firstname': firstname,
@@ -231,13 +231,21 @@ def event_add_member(request, slug):
                 'phone': phone,
                 'event': event.name,
                 'label': event.label,
-                'start': event.start_date,
-                'end': event.end_date,
-                'member_label': member_label
+                'start': event.get_first_day_start_date(),
             }
 
             try:
-                addresses = {'to': [settings.EVENT_RECEIVER_EMAIL]}
+                addresses_list = []
+                if event.sponsors:
+                    for sponsor in event.sponsors.all().exclude(email__isnull=True):
+                        addresses_list.append(sponsor.email)
+                if len(addresses_list) == 0:
+                    if event.registration_recipient:
+                        addresses_list.append(event.registration_recipient)
+                    else:
+                        addresses_list.append(settings.EVENT_RECEIVER_EMAIL)
+
+                addresses = {'to': addresses_list}
                 send_email(addresses, subject, template_name, formatting_dict=formatting_dict)
                 messages.success(request, 'Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen.')
                 new_member = EventMember.objects.latest('date_created')

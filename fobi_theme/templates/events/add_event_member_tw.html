@@ -10,11 +10,21 @@
 <div class="grid min-h-screen place-items-center">
   <div class="w-11/12 p-12 bg-white sm:w-8/12 md:w-1/2 lg:w-5/12">
     <h1 class="text-xl font-semibold">Anmeldung <span class="font-normal">zur Veranstaltung</span> {{ event.name }}</h1>
-    <p class='text-left'>{{ event.start_date|date:"DATE_FORMAT" }}{% if event.end_date %}
-      -
-      {{ event.end_date|date:"DATE_FORMAT" }}{% endif %}</p>
-    <p class='text-left'>{{ event.location.city }}</p>
-    <p class='text-left'>{{ event.speaker }}</p>
+    <p class='text-left'>
+      {% with event.event_days.all|first as first %}
+      {{ first.start_date|date:"l, d. F Y"}}
+      {% endwith %}
+      {% if event.event_days.all|length > 1 %}
+      - {{ event.get_last_day.start_date|date:"l, d. F Y" }}
+      {% endif %}
+              
+    </p>
+    <p class='text-left'>Referent*in{% if event.speaker.all|length > 1 %}nen{% endif %}:&nbsp;
+      {% for speaker in event.speaker.all %}
+      {{speaker}}{% if not forloop.last %}, {% endif %}
+      {% endfor %}                     
+    </p>
+    
     <form class="mt-6 divide-y divide-red" method="post">
       {% csrf_token %}
       <div class="grid grid-cols-1 py-5">
@@ -118,7 +128,7 @@
       </div>
       <div class="grid grid-cols-1 py-5">
         <button type="submit"
-          class="w-full py-3 mt-6 font-medium tracking-widest text-white uppercase bg-red shadow-lg focus:outline-none hover:bg-gray-900 hover:shadow-none">
+          class="w-full py-3 mt-6 font-medium tracking-widest text-gray-900 uppercase bg-red shadow-lg focus:outline-none hover:bg-vfllred hover:shadow-none">
           Anmelden
         </button>
         
