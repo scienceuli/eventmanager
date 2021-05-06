@@ -427,7 +427,11 @@
                                 {% if event.few_remaining_places %}
                                 <span class="text-vfllred italic">Nur noch wenige Restplätze!<br /></span>
                                 {% endif %}
+                                {% if event.registration %}
                                 {{ event.registration|safe }}
+                                {% else %}
+                                Zum Anmeldformular:
+                                {% endif %}
                                 {% endif %}
                             </div>
                             {% if not event.is_full %}
