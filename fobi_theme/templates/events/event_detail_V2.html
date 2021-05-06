@@ -434,7 +434,7 @@
                                 {% endif %}
                                 {% endif %}
                             </div>
-                            {% if not event.is_full and event.category != 'Fortbildungen unserer Kooperationspartner*innen' %}
+                            {% if not event.is_full and event.category.name != 'Fortbildungen unserer Kooperationspartner*innen' %}
                             <div class="item">
                                 <div class="rounded-full w-32 mx-4 px-4 text-white bg-vfllred">
                                     <a class='bg-vfllred text-lg'
