@@ -369,7 +369,7 @@ class EventAgenda(BaseModel):
     end_time = models.TimeField(verbose_name="Ende", null=True, blank=True)
     position = models.PositiveSmallIntegerField(verbose_name="Reihenfolge", null=True, help_text="Reihenfolge der Programme in der Anezige")
     venue_name = models.CharField(verbose_name="wo", max_length=255, null=True, blank=True)
-    description = RichTextField(verbose_name="Programm", config_name='short')
+    description = RichTextField(verbose_name="Programm", config_name='short', blank=True)
 
     class Meta:
         ordering = ('position',)
