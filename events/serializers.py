@@ -8,7 +8,7 @@ class SpeakerSerializer(serializers.ModelSerializer):
         fields = ('first_name', 'last_name')
 
 
-class EventSerializer(serializers.ModelSerializer):
+class EventSerializer(serializers.HyperlinkedModelSerializer):
 
     speaker = SpeakerSerializer(read_only=True, many=True)
     category_name = serializers.CharField(source='category.name')
@@ -21,4 +21,4 @@ class EventSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
-        fields = ('url', 'id','category_name', 'name', 'first_day', 'web_url', 'description', 'speaker',)
+        fields = ('id', 'url','category_name', 'name', 'first_day', 'web_url', 'description', 'speaker',)
