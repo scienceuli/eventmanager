@@ -8,14 +8,17 @@ class SpeakerSerializer(serializers.ModelSerializer):
         fields = ('first_name', 'last_name')
 
 
-
 class EventSerializer(serializers.ModelSerializer):
 
     speaker = SpeakerSerializer(read_only=True, many=True)
     category_name = serializers.CharField(source='category.name')
     first_day = serializers.DateField(format="%d.%m.%Y")
-    event_absolute_url = serializers.URLField(source='get_absolute_url', read_only=True)
+    web_url = serializers.SerializerMethodField()
+
+    def get_web_url(self, obj):
+        obj_url = obj.get_absolute_url()
+        return self.context["request"].build_absolute_uri(obj_url)
 
     class Meta:
         model = Event
-        fields = ('id','category_name', 'name', 'first_day', 'event_absolute_url', 'description', 'speaker',)
+        fields = ('id','category_name', 'name', 'first_day', 'web_url', 'description', 'speaker',)
