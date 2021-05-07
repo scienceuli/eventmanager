@@ -17,14 +17,14 @@
       {% if event.event_days.all|length > 1 %}
       - {{ event.get_last_day.start_date|date:"l, d. F Y" }}
       {% endif %}
-              
+
     </p>
-    <p class='text-left'>Referent*in{% if event.speaker.all|length > 1 %}nen{% endif %}:&nbsp;
+    <p class='text-left'>Dozent*in{% if event.speaker.all|length > 1 %}nen{% endif %}:&nbsp;
       {% for speaker in event.speaker.all %}
       {{speaker}}{% if not forloop.last %}, {% endif %}
-      {% endfor %}                     
+      {% endfor %}
     </p>
-    
+
     <form class="mt-6 divide-y divide-red" method="post">
       {% csrf_token %}
       <div class="grid grid-cols-1 py-5">
@@ -122,7 +122,7 @@
           {{ form.check }}
           <span class="ml-3 text-xs text-gray-600">Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und
             Nachname, Telefon, E-Mail-Adresse) auf der Teilnehmerliste stehen und an die Teilnehmer*innen sowie den/die
-            Referent*in weitergegeben werden.</span>
+            Dozent*in weitergegeben werden.</span>
         </label>
 
       </div>
@@ -131,7 +131,7 @@
           class="w-full py-3 mt-6 font-medium tracking-widest text-gray-900 uppercase bg-red  focus:outline-none hover:bg-vfllred hover:shadow-lg">
           Anmelden
         </button>
-        
+
 
         <button class="flex justify-between inline-block mt-4 text-xs text-gray-500 cursor-pointer hover:text-black"
           onclick="javascript:history.back();">Abbrechen</button>

@@ -15,36 +15,45 @@ from .abstract import BaseModel, AddressModel
 class EventCategory(BaseModel):
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField("Beschreibung", blank=True)
-    singular = models.CharField(max_length=255, null=True, blank=True,
-        help_text="wird im Frontend als Kategorie angezeigt")
+    singular = models.CharField(
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="wird im Frontend als Kategorie angezeigt",
+    )
     position = models.PositiveSmallIntegerField(default=1)
 
     class Meta:
-        ordering = ('position',)
+        ordering = ("position",)
         verbose_name = "Kategorie"
         verbose_name_plural = "Kategorien"
 
     def __str__(self):
         return self.name
-    
+
     def get_absolute_url(self):
-        return reverse('event-category-list')
+        return reverse("event-category-list")
+
 
 class EventFormat(BaseModel):
     name = models.CharField(verbose_name="Format", max_length=255, unique=True)
     description = models.TextField("Beschreibung", blank=True)
 
     class Meta:
-        ordering = ('name',)
+        ordering = ("name",)
         verbose_name = "Format"
         verbose_name_plural = "Formate"
 
     def __str__(self):
         return self.name
 
+
 class EventLocation(AddressModel):
     title = models.CharField("Name", max_length=128)
-    url = models.URLField(verbose_name="Veranstaltungsort Website", blank=True,)
+    url = models.URLField(
+        verbose_name="Veranstaltungsort Website",
+        blank=True,
+    )
 
     class Meta:
         verbose_name = "Veranstaltungsort"
@@ -77,8 +86,6 @@ class EventLocation(AddressModel):
 
         return address
 
-    
-
 
 class EventSpeaker(BaseModel):
     first_name = models.CharField("Vorname", blank=True, max_length=128)
@@ -88,18 +95,18 @@ class EventSpeaker(BaseModel):
     bio = models.TextField("Biografie", blank=True)
     url = models.URLField("Website", blank=True)
     social_url = models.URLField("Soziale Medien", blank=True)
-    image = models.ImageField(upload_to='speaker/', blank=True)
+    image = models.ImageField(upload_to="speaker/", blank=True)
 
     class Meta:
-        ordering = ('last_name',)
-        verbose_name = "Referent*in"
-        verbose_name_plural = "Referent*innen"
+        ordering = ("last_name",)
+        verbose_name = "Dozent*in"
+        verbose_name_plural = "Dozent*innen"
 
     def __str__(self):
-        return '{first_name} {last_name}'.format(
-            first_name=self.first_name,
-            last_name=self.last_name
+        return "{first_name} {last_name}".format(
+            first_name=self.first_name, last_name=self.last_name
         ).strip()
+
 
 class EventSponsor(BaseModel):
     first_name = models.CharField("Vorname", blank=True, max_length=128)
@@ -107,50 +114,104 @@ class EventSponsor(BaseModel):
     email = models.EmailField("E-Mail", blank=True, max_length=255)
     phone = models.CharField("Tel", max_length=64, blank=True)
     url = models.URLField("Website", blank=True)
-    image = models.ImageField(upload_to='speaker/', blank=True)
+    image = models.ImageField(upload_to="speaker/", blank=True)
 
     class Meta:
-        ordering = ('last_name',)
+        ordering = ("last_name",)
         verbose_name = "Pat*in"
         verbose_name_plural = "Pat*innen"
 
     def __str__(self):
-        return '{first_name} {last_name}'.format(
-            first_name=self.first_name,
-            last_name=self.last_name
+        return "{first_name} {last_name}".format(
+            first_name=self.first_name, last_name=self.last_name
         ).strip()
 
+
 class Event(BaseModel):
-    category = models.ForeignKey(EventCategory, verbose_name="Kategorie", on_delete=models.CASCADE)
+    category = models.ForeignKey(
+        EventCategory, verbose_name="Kategorie", on_delete=models.CASCADE
+    )
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, null=False, unique=True, editable=False)
-    frontend_flag = models.BooleanField(verbose_name='im Frontend zeigen?', default=True)
-    label = models.CharField(max_length=64, verbose_name="Kurzname", unique=True, help_text="eindeutiger Kurzname")
-    description = RichTextUploadingField(verbose_name="Teaser", config_name='short')
-    duration = models.CharField(verbose_name="Dauer", max_length=255, null=True, blank=True)
-    target_group = models.CharField(verbose_name="Zielgruppe", max_length=255, )
-    prerequisites = RichTextUploadingField(verbose_name="Voraussetzungen", max_length=255, config_name='short')
-    objectives = RichTextUploadingField(verbose_name="Lernziele", config_name='short')
-    speaker = models.ManyToManyField(EventSpeaker, verbose_name="Referent*innen", through='EventSpeakerThrough')
-    sponsors = models.ManyToManyField(EventSponsor, verbose_name="Pate,Patin", through='EventSponsorThrough')
-    methods = models.CharField(verbose_name="Methoden", max_length=255, null=True, blank=True)
+    frontend_flag = models.BooleanField(
+        verbose_name="im Frontend zeigen?", default=True
+    )
+    label = models.CharField(
+        max_length=64,
+        verbose_name="Kurzname",
+        unique=True,
+        help_text="eindeutiger Kurzname",
+    )
+    description = RichTextUploadingField(verbose_name="Teaser", config_name="short")
+    duration = models.CharField(
+        verbose_name="Dauer", max_length=255, null=True, blank=True
+    )
+    target_group = models.CharField(
+        verbose_name="Zielgruppe",
+        max_length=255,
+    )
+    prerequisites = RichTextUploadingField(
+        verbose_name="Voraussetzungen", max_length=255, config_name="short"
+    )
+    objectives = RichTextUploadingField(verbose_name="Lernziele", config_name="short")
+    speaker = models.ManyToManyField(
+        EventSpeaker, verbose_name="Dozent*innen", through="EventSpeakerThrough"
+    )
+    sponsors = models.ManyToManyField(
+        EventSponsor, verbose_name="Pate,Patin", through="EventSponsorThrough"
+    )
+    methods = models.CharField(
+        verbose_name="Methoden", max_length=255, null=True, blank=True
+    )
 
     SCHEDULED_STATUS_CHOICES = (
-        ('yet to scheduled', 'noch offen'),
-        ('scheduled', 'terminiert')
+        ("yet to scheduled", "noch offen"),
+        ("scheduled", "terminiert"),
     )
-    scheduled_status = models.CharField(max_length=25, choices=SCHEDULED_STATUS_CHOICES, default='scheduled')
-    location = models.ForeignKey(EventLocation, verbose_name="Veranstaltungsort", null=True, on_delete=models.SET_NULL, related_name='location_events')
-    fees = RichTextField(verbose_name="Gebühren", config_name='short')
-    catering = RichTextField(verbose_name="Verpflegung", null=True, blank=True, config_name='short')
-    lodging = RichTextField(verbose_name="Übernachtung", null=True, blank=True, config_name='short')
-    total_costs = RichTextField(verbose_name="Gesamtkosten", null=True, blank=True, config_name='short')
-    registration = RichTextField(verbose_name="Anmeldung", config_name='short', blank=True)
-    registration_recipient = models.EmailField(verbose_name="Anmelde-Email an", max_length=254, null=True, blank=True, help_text="an diese Adresse werden Anmeldungen geschickt")
-    notes = RichTextField(verbose_name="Hinweise", null=True, blank=True, config_name='short')
-    start_date = models.DateTimeField(verbose_name="Beginn", null=True, help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
-    end_date = models.DateTimeField(verbose_name="Ende", null=True, help_text='Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm')
+    scheduled_status = models.CharField(
+        max_length=25, choices=SCHEDULED_STATUS_CHOICES, default="scheduled"
+    )
+    location = models.ForeignKey(
+        EventLocation,
+        verbose_name="Veranstaltungsort",
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="location_events",
+    )
+    fees = RichTextField(verbose_name="Gebühren", config_name="short")
+    catering = RichTextField(
+        verbose_name="Verpflegung", null=True, blank=True, config_name="short"
+    )
+    lodging = RichTextField(
+        verbose_name="Übernachtung", null=True, blank=True, config_name="short"
+    )
+    total_costs = RichTextField(
+        verbose_name="Gesamtkosten", null=True, blank=True, config_name="short"
+    )
+    registration = RichTextField(
+        verbose_name="Anmeldung", config_name="short", blank=True
+    )
+    registration_recipient = models.EmailField(
+        verbose_name="Anmelde-Email an",
+        max_length=254,
+        null=True,
+        blank=True,
+        help_text="an diese Adresse werden Anmeldungen geschickt",
+    )
+    notes = RichTextField(
+        verbose_name="Hinweise", null=True, blank=True, config_name="short"
+    )
+    start_date = models.DateTimeField(
+        verbose_name="Beginn",
+        null=True,
+        help_text="Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm",
+    )
+    end_date = models.DateTimeField(
+        verbose_name="Ende",
+        null=True,
+        help_text="Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm",
+    )
     open_date = models.DateTimeField(
         verbose_name="Anmeldefrist Beginn",
         null=True,
@@ -160,33 +221,35 @@ class Event(BaseModel):
         verbose_name="Anmeldefrist Ende", null=True, blank=True
     )
     first_day = models.DateField(null=True, blank=True)
-    capacity = models.PositiveIntegerField(verbose_name='Kapazität', default=15)
+    capacity = models.PositiveIntegerField(verbose_name="Kapazität", default=15)
     STATUS_CHOICES = (
-        ('active', 'findet statt'),
-        ('deleted', 'verschoben'),
-        ('cancel', 'abgesagt'),
+        ("active", "findet statt"),
+        ("deleted", "verschoben"),
+        ("cancel", "abgesagt"),
     )
-    status = models.CharField(choices=STATUS_CHOICES, max_length=10, default='active')
+    status = models.CharField(choices=STATUS_CHOICES, max_length=10, default="active")
     moodle_id = models.PositiveSmallIntegerField(default=0)
     moodle_course_created = models.BooleanField(default=False)
-    
+
     MOODLE_COURSE_TYPE_CHOICES = (
-        (3, 'in Planung'),
-        (4, 'Fortbildungen'),
+        (3, "in Planung"),
+        (4, "Fortbildungen"),
     )
-    moodle_course_type = models.PositiveSmallIntegerField(verbose_name='Moodle Kurstyp', choices=MOODLE_COURSE_TYPE_CHOICES, default=4)
+    moodle_course_type = models.PositiveSmallIntegerField(
+        verbose_name="Moodle Kurstyp", choices=MOODLE_COURSE_TYPE_CHOICES, default=4
+    )
     moodle_new_user_flag = models.BooleanField(
         verbose_name="Autom. E-Mail an neue Moodle-User",
         default=False,
-        help_text="Hier kann für den Kurs festgelegt werden, ob neue Moodle-User die automatische Begrüßungsmail bekommen (default=False).")
+        help_text="Hier kann für den Kurs festgelegt werden, ob neue Moodle-User die automatische Begrüßungsmail bekommen (default=False).",
+    )
     moodle_standard_password = models.CharField(
-        max_length=24, 
-        verbose_name="Moodle Standard-Passwort",
-        default="VfllMoodle123#")
+        max_length=24, verbose_name="Moodle Standard-Passwort", default="VfllMoodle123#"
+    )
     students_number = models.PositiveSmallIntegerField(default=0, editable=False)
 
     class Meta:
-        ordering = ('start_date',)
+        ordering = ("start_date",)
         verbose_name = "Veranstaltung"
         verbose_name_plural = "Veranstaltungen"
 
@@ -199,36 +262,42 @@ class Event(BaseModel):
         - start_date darf nicht in der Vergangenheit liegen
         - end_date muss nach dem start_date liegen
         - Nachfrage bei mehr als 14 Tagen Dauer
-        - 
+        -
         """
-        #if not self.pk and self.close_date and self.close_date < timezone.now():
+        # if not self.pk and self.close_date and self.close_date < timezone.now():
         #    raise ValidationError("Die Anmeldfrist liegt in der Vergangenheit!")
-        #if not self.pk and self.start_date and self.start_date < timezone.now():
+        # if not self.pk and self.start_date and self.start_date < timezone.now():
         #    raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
 
-        #if self.start_date and self.end_date and self.start_date >= self.end_date:
+        # if self.start_date and self.end_date and self.start_date >= self.end_date:
         #    raise ValidationError("Das Startdatum muss vor dem Enddatum liegen!")
-        #if self.start_date and self.end_date:
+        # if self.start_date and self.end_date:
         #    delta = self.end_date - self.start_date
         #    if delta.days >= 14:
         #        raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
         if self.capacity < self.members.count():
-            raise ValidationError("Die Teilnehmer*innenzahl darf nicht größer als die Kapaizität sein.")
-
-        
-    
+            raise ValidationError(
+                "Die Teilnehmer*innenzahl darf nicht größer als die Kapaizität sein."
+            )
 
     def get_absolute_url(self):
-        return reverse('event-detail', kwargs={'slug': self.slug}) 
+        return reverse("event-detail", kwargs={"slug": self.slug})
 
     def is_yet_open_for_registration(self):
         return not self.open_date or self.open_date < timezone.now()
 
     def get_end_of_registration(self):
-        return self.close_date.date() if self.close_date else self.get_first_day_start_date()
+        return (
+            self.close_date.date()
+            if self.close_date
+            else self.get_first_day_start_date()
+        )
 
     def is_past(self):
-        if self.get_end_of_registration() and date.today() > self.get_end_of_registration():
+        if (
+            self.get_end_of_registration()
+            and date.today() > self.get_end_of_registration()
+        ):
             return True
         return False
 
@@ -245,15 +314,15 @@ class Event(BaseModel):
     registration_over = property(is_past_hinweis)
 
     def get_number_of_members(self):
-        '''
+        """
         gibt die Anzahl der Teilnehmer und der eingeschriebenen Moodle-User zurück
-        '''
+        """
         return f"{self.members.count()} ({self.students_number})"
 
     get_number_of_members.short_description = "Teilnehmer"
 
     def get_number_of_free_places(self):
-        return self.capacity - self.members.count() 
+        return self.capacity - self.members.count()
 
     get_number_of_free_places.short_description = "offen"
 
@@ -273,62 +342,70 @@ class Event(BaseModel):
 
     def get_first_day(self):
         try:
-            return self.event_days.all().order_by('start_date')[0]
-           
+            return self.event_days.all().order_by("start_date")[0]
+
         except IndexError:
             pass
 
     def get_first_day_start_date(self):
         try:
-            return self.event_days.all().order_by('start_date')[0].start_date
-           
+            return self.event_days.all().order_by("start_date")[0].start_date
+
         except IndexError:
             pass
 
     def get_year(self):
         try:
-            return self.event_days.all().order_by('start_date')[0].start_date.year
-           
+            return self.event_days.all().order_by("start_date")[0].start_date.year
+
         except IndexError:
             pass
-    
+
     def get_last_day(self):
         try:
-            return self.event_days.all().order_by('-start_date')[0]
-           
+            return self.event_days.all().order_by("-start_date")[0]
+
         except IndexError:
             pass
 
     def save(self, *args, **kwargs):
-        max_length = self._meta.get_field('slug').max_length
-        last_id = Event.objects.latest('id').id
+        max_length = self._meta.get_field("slug").max_length
+        last_id = Event.objects.latest("id").id
         if not self.id:
             self.slug = slugify(f"{self.name}-{str(last_id+1)}")[:max_length]
         add = not self.pk
-        #super(Event, self).save(*args, **kwargs)
+        # super(Event, self).save(*args, **kwargs)
         if add:
-            #if not self.slug:
+            # if not self.slug:
             #    self.slug = slugify(self.name)[:max_length]
             if not self.label:
                 self.label = f"{self.name.partition(' ')[0]}-{date.today().year}-{str(last_id+1)}"
-            kwargs['force_insert'] = False # create() uses this, which causes error.
-    
+            kwargs["force_insert"] = False  # create() uses this, which causes error.
+
         self.first_day = self.get_first_day_start_date()
         super(Event, self).save(*args, **kwargs)
 
 
 class EventSpeakerThrough(BaseModel):
-    eventspeaker = models.ForeignKey(EventSpeaker, verbose_name='Referent*in', on_delete=models.CASCADE)
-    event = models.ForeignKey(Event, verbose_name='Veranstaltung', on_delete=models.CASCADE)
+    eventspeaker = models.ForeignKey(
+        EventSpeaker, verbose_name="Dozent*in", on_delete=models.CASCADE
+    )
+    event = models.ForeignKey(
+        Event, verbose_name="Veranstaltung", on_delete=models.CASCADE
+    )
 
     class Meta:
-        verbose_name = "Referent*in"
-        verbose_name_plural = "Referent*innen"
+        verbose_name = "Dozent*in"
+        verbose_name_plural = "Dozent*innen"
 
 
 class EventSponsorThrough(BaseModel):
-    eventsponsor = models.ForeignKey(EventSponsor, verbose_name='Pat*in', on_delete=models.CASCADE)
-    event = models.ForeignKey(Event, verbose_name='Veranstaltung', on_delete=models.CASCADE)
+    eventsponsor = models.ForeignKey(
+        EventSponsor, verbose_name="Pat*in", on_delete=models.CASCADE
+    )
+    event = models.ForeignKey(
+        Event, verbose_name="Veranstaltung", on_delete=models.CASCADE
+    )
 
     class Meta:
         verbose_name = "Pat*in"
@@ -336,13 +413,18 @@ class EventSponsorThrough(BaseModel):
 
 
 class EventDay(BaseModel):
-    event = models.ForeignKey(Event, related_name="event_days", on_delete=models.CASCADE)
-    start_date = models.DateField(verbose_name="Datum", help_text='Datum: Picker verwenden oder in der Form tt.mm.jj')
-    start_time = models.TimeField(verbose_name="Beginn", help_text='hh:mm')
-    end_time = models.TimeField(verbose_name="Ende", help_text='hh:mm')
+    event = models.ForeignKey(
+        Event, related_name="event_days", on_delete=models.CASCADE
+    )
+    start_date = models.DateField(
+        verbose_name="Datum",
+        help_text="Datum: Picker verwenden oder in der Form tt.mm.jj",
+    )
+    start_time = models.TimeField(verbose_name="Beginn", help_text="hh:mm")
+    end_time = models.TimeField(verbose_name="Ende", help_text="hh:mm")
 
     class Meta:
-        ordering = ('start_date',)
+        ordering = ("start_date",)
         verbose_name = "Veranstaltungstag"
         verbose_name_plural = "Veranstaltungstage"
 
@@ -355,26 +437,37 @@ class EventDay(BaseModel):
         - start_date darf nicht in der Vergangenheit liegen
         - end_date muss nach dem start_date liegen
         - Nachfrage bei mehr als 14 Tagen Dauer
-        - 
+        -
         """
         if not self.pk and self.start_date and self.start_date < timezone.now().date():
             raise ValidationError("Das Startdatum liegt in der Vergangenheit!")
 
         if self.start_time and self.end_time and self.start_time >= self.end_time:
             raise ValidationError("Die Startzeit muss vor der Endzeit liegen!")
-        
+
 
 class EventAgenda(BaseModel):
     event = models.ForeignKey(Event, related_name="agendas", on_delete=models.CASCADE)
-    session_name = models.CharField(verbose_name="Programmteil", max_length=120, )
+    session_name = models.CharField(
+        verbose_name="Programmteil",
+        max_length=120,
+    )
     start_time = models.TimeField(verbose_name="Beginn", null=True, blank=True)
     end_time = models.TimeField(verbose_name="Ende", null=True, blank=True)
-    position = models.PositiveSmallIntegerField(verbose_name="Reihenfolge", null=True, help_text="Reihenfolge der Programme in der Anezige")
-    venue_name = models.CharField(verbose_name="wo", max_length=255, null=True, blank=True)
-    description = RichTextField(verbose_name="Programm", config_name='short', blank=True)
+    position = models.PositiveSmallIntegerField(
+        verbose_name="Reihenfolge",
+        null=True,
+        help_text="Reihenfolge der Programme in der Anezige",
+    )
+    venue_name = models.CharField(
+        verbose_name="wo", max_length=255, null=True, blank=True
+    )
+    description = RichTextField(
+        verbose_name="Programm", config_name="short", blank=True
+    )
 
     class Meta:
-        ordering = ('position',)
+        ordering = ("position",)
         verbose_name = "Programm"
         verbose_name_plural = "Programme"
 
@@ -382,19 +475,23 @@ class EventAgenda(BaseModel):
         return self.session_name
 
     def save(self, *args, **kwargs):
-        EventAgenda.objects.filter(position__gte=self.position).update(position=F('position') + 1)
+        EventAgenda.objects.filter(position__gte=self.position).update(
+            position=F("position") + 1
+        )
         super(EventAgenda, self).save(*args, **kwargs)
 
 
 class EventImage(BaseModel):
     event = models.OneToOneField(Event, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to='event_image/')
+    image = models.ImageField(upload_to="event_image/")
+
 
 MEMBER_ROLE_CHOICES = (
-    (1, 'Manager*in'),
-    (3, 'Trainer*in'),
-    (5, 'Teilnehmer*in'),
+    (1, "Manager*in"),
+    (3, "Trainer*in"),
+    (5, "Teilnehmer*in"),
 )
+
 
 class MemberRole(BaseModel):
     roleid = models.PositiveSmallIntegerField(choices=MEMBER_ROLE_CHOICES)
@@ -403,45 +500,52 @@ class MemberRole(BaseModel):
         return self.get_roleid_display()
 
 
-
 class EventMember(AddressModel):
-    '''
-    Teilnehmer werden verwaltet 
+    """
+    Teilnehmer werden verwaltet
     mit ihren Anmeldedaten
-    '''
-    event = models.ForeignKey(Event, verbose_name='Veranstaltung', related_name="members", on_delete=models.CASCADE)
-    name = models.CharField('Kurzbezeichnung', max_length=255, null=True, blank=True)
-    firstname = models.CharField('Vorname', max_length=255, blank=True)
-    lastname = models.CharField('Nachname', max_length=255, blank=True)
+    """
+
+    event = models.ForeignKey(
+        Event,
+        verbose_name="Veranstaltung",
+        related_name="members",
+        on_delete=models.CASCADE,
+    )
+    name = models.CharField("Kurzbezeichnung", max_length=255, null=True, blank=True)
+    firstname = models.CharField("Vorname", max_length=255, blank=True)
+    lastname = models.CharField("Nachname", max_length=255, blank=True)
     email = models.EmailField("E-Mail", blank=True, max_length=255)
     phone = models.CharField("Tel", max_length=64, blank=True)
     vfll = models.BooleanField("VFLL-Mitglied", default=False)
 
     memberships = models.CharField("Mitgliedschaften", max_length=64, blank=True)
-    attention = models.CharField('aufmerksamen geworden durch', max_length=64, blank=True)
-    attention_other = models.CharField('sonstige', max_length=64, blank=True)
-    education_bonus = models.BooleanField('Bildungsprämie', default=False)
+    attention = models.CharField(
+        "aufmerksamen geworden durch", max_length=64, blank=True
+    )
+    attention_other = models.CharField("sonstige", max_length=64, blank=True)
+    education_bonus = models.BooleanField("Bildungsprämie", default=False)
     message = models.TextField("Anmerkung", blank=True)
     check = models.BooleanField(default=False)
 
     label = models.CharField(max_length=64)
     ATTEND_STATUS_CHOICES = (
-        ('registered', 'angemeldet'),
-        ('waiting', 'Warteliste'),
-        ('attending', 'nimmt teil'),
-        ('absent', 'nicht erschienen'),
-        ('cancelled', 'abgesagt'),
+        ("registered", "angemeldet"),
+        ("waiting", "Warteliste"),
+        ("attending", "nimmt teil"),
+        ("absent", "nicht erschienen"),
+        ("cancelled", "abgesagt"),
     )
     attend_status = models.CharField(choices=ATTEND_STATUS_CHOICES, max_length=10)
     mail_to_admin = models.BooleanField("m > admin", default=False)
     moodle_id = models.PositiveIntegerField("MoodleID", default=0)
-    roles = models.ManyToManyField(MemberRole, through='EventMemberRole')
+    roles = models.ManyToManyField(MemberRole, through="EventMemberRole")
     enroled = models.BooleanField(">m", default=False)
 
     class Meta:
-        verbose_name = 'Teilnehmer*in'
-        verbose_name_plural = 'Teilnehmer*innen'
-        unique_together = ['event', 'name']
+        verbose_name = "Teilnehmer*in"
+        verbose_name_plural = "Teilnehmer*innen"
+        unique_together = ["event", "name"]
 
     def __str__(self):
         return str(f"Anmeldung von {self.lastname}, {self.firstname}")
@@ -452,11 +556,12 @@ class EventMember(AddressModel):
         if add:
             if not self.label:
                 self.label = f"{self.event.label}-A{str(self.id)}"
-            kwargs['force_insert'] = False # create() uses this, which causes error.
+            kwargs["force_insert"] = False  # create() uses this, which causes error.
             super(EventMember, self).save(*args, **kwargs)
         if not self.name:
             self.name = f"{self.event.label} | {timezone.now()}"
             super(EventMember, self).save(*args, **kwargs)
+
 
 class EventMemberRole(BaseModel):
     eventmember = models.ForeignKey(EventMember, on_delete=models.CASCADE)
@@ -465,6 +570,3 @@ class EventMemberRole(BaseModel):
     class Meta:
         verbose_name = "Rolle"
         verbose_name_plural = "Rollen"
-
-    
-

@@ -3,5 +3,8 @@
         "activityBar.background": "#2A3104",
         "titleBar.activeBackground": "#3B4405",
         "titleBar.activeForeground": "#F8FDE1"
-    }
+    },
+    "editor.formatOnSave": true,
+    "python.formatting.provider": "black",
+    "python.pythonPath": "/Users/scienceuli/.pyenv/versions/3.9.1/envs/eventmanagerenv/bin/python"
 }
