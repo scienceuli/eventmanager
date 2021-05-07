@@ -161,7 +161,7 @@
 
             <!-- Ende Location -->
 
-            <!-- Referent -->
+            <!-- Dozent -->
 
             <div class="flex relative pb-8 sm:items-center md:w-2/3 mx-auto">
 
@@ -177,7 +177,7 @@
                         <span class="text-3xl"><i class="fas fa-chalkboard-teacher"></i></span>
                     </div>
                     <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
-                        <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Referent*in
+                        <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Dozent*in
                             {% if event.speaker.all|length > 1 %}nen{% endif %}</h2>
                         <p class="leading-relaxed">
                             {% for speaker in event.speaker.all %}
@@ -228,7 +228,7 @@
                                             {% endif %}
                                             {% if speaker.url %}
                                             <span>{% if speaker.email %} | {% endif %}<a href="{{ speaker.url }}">
-                                                {{ speaker.url }}</a></span>
+                                                    {{ speaker.url }}</a></span>
                                             {% endif %}
                                             {% if speaker.bio %}
                                         <p class="my-4 text-blueGray-500 text-lg leading-relaxed">
@@ -258,7 +258,7 @@
                 </div>
             </div>
 
-            <!-- Ende Referent -->
+            <!-- Ende Dozent -->
 
 
             <!-- Zielgruppe -->
@@ -403,7 +403,7 @@
             <!-- Ende Kontakt , mehr Infos -->
 
             <!-- Anmeldung -->
-            
+
             <div class="flex relative pb-8 sm:items-center md:w-2/3 mx-auto">
 
 
@@ -434,7 +434,8 @@
                                 {% endif %}
                                 {% endif %}
                             </div>
-                            {% if not event.is_full and event.category.name != 'Fortbildungen unserer Kooperationspartner*innen' %}
+                            {% if not event.is_full and event.category.name != 'Fortbildungen unserer
+                            Kooperationspartner*innen' %}
                             <div class="item">
                                 <div class="rounded-full w-32 mx-4 px-4 text-white bg-vfllred">
                                     <a class='bg-vfllred text-lg'
@@ -447,10 +448,10 @@
                     </div>
 
 
-                    
+
                 </div>
             </div>
-            
+
 
             <!-- Ende Anmeldung -->
 
