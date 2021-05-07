@@ -15,6 +15,8 @@ class EventSerializer(serializers.ModelSerializer):
     first_day = serializers.DateField(format="%d.%m.%Y")
     event_absolute_url = serializers.URLField(source='get_absolute_url', read_only=True) 
 
+    # ref: https://stackoverflow.com/questions/33016149/including-the-get-absolute-url-value-in-json-output
+
 
     class Meta:
         model = Event

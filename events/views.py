@@ -75,7 +75,7 @@ class EventListView(ListView):
 
         # events from database
         context = super().get_context_data(**kwargs)
-        event_queryset_unsorted = Event.objects.all().exclude(event_days=None) # unsorted
+        event_queryset_unsorted = Event.objects.all().exclude(event_days=None).exclude(frontend_flag=False) # unsorted
         
         event_queryset = sorted(event_queryset_unsorted, key=lambda t: t.get_first_day_start_date())
         
