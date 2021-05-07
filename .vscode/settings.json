@@ -6,5 +6,6 @@
     },
     "editor.formatOnSave": true,
     "python.formatting.provider": "black",
-    "python.pythonPath": "/Users/scienceuli/.pyenv/versions/3.9.1/envs/eventmanagerenv/bin/python"
+    "python.pythonPath": "/Users/scienceuli/.pyenv/versions/3.9.1/envs/eventmanagerenv/bin/python",
+    "html.format.wrapLineLength": 0
 }
