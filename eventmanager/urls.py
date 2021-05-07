@@ -33,7 +33,7 @@ urlpatterns = [
     path('login/', user_views.login_page, name='login'),
     path('logout/', user_views.logout_page, name='logout'),
     path('register/',user_views.register,name='register'),
-    path('', include('events.urls', namespace="events")),
+    path('', include('events.urls')),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path('<int:event_id>/pdf/', admin_event_pdf, name='admin-event-pdf'),
 ]

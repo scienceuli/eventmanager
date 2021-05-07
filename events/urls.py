@@ -21,7 +21,6 @@ from .views import (
 def trigger_error(request):
     division_by_zero = 1 / 0
 
-app_name = "events"
 
 urlpatterns = [
     path('sentry-debug/', trigger_error), # sentry test
