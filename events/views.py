@@ -92,10 +92,11 @@ class EventListView(ListView):
         event_queryset_unsorted = (
             Event.objects.all()
             .filter(first_day__gte=date.today())
+            .filter(pub_status="PUB")
             .exclude(event_days=None)
-            .exclude(frontend_flag=False)
         )  # unsorted
 
+        # sorted
         event_queryset = sorted(
             event_queryset_unsorted, key=lambda t: t.get_first_day_start_date()
         )
@@ -228,6 +229,10 @@ def event_add_member(request, slug):
             attention_other = form.cleaned_data["attention_other"]
             education_bonus = form.cleaned_data["education_bonus"]
             check = form.cleaned_data["check"]
+            if event.is_full:
+                attend_status = "waiting"
+            else:
+                attend_status = "registered"
 
             # make name of this registration from event label and date
 
@@ -252,7 +257,7 @@ def event_add_member(request, slug):
                 attention_other=attention_other,
                 education_bonus=education_bonus,
                 check=check,
-                attend_status="registered",
+                attend_status=attend_status,
             )
 
             """

@@ -217,6 +217,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "firstname",
         "lastname",
         "email",
+        "attend_status",
         "vfll",
         "education_bonus",
         "change_link",
@@ -230,6 +231,13 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     #    if obj and obj.is_past():
     #        return False
     #    return True
+
+    # def get_short_attend_status(self, obj):
+    #    if obj.attend_status:
+    #        return obj.attend_status[0]
+    #    return "-"
+
+    # get_short_attend_status.short_description = "St"
 
     def change_link(self, obj):
         return mark_safe(
@@ -468,7 +476,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     fieldsets = (
         (
             "Name, Kurztitel, Format",
-            {"fields": ("name", "label", "category", "eventformat", "frontend_flag")},
+            {"fields": ("name", "label", "category", "eventformat", "pub_status")},
         ),
         (
             "Inhaltliche Angaben",

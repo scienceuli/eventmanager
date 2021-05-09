@@ -408,10 +408,12 @@
                                 {% endif %}
                                 {% endif %}
                             </div>
-                            {% if not event.is_full and event.category.name != 'Fortbildungen unserer Kooperationspartner*innen' %}
+                            {% if event.category.name != 'Fortbildungen unserer Kooperationspartner*innen' %}
                             <div class="item">
-                                <div class="rounded-full w-32 mx-4 px-4 text-white bg-vfllred">
-                                    <a class='bg-vfllred text-lg' href="{% url 'event-add-member' event.slug %}">Anmelden
+                                <div class="mx-4 px-4">
+
+                                    <a class='text-lg bg-gray-200 font-bold rounded-full text-vfllred py-4 px-5 lg:px-8' href="{% url 'event-add-member' event.slug %}">
+                                        {% if not event.is_full %}Anmelden{% else %}Auf die Warteliste{% endif %}
                                     </a>
                                 </div>
                             </div>

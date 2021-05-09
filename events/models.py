@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.urls import reverse
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ValidationError
+from django.template.defaultfilters import truncatechars
 from ckeditor_uploader.fields import RichTextUploadingField
 from ckeditor.fields import RichTextField
 
@@ -129,12 +130,31 @@ class EventSponsor(BaseModel):
 
 
 class Event(BaseModel):
+
+    PUB_STATUS_CHOICES = (
+        ("PUB", "öffentlich"),
+        ("UNPUB", "draft"),
+        ("ARCH", "archiviert"),
+    )
+
     category = models.ForeignKey(
         EventCategory, verbose_name="Kategorie", on_delete=models.CASCADE
     )
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, null=False, unique=True, editable=False)
+
+    pub_status = models.CharField(
+        max_length=8,
+        choices=PUB_STATUS_CHOICES,
+        default="PUB",
+        verbose_name="Status Veröffentlichung",
+        help_text=(
+            "veröffentlicht: sichtbar und buchbar; "
+            "draft: nicht sichtbar, nicht buchbar; "
+            "archiviert: nicht sichtbar, nicht buchbar"
+        ),
+    )
     frontend_flag = models.BooleanField(
         verbose_name="im Frontend zeigen?", default=True
     )
@@ -314,28 +334,31 @@ class Event(BaseModel):
 
     registration_over = property(is_past_hinweis)
 
+    def get_number_of_registered_members(self):
+        return self.members.filter(attend_status="registered").count()
+
     def get_number_of_members(self):
         """
         gibt die Anzahl der Teilnehmer und der eingeschriebenen Moodle-User zurück
         """
-        return f"{self.members.count()} ({self.students_number})"
+        return f"{self.get_number_of_registered_members()} ({self.students_number})"
 
     get_number_of_members.short_description = "Teilnehmer"
 
     def get_number_of_free_places(self):
-        return self.capacity - self.members.count()
+        return self.capacity - self.get_number_of_registered_members()
 
     get_number_of_free_places.short_description = "offen"
 
     def is_full(self):
-        count = self.members.count()
+        count = self.get_number_of_registered_members()
         capacity = self.capacity if self.capacity is not None else sys.maxsize
         if capacity <= count:
             return True
         return False
 
     def few_remaining_places(self):
-        count = self.members.count()
+        count = self.get_number_of_registered_members()
         capacity = self.capacity if self.capacity is not None else sys.maxsize
         if capacity - count <= 3:
             return True
