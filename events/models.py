@@ -560,7 +560,9 @@ class EventMember(AddressModel):
         ("absent", "nicht erschienen"),
         ("cancelled", "abgesagt"),
     )
-    attend_status = models.CharField(choices=ATTEND_STATUS_CHOICES, max_length=10)
+    attend_status = models.CharField(
+        verbose_name="Status", choices=ATTEND_STATUS_CHOICES, max_length=10
+    )
     mail_to_admin = models.BooleanField("m > admin", default=False)
     moodle_id = models.PositiveIntegerField("MoodleID", default=0)
     roles = models.ManyToManyField(MemberRole, through="EventMemberRole")
