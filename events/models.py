@@ -14,6 +14,7 @@ from .abstract import BaseModel, AddressModel
 
 class EventCategory(BaseModel):
     name = models.CharField(max_length=255, unique=True)
+    title = models.CharField(max_length=255, null=True, blank=True)
     description = models.TextField("Beschreibung", blank=True)
     singular = models.CharField(
         max_length=255,
