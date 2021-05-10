@@ -2,9 +2,6 @@ from django import forms
 
 
 class EventMemberForm(forms.Form):
-    def __init__(self, *args, **kwargs):
-        self.category = kwargs.pop("category", None)
-        super().__init__(*args, **kwargs)
 
     MEMBERSHIP_CHOICES = (
         ("vdu", "VdÜ"),

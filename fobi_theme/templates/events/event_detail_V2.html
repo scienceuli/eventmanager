@@ -168,8 +168,7 @@
                         <span class="text-3xl"><i class="fas fa-chalkboard-teacher"></i></span>
                     </div>
                     <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
-                        <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Dozent*in
-                            {% if event.speaker.all|length > 1 %}nen{% endif %}</h2>
+                        <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Dozent*in{% if event.speaker.all|length > 1 %}nen{% endif %}</h2>
                         <p class="leading-relaxed">
                             {% for speaker in event.speaker.all %}
                             {% if speaker.email or speaker.url or speaker.bio %}

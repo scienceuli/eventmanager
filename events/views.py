@@ -204,7 +204,8 @@ def search_event(request):
 @login_required(login_url="login")
 def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
-    template_name = "anmeldung"
+    mail_to_admin_template_name = "anmeldung"
+    mail_to_member_template_name = "bestaetigung"
 
     if request.method == "GET":
         form = EventMemberForm()
@@ -281,11 +282,13 @@ def event_add_member(request, slug):
                 "email": email,
                 "phone": phone,
                 "event": event.name,
+                "attend_status": attend_status,
                 "label": event.label,
                 "start": event.get_first_day_start_date(),
             }
 
             try:
+                # mails to vfll
                 addresses_list = []
                 if event.sponsors:
                     for sponsor in event.sponsors.all().exclude(email__isnull=True):
@@ -298,14 +301,30 @@ def event_add_member(request, slug):
 
                 addresses = {"to": addresses_list}
                 send_email(
-                    addresses, subject, template_name, formatting_dict=formatting_dict
+                    addresses,
+                    subject,
+                    mail_to_admin_template_name,
+                    formatting_dict=formatting_dict,
                 )
                 messages.success(
-                    request, "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen."
+                    request,
+                    "Vielen Dank für Ihre Anmeldung. Eine Bestätigungsmail wurde an Sie verschickt. Wir melden uns bei Ihnen mit weiteren Informationen.",
                 )
+                # save new member
                 new_member = EventMember.objects.latest("date_created")
                 new_member.mail_to_admin = True
                 new_member.save()
+                # mail to member
+                print(f"member email: {email}")
+                member_addresses_list = []
+                member_addresses_list.append(email)
+                member_addresses = {"to": member_addresses_list}
+                send_email(
+                    member_addresses,
+                    subject,
+                    mail_to_member_template_name,
+                    formatting_dict=formatting_dict,
+                )
 
             except BadHeaderError:
                 return HttpResponse("Invalid header found.")
