@@ -121,7 +121,7 @@
         <label for="check" class="inline-flex items-center">
           {{ form.check }}
           <span class="ml-3 text-xs text-gray-600">
-            {% if event.category == 'Onlineseminare' %}
+            {% if event.category|stringformat:"s" == 'Onlineseminare' %}
             Ich bin damit einverstanden, während des Webinars mit vollem Namen für alle erkennbar und ansprechbar zu sein. Bei Bedarf werde ich auch per Kamera sichtbar sein. Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, Telefon, E-Mail-Adresse) an den/die Referent*in weitergegeben werden.
             {% else %}
             Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und

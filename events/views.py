@@ -312,7 +312,9 @@ def event_add_member(request, slug):
 
             return redirect("event-detail", event.slug)
     return render(
-        request, "events/add_event_member_tw.html", {"form": form, "event": event}
+        request,
+        "events/add_event_member_tw.html",
+        {"form": form, "event": event},
     )
 
 
