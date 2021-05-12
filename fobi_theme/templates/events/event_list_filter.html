@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
 
-{% load static timetags %}
+{% load static timetags tailwind_filters %}
 {% load i18n %}
 
 {% block title %}Veranstaltungen{% endblock title %}
@@ -24,16 +24,19 @@
 
 {% block content %}
 
-<form method="get">
-  {{ filterset.form.as_p }}
-  <input type="submit" />
-</form>
-{% for obj in filterselt.qs %}
-{{ obj.title }} - {{ obj.first_day }} <br />
-{% endfor %}
 
 <section class="py-20 px-20 bg-white">
+
   <div class="container max-w-6xl mx-auto">
+    <div class="pb-4">
+      <form method="get">
+        {{ filterset.form|crispy }}
+        <input type="submit" />
+      </form>
+      {% if has_filter %}
+      <a href="{%  url 'event-filter' %}">Alle Filter löschen</a>
+      {% endif %}
+    </div>
     {% for year, events_month_dict in events_dict.items %}
     <h2 class="text-xl md:text-4xl py-5 font-bold tracking-tight text-left">{{ year }}</h2>
 
@@ -75,7 +78,6 @@
   </div>
 
 </section>
-
 
 
 {% endblock content %}

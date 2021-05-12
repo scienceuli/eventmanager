@@ -320,10 +320,7 @@ class EventSponsorThroughInline(admin.TabularInline):
 
 
 class EventSpeakerAdmin(admin.ModelAdmin):
-    list_display = (
-        "last_name",
-        "first_name",
-    )
+    list_display = ("last_name", "first_name", "email")
     ordering = (
         "last_name",
         "first_name",

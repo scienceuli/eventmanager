@@ -3,8 +3,6 @@ from django.http import request, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
 
-request
-
 from datetime import datetime
 from datetime import date
 from django.utils import timezone
@@ -135,23 +133,67 @@ class EventListView(ListView):
 
 
 class FilteredEventListView(ListView):
+    """
+    ref: https://www.caktusgroup.com/blog/2018/10/18/filtering-and-pagination-django/
+    """
+
     model = Event
     filterset_class = EventFilter
+    template_name = "events/event_list_filter.html"
+    strict = False
 
     def get_queryset(self):
         # Get the queryset however you usually would.  For example:
-        queryset = super().get_queryset()
+        queryset = (
+            super()
+            .get_queryset()
+            .filter(pub_status="PUB")
+            .exclude(event_days=None)
+            .order_by("first_day")
+        )
         # Then use the query parameters and the queryset to
         # instantiate a filterset and save it as an attribute
         # on the view instance for later.
+
+        # if no date_range_min is given, queryset is filtered by actual date
+        date_min = self.request.GET.get("first_day_min", None)
+        if date_min is None:
+            queryset = queryset.filter(first_day__gte=date.today())
+
         self.filterset = self.filterset_class(self.request.GET, queryset=queryset)
+
+        # has the request any filters?
+        self.has_filter = any(
+            field in self.request.GET for field in set(self.filterset.get_fields())
+        )
+
         # Return the filtered queryset
+
         return self.filterset.qs.distinct()
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # filtered_queryset = self.filterset.qs.distinct()
+
+        filterset_sorted = sorted(
+            self.filterset.qs, key=lambda t: t.get_first_day_start_date()
+        )
+
+        events_dict = {}
+
+        for year, group in itertools.groupby(
+            filterset_sorted, lambda e: e.get_first_day_start_date().strftime("%Y")
+        ):
+            events_dict[year] = {}
+            for month, inner_group in itertools.groupby(
+                group, lambda e: e.get_first_day_start_date().strftime("%B")
+            ):
+                events_dict[year][month] = list(inner_group)
         # Pass the filterset to the template - it provides the form.
         context["filterset"] = self.filterset
+        context["events_dict"] = events_dict
+        context["has_filter"] = self.has_filter
+
         return context
 
 
@@ -296,8 +338,36 @@ def event_add_member(request, slug):
 
             member_label = EventMember.objects.latest("date_created").label
 
-            # mail preparation
+            ## mail preparation
+
             subject = f"Anmeldung am Kurs {event.name}"
+
+            # mails to vfll
+            addresses_list = []
+            if event.sponsors:
+                for sponsor in event.sponsors.all().exclude(email__isnull=True):
+                    addresses_list.append(sponsor.email)
+            if len(addresses_list) == 0:
+                if event.registration_recipient:
+                    addresses_list.append(event.registration_recipient)
+                else:
+                    addresses_list.append(settings.EVENT_RECEIVER_EMAIL)
+
+            addresses = {"to": addresses_list}
+
+            addresses_string = addresses_list.join(" oder ")
+
+            # Dozenten
+            speaker_list = []
+            if event.speaker:
+                for sp in event.speakers.all():
+                    speaker_list.append(sp)
+
+            if len(speaker_list) == 0:
+                speaker_string = "NN"
+            else:
+                speaker_string = speaker_list.join(", ")
+
             formatting_dict = {
                 "firstname": firstname,
                 "lastname": lastname,
@@ -312,21 +382,12 @@ def event_add_member(request, slug):
                 "attend_status": attend_status,
                 "label": event.label,
                 "start": event.get_first_day_start_date(),
+                "addresses_string": addresses_string,
+                "speaker_string": speaker_string,
             }
 
             try:
-                # mails to vfll
-                addresses_list = []
-                if event.sponsors:
-                    for sponsor in event.sponsors.all().exclude(email__isnull=True):
-                        addresses_list.append(sponsor.email)
-                if len(addresses_list) == 0:
-                    if event.registration_recipient:
-                        addresses_list.append(event.registration_recipient)
-                    else:
-                        addresses_list.append(settings.EVENT_RECEIVER_EMAIL)
 
-                addresses = {"to": addresses_list}
                 send_email(
                     addresses,
                     subject,

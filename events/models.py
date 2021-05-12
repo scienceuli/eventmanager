@@ -105,8 +105,8 @@ class EventSpeaker(BaseModel):
         verbose_name_plural = "Dozent*innen"
 
     def __str__(self):
-        return "{first_name} {last_name}".format(
-            first_name=self.first_name, last_name=self.last_name
+        return "{first_name} {last_name} ({email})".format(
+            first_name=self.first_name, last_name=self.last_name, email=self.email
         ).strip()
 
 

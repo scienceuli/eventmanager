@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "rest_framework",
     # third party
     "crispy_forms",
+    "crispy_tailwind",
     "ckeditor",
     "ckeditor_uploader",
     "easy_thumbnails",
@@ -139,7 +140,10 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Crsipy forms
-CRISPY_TEMPLATE_PACK = "bootstrap4"
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+
+CRISPY_TEMPLATE_PACK = "tailwind"
 
 
 # Ckeditor config
