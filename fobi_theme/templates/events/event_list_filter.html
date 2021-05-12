@@ -24,6 +24,13 @@
 
 {% block content %}
 
+<form method="get">
+  {{ filterset.form.as_p }}
+  <input type="submit" />
+</form>
+{% for obj in filterselt.qs %}
+{{ obj.title }} - {{ obj.first_day }} <br />
+{% endfor %}
 
 <section class="py-20 px-20 bg-white">
   <div class="container max-w-6xl mx-auto">

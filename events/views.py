@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import request, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
+
+request
 
 from datetime import datetime
 from datetime import date
@@ -23,6 +25,8 @@ from django.contrib.auth.decorators import login_required
 from django.core.mail import send_mail, BadHeaderError
 
 from django.conf import settings
+
+from events.filter import EventFilter
 
 #
 
@@ -79,6 +83,24 @@ class EventListView(ListView):
     model = Event
     template_name = "events/event_list_tw.html"
 
+    def get_queryset(self):
+
+        queryset = super().get_queryset()
+
+        # only upcoming events
+        queryset = (
+            Event.objects.all()
+            .filter(first_day__gte=date.today())
+            .filter(pub_status="PUB")
+            .exclude(event_days=None)
+        )  # unsorted
+
+        if self.request.GET.get("cat"):
+            queryset = queryset.filter(category__name=self.request.GET.get("cat"))
+
+        # return qs
+        return queryset.order_by("first_day")
+
     def get_context_data(self, **kwargs):
         # get moodle courses
         # fname = 'core_course_get_courses'
@@ -86,34 +108,18 @@ class EventListView(ListView):
 
         # events from database
         context = super().get_context_data(**kwargs)
-        # event_queryset_unsorted = Event.objects.all().exclude(event_days=None).exclude(frontend_flag=False) # unsorted
 
-        # only upcoming events
-        event_queryset_unsorted = (
-            Event.objects.all()
-            .filter(first_day__gte=date.today())
-            .filter(pub_status="PUB")
-            .exclude(event_days=None)
-        )  # unsorted
+        events = self.get_queryset()
 
-        # sorted
-        event_queryset = sorted(
-            event_queryset_unsorted, key=lambda t: t.get_first_day_start_date()
-        )
+        # sorting
 
-        if self.request.GET.get("cat"):
-            event_queryset = sorted(
-                event_queryset_unsorted.filter(
-                    category__name=self.request.GET.get("cat")
-                ),
-                key=lambda t: t.get_first_day_start_date(),
-            )
+        events_sorted = sorted(events, key=lambda t: t.get_first_day_start_date())
 
         # Version 1
         events_dict = {}
 
         for year, group in itertools.groupby(
-            event_queryset, lambda e: e.get_first_day_start_date().strftime("%Y")
+            events_sorted, lambda e: e.get_first_day_start_date().strftime("%Y")
         ):
             events_dict[year] = {}
             for month, inner_group in itertools.groupby(
@@ -125,6 +131,27 @@ class EventListView(ListView):
 
         # context['events_grouped_list'] = events_grouped_list
         context["events_dict"] = events_dict
+        return context
+
+
+class FilteredEventListView(ListView):
+    model = Event
+    filterset_class = EventFilter
+
+    def get_queryset(self):
+        # Get the queryset however you usually would.  For example:
+        queryset = super().get_queryset()
+        # Then use the query parameters and the queryset to
+        # instantiate a filterset and save it as an attribute
+        # on the view instance for later.
+        self.filterset = self.filterset_class(self.request.GET, queryset=queryset)
+        # Return the filtered queryset
+        return self.filterset.qs.distinct()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # Pass the filterset to the template - it provides the form.
+        context["filterset"] = self.filterset
         return context
 
 
