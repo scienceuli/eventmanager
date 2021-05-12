@@ -173,11 +173,11 @@
                             {% for speaker in event.speaker.all %}
                             {% if speaker.email or speaker.url or speaker.bio %}
                             <button class="hover:text-vfllred inline-block" onclick="toggleModal('modal-id-{{forloop.counter}}')">
-                                {{speaker}}{% if not forloop.last %}, {% endif %}
+                                {{speaker.full_name}}{% if not forloop.last %}, {% endif %}
                             </button>
                             {% else %}
                             <span class="">
-                                {{speaker}}{% if not forloop.last %}, {% endif %}
+                                {{speaker.full_name}}{% if not forloop.last %}, {% endif %}
                             </span>
                             {% endif %}
                             {% endfor %}
@@ -189,7 +189,7 @@
                                     <!--header-->
                                     <div class="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
                                         <h3 class="text-3xl font-semibold">
-                                            {{ speaker }}
+                                            {{ speaker.full_name }}
                                         </h3>
                                         <button class="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none" onclick="toggleModal('modal-id')">
                                             <span class="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
@@ -400,8 +400,12 @@
                                 {% if event.few_remaining_places %}
                                 <span class="text-vfllred italic">Nur noch wenige Restplätze!<br /></span>
                                 {% endif %}
+
+                                {% if event.category.name == 'Fortbildungen unserer Kooperationspartner*innen' %}
                                 {% if event.registration %}
+
                                 {{ event.registration|safe }}
+                                {% endif %}
                                 {% else %}
                                 Zum Anmeldformular:
                                 {% endif %}

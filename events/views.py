@@ -355,18 +355,18 @@ def event_add_member(request, slug):
 
             addresses = {"to": addresses_list}
 
-            addresses_string = addresses_list.join(" oder ")
+            addresses_string = " oder ".join(addresses_list)
 
             # Dozenten
             speaker_list = []
             if event.speaker:
-                for sp in event.speakers.all():
-                    speaker_list.append(sp)
+                for sp in event.speaker.all():
+                    speaker_list.append(sp.full_name)
 
             if len(speaker_list) == 0:
                 speaker_string = "NN"
             else:
-                speaker_string = speaker_list.join(", ")
+                speaker_string = ", ".join(speaker_list)
 
             formatting_dict = {
                 "firstname": firstname,
@@ -387,7 +387,6 @@ def event_add_member(request, slug):
             }
 
             try:
-
                 send_email(
                     addresses,
                     subject,

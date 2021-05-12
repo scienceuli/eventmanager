@@ -379,10 +379,7 @@ admin.site.register(EventSpeaker, EventSpeakerAdmin)
 
 
 class EventSponsorAdmin(admin.ModelAdmin):
-    list_display = (
-        "last_name",
-        "first_name",
-    )
+    list_display = ("last_name", "first_name", "email")
     ordering = (
         "last_name",
         "first_name",

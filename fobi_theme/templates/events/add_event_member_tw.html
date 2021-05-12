@@ -21,7 +21,7 @@
     </p>
     <p class='text-left'>Dozent*in{% if event.speaker.all|length > 1 %}nen{% endif %}:&nbsp;
       {% for speaker in event.speaker.all %}
-      {{speaker}}{% if not forloop.last %}, {% endif %}
+      {{speaker.full_name}}{% if not forloop.last %}, {% endif %}
       {% endfor %}
     </p>
 

@@ -109,6 +109,12 @@ class EventSpeaker(BaseModel):
             first_name=self.first_name, last_name=self.last_name, email=self.email
         ).strip()
 
+    @property
+    def full_name(self):
+        return "{first_name} {last_name}".format(
+            first_name=self.first_name, last_name=self.last_name
+        ).strip()
+
 
 class EventSponsor(BaseModel):
     first_name = models.CharField("Vorname", blank=True, max_length=128)
@@ -124,6 +130,12 @@ class EventSponsor(BaseModel):
         verbose_name_plural = "Pat*innen"
 
     def __str__(self):
+        return "{first_name} {last_name} ({email})".format(
+            first_name=self.first_name, last_name=self.last_name, email=self.email
+        ).strip()
+
+    @property
+    def full_name(self):
         return "{first_name} {last_name}".format(
             first_name=self.first_name, last_name=self.last_name
         ).strip()
