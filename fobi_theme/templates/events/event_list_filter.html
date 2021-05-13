@@ -28,14 +28,21 @@
 <section class="py-20 px-20 bg-white">
 
   <div class="container max-w-6xl mx-auto">
-    <div class="pb-4">
-      <form method="get">
-        {{ filterset.form|crispy }}
+    <div class="pb-4 flex justify-between gap-3 border-b-2">
+      <form method="get" class="">
+
+        {{ filterset.form.as_p }}
+        <button type="submit" class="inline-flex justify-center mt-2 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-vfllred bg-gray-200">
+          Filter anwenden
+        </button>
+        {% if has_filter %}
+        <a href="{%  url 'event-filter' %}">Alle Filter löschen</a>
+        {% endif %}
+        <!--
         <input type="submit" />
+        -->
       </form>
-      {% if has_filter %}
-      <a href="{%  url 'event-filter' %}">Alle Filter löschen</a>
-      {% endif %}
+
     </div>
     {% for year, events_month_dict in events_dict.items %}
     <h2 class="text-xl md:text-4xl py-5 font-bold tracking-tight text-left">{{ year }}</h2>
