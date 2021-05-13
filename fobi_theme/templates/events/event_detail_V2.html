@@ -41,10 +41,10 @@
                 <span class="text-left text-xl">
 
                     {% with event.event_days.all|first as first %}
-                    {{ first.start_date|date:"l, d. F Y"}}
+                    {{ first.start_date|date:"l, j. F Y"}}
                     {% endwith %}
                     {% if event.event_days.all|length > 1 %}
-                    - {{ event.get_last_day.start_date|date:"l, d. F Y" }}
+                    - {{ event.get_last_day.start_date|date:"l, j. F Y" }}
                     {% endif %}
 
                 </span>
@@ -92,7 +92,7 @@
                         <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Termine</h2>
                         <p class="leading-relaxed">
                             {% for day in event.event_days.all %}
-                            <span>{{ day.start_date|date:"D, d. M Y"}}</span>
+                            <span>{{ day.start_date|date:"D, j. M Y"}}</span>
                             <span class="ml-4">{{day.start_time|date:"H:i"}}-{{day.end_time|date:"H:i"}}</span>
                             {% if not forloop.last %} <br />{% endif %}
                             {% endfor %}
