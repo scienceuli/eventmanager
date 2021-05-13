@@ -29,15 +29,29 @@
 
   <div class="container max-w-6xl mx-auto">
     <div class="pb-4 flex justify-between gap-3 border-b-2">
-      <form method="get" class="">
+      <form method="get" class="flex-inline">
 
-        {{ filterset.form.as_p }}
-        <button type="submit" class="inline-flex justify-center mt-2 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-vfllred bg-gray-200">
-          Filter anwenden
-        </button>
-        {% if has_filter %}
-        <a href="{%  url 'event-filter' %}">Alle Filter löschen</a>
-        {% endif %}
+        <label class=" text-gray-700 text-sm font-bold" for="id_first_day_0">
+          Datum
+        </label>
+        <span class=" ml-4">
+          {{ filterset.form.first_day }}
+        </span>
+        <label class="ml-4 text-gray-700 text-sm font-bold" for="id_category">
+          Kategorie
+        </label>
+        <span class=" ml-4">
+          {{ filterset.form.category }}
+        </span>
+
+        <div class="block">
+          <button type="submit" class="inline-flex justify-center mt-2 py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-vfllred bg-gray-200">
+            Filter anwenden
+          </button>
+          {% if has_filter %}
+          <a href="{%  url 'event-filter' %}">Alle Filter löschen</a>
+          {% endif %}
+        </div>
         <!--
         <input type="submit" />
         -->
