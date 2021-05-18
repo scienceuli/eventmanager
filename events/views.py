@@ -209,7 +209,8 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
     pass
 
 
-class EventDetailView(LoginRequiredMixin, DetailView):
+# class EventDetailView(LoginRequiredMixin, DetailView):
+class EventDetailView(DetailView):
     login_url = "login"
     model = Event
     template_name = "events/event_detail_V2.html"
@@ -270,7 +271,7 @@ def search_event(request):
     return render(request, "events/event_list_tw.html")
 
 
-@login_required(login_url="login")
+# @login_required(login_url="login")
 def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
     mail_to_admin_template_name = "anmeldung"
