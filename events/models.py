@@ -31,6 +31,8 @@ class EventCategory(BaseModel):
         verbose_name_plural = "Kategorien"
 
     def __str__(self):
+        if self.title:
+            return self.title
         return self.name
 
     def get_absolute_url(self):

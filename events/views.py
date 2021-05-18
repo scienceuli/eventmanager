@@ -395,7 +395,7 @@ def event_add_member(request, slug):
                 )
                 messages.success(
                     request,
-                    "Vielen Dank für Ihre Anmeldung. Eine Bestätigungsmail wurde an Sie verschickt. Wir melden uns bei Ihnen mit weiteren Informationen.",
+                    "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
                 )
                 # save new member
                 new_member = EventMember.objects.latest("date_created")
@@ -406,12 +406,13 @@ def event_add_member(request, slug):
                 member_addresses_list = []
                 member_addresses_list.append(email)
                 member_addresses = {"to": member_addresses_list}
-                send_email(
-                    member_addresses,
-                    subject,
-                    mail_to_member_template_name,
-                    formatting_dict=formatting_dict,
-                )
+                # TODO freischalten, wenn Fobis einverstanden
+                # send_email(
+                #    member_addresses,
+                #    subject,
+                #    mail_to_member_template_name,
+                #    formatting_dict=formatting_dict,
+                # )
 
             except BadHeaderError:
                 return HttpResponse("Invalid header found.")
