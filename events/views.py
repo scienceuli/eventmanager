@@ -300,7 +300,7 @@ def event_add_member(request, slug):
             attention_other = form.cleaned_data["attention_other"]
             education_bonus = form.cleaned_data["education_bonus"]
             check = form.cleaned_data["check"]
-            if event.is_full:
+            if event.is_full():
                 attend_status = "waiting"
             else:
                 attend_status = "registered"
