@@ -116,7 +116,7 @@ class EventMemberRoleInline(admin.TabularInline):
 
 class EventMemberAdmin(admin.ModelAdmin):
 
-    list_display = ["lastname", "firstname", "email", "event"]
+    list_display = ["lastname", "firstname", "email", "event", "date_created"]
     list_filter = [
         "event",
     ]
