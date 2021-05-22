@@ -592,6 +592,7 @@ class EventMember(AddressModel):
         verbose_name="Status", choices=ATTEND_STATUS_CHOICES, max_length=10
     )
     mail_to_admin = models.BooleanField("m > admin", default=False)
+    via_form = models.BooleanField("AF", default=False)
     moodle_id = models.PositiveIntegerField("MoodleID", default=0)
     roles = models.ManyToManyField(MemberRole, through="EventMemberRole")
     enroled = models.BooleanField(">m", default=False)
