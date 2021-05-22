@@ -129,9 +129,7 @@ class EventMemberAdmin(admin.ModelAdmin):
         "event",
     ]
     search_fields = ("lastname", "firstname", "email")
-    readonly_fields = [
-        "name",
-    ]
+    readonly_fields = ["name", "mail_to_admin", "via_form"]
     inlines = [
         EventMemberRoleInline,
     ]
