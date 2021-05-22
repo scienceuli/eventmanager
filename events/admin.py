@@ -151,6 +151,13 @@ class EventMemberAdmin(admin.ModelAdmin):
                 "fields": ("vfll", "attention", "attention_other", "education_bonus"),
             },
         ),
+        (
+            "intern",
+            {
+                "classes": ("collapse",),
+                "fields": ("mail_to_admin", "via_form"),
+            },
+        ),
     )
     actions = [export_as_xls, import_from_csv]
 
