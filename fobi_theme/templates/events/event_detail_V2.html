@@ -382,6 +382,8 @@
 
             <!-- Anmeldung -->
 
+            {% if not event.is_past %}
+
             <div class="flex relative pb-8 sm:items-center md:w-2/3 mx-auto">
 
 
@@ -433,6 +435,7 @@
                 </div>
             </div>
 
+            {% endif %}
 
             <!-- Ende Anmeldung -->
 

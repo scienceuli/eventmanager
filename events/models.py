@@ -329,6 +329,23 @@ class Event(BaseModel):
         )
 
     def is_past(self):
+        if date.today() > self.first_day:
+            return True
+        return False
+
+    def is_past_hinweis(self):
+        if self.is_past():
+            return "vorüber"
+        return "kommt noch"
+
+    is_past_hinweis.short_description = "Event vorüber"
+
+    event_over = property(is_past_hinweis)
+
+    def is_open_for_registration(self):
+        return self.is_yet_open_for_registration() and not self.is_past()
+
+    def is_closed_for_registration(self):
         if (
             self.get_end_of_registration()
             and date.today() > self.get_end_of_registration()
@@ -336,17 +353,14 @@ class Event(BaseModel):
             return True
         return False
 
-    def is_open_for_registration(self):
-        return self.is_yet_open_for_registration() and not self.is_past()
-
-    def is_past_hinweis(self):
-        if self.is_past():
+    def is_closed_hinweis(self):
+        if self.is_closed_for_registration():
             return "abgelaufen"
         return "offen"
 
-    is_past_hinweis.short_description = "Anmeldefrist"
+    is_closed_hinweis.short_description = "Anmeldefrist"
 
-    registration_over = property(is_past_hinweis)
+    registration_over = property(is_closed_hinweis)
 
     def get_number_of_registered_members(self):
         return self.members.filter(attend_status="registered").count()
