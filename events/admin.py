@@ -123,6 +123,7 @@ class EventMemberAdmin(admin.ModelAdmin):
         "event",
         "date_created",
         "via_form",
+        "mail_to_admin",
     ]
     list_filter = [
         "event",
