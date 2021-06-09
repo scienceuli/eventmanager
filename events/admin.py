@@ -27,6 +27,7 @@ from .models import (
     EventFormat,
     Event,
     EventDay,
+    EventHighlight,
     EventImage,
     EventSpeaker,
     EventSpeakerThrough,
@@ -37,6 +38,7 @@ from .models import (
     EventMember,
     EventMemberRole,
     MemberRole,
+    EventHighlight,
 )
 
 from .email_template import EmailTemplate
@@ -848,3 +850,10 @@ class EmailTemplateAdmin(admin.ModelAdmin):
 
 
 admin.site.register(EmailTemplate, EmailTemplateAdmin)
+
+
+class EventHighlightAdmin(admin.ModelAdmin):
+    model = EventHighlight
+
+
+admin.site.register(EventHighlight, EventHighlightAdmin)

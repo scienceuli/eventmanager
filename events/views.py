@@ -40,6 +40,7 @@ from .models import (
     Event,
     EventImage,
     EventMember,
+    EventHighlight,
 )
 
 from .forms import EventMemberForm
@@ -61,7 +62,13 @@ locale.setlocale(locale.LC_TIME, "de_DE")
 
 
 def home(request):
-    return render(request, "events/home.html")
+    event_highlight = EventHighlight.objects.filter(id=1).filter(
+        event__first_day__gte=date.today()
+    )
+    print(event_highlight)
+    context = {"event_highlight": event_highlight[0]}
+
+    return render(request, "events/home.html", context)
 
 
 @login_required(login_url="login")

@@ -2,6 +2,7 @@ from django.db import models
 from django.db.models import F
 from datetime import datetime
 from datetime import date
+from django.db.models.fields import related
 from django.utils import timezone
 from django.urls import reverse
 from django.template.defaultfilters import slugify
@@ -625,3 +626,26 @@ class EventMemberRole(BaseModel):
     class Meta:
         verbose_name = "Rolle"
         verbose_name_plural = "Rollen"
+
+
+class EventHighlight(BaseModel):
+    event = models.ForeignKey(
+        Event,
+        related_name="highlight",
+        on_delete=models.CASCADE,
+        limit_choices_to={
+            "pub_status": "PUB",
+            "first_day__gte": date.today(),
+        },
+    )
+
+    def __str__(self):
+        return self.event.name
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(
+                name="%(app_label)s_%(class)s_single_instance",
+                check=models.Q(id=1),
+            ),
+        ]

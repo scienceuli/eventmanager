@@ -92,7 +92,7 @@
                         <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Termine</h2>
                         <p class="leading-relaxed">
                             {% for day in event.event_days.all %}
-                            <span>{{ day.start_date|date:"D, j. M Y"}}</span>
+                            <span>{{ day.start_date|date:"D, j. F Y"}}</span>
                             <span class="ml-4">{{day.start_time|date:"H:i"}}-{{day.end_time|date:"H:i"}}</span>
                             {% if not forloop.last %} <br />{% endif %}
                             {% endfor %}
@@ -400,6 +400,9 @@
                         <h2 class="font-medium title-font text-vfllred mb-1 text-xl">Anmeldung</h2>
                         <div class="flex mx-auto">
                             <div class="leading-relaxed mr-4">
+                                {% if event.close_date %}
+                                <p class="font-semibold">Anmeldefrist: {{event.close_date|date:"j. F Y"}}</p>
+                                {% endif %}
                                 {% if event.is_full %}
                                 <span class="text-vfllred italic">Leider ausgebucht!</span>
                                 {% else %}
