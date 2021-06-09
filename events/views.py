@@ -62,11 +62,15 @@ locale.setlocale(locale.LC_TIME, "de_DE")
 
 
 def home(request):
-    event_highlight = EventHighlight.objects.filter(id=1).filter(
+    event_highlight_query = EventHighlight.objects.filter(id=1).filter(
         event__first_day__gte=date.today()
     )
-    print(event_highlight)
-    context = {"event_highlight": event_highlight[0]}
+    if event_highlight_query:
+        event_highlight = event_highlight_query[0]
+    else:
+        event_highlight = None
+
+    context = {"event_highlight": event_highlight}
 
     return render(request, "events/home.html", context)
 
