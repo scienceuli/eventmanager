@@ -49,7 +49,7 @@ from .api import call
 
 from .serializers import EventSerializer
 
-from .utils import send_email
+from .utils import send_email, boolean_translate
 
 import itertools
 
@@ -307,6 +307,7 @@ def event_add_member(request, slug):
             message = form.cleaned_data["message"]
             vfll = form.cleaned_data["vfll"]
             memberships = form.cleaned_data["memberships"]
+            memberships_labels = form.selected_memberships_labels()
             attention = form.cleaned_data["attention"]
             attention_other = form.cleaned_data["attention_other"]
             education_bonus = form.cleaned_data["education_bonus"]
@@ -390,11 +391,11 @@ def event_add_member(request, slug):
                 "state": state,
                 "email": email,
                 "phone": phone,
-                "vfll": vfll,
-                "memberships": memberships,
-                "education_bonus": education_bonus,
+                "vfll": boolean_translate(vfll),
+                "memberships": memberships_labels,
+                "education_bonus": boolean_translate(education_bonus),
                 "message": message,
-                "check": check,
+                "check": boolean_translate(check),
                 "event": event.name,
                 "attend_status": attend_status,
                 "label": event.label,

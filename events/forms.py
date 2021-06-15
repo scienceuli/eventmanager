@@ -13,6 +13,14 @@ class EventMemberForm(forms.Form):
         ("at", "ATICOM"),
     )
 
+    # ref: https://stackoverflow.com/questions/9993939/django-display-values-of-the-selected-multiple-choice-field-in-a-template
+    def selected_memberships_labels(self):
+        return [
+            label
+            for value, label in self.fields["memberships"].choices
+            if value in self["memberships"].value()
+        ]
+
     ATTENTION_CHOICES = (
         ("vfll", "VFLL-Website oder -Blog"),
         ("pers", "persönliche Einladung"),
