@@ -116,7 +116,7 @@ class EventMemberForm(forms.Form):
     )
 
     attention_other = forms.CharField(
-        # max_length=64,
+        max_length=64,
         widget=forms.TextInput(
             attrs={
                 "class": "block w-full text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
