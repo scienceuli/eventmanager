@@ -228,6 +228,9 @@ class Event(BaseModel):
     registration = RichTextField(
         verbose_name="Anmeldung", config_name="short", blank=True
     )
+
+    registration_possible = models.BooleanField("Anmeldung möglich", default=True)
+
     registration_recipient = models.EmailField(
         verbose_name="Anmelde-Email an",
         max_length=254,
