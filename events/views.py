@@ -43,7 +43,7 @@ from .models import (
     EventHighlight,
 )
 
-from .forms import EventMemberForm
+from .forms import EventMemberForm, SymposiumForm
 
 from .api import call
 
@@ -288,60 +288,82 @@ def event_add_member(request, slug):
     mail_to_admin_template_name = "anmeldung"
     mail_to_member_template_name = "bestaetigung"
 
+    if event.registration_form == "s":
+        form_template = "events/add_event_member_tw.html"
+    elif event.registration_form == "m":
+        form_template = "events/add_event_member_mv.html"
+
     if request.method == "GET":
-        form = EventMemberForm()
+        if event.registration_form == "s":
+            form = EventMemberForm()
+        elif event.registration_form == "m":
+            form = SymposiumForm()
     else:
-        form = EventMemberForm(request.POST)
+        if event.registration_form == "s":
+            form = EventMemberForm(request.POST)
+        elif event.registration_form == "m":
+            form = SymposiumForm(request.POST)
         if form.is_valid():
-            firstname = form.cleaned_data["firstname"]
-            lastname = form.cleaned_data["lastname"]
+            if event.registration_form == "s":
+                firstname = form.cleaned_data["firstname"]
+                lastname = form.cleaned_data["lastname"]
 
-            address_line = form.cleaned_data["address_line"]
-            street = form.cleaned_data["street"]
-            city = form.cleaned_data["city"]
-            state = form.cleaned_data["state"]
-            postcode = form.cleaned_data["postcode"]
+                address_line = form.cleaned_data["address_line"]
+                street = form.cleaned_data["street"]
+                city = form.cleaned_data["city"]
+                state = form.cleaned_data["state"]
+                postcode = form.cleaned_data["postcode"]
 
-            email = form.cleaned_data["email"]
-            phone = form.cleaned_data["phone"]
-            message = form.cleaned_data["message"]
-            vfll = form.cleaned_data["vfll"]
-            memberships = form.cleaned_data["memberships"]
-            memberships_labels = form.selected_memberships_labels()
-            attention = form.cleaned_data["attention"]
-            attention_other = form.cleaned_data["attention_other"]
-            education_bonus = form.cleaned_data["education_bonus"]
-            check = form.cleaned_data["check"]
-            if event.is_full():
-                attend_status = "waiting"
-            else:
-                attend_status = "registered"
+                email = form.cleaned_data["email"]
+                phone = form.cleaned_data["phone"]
+                message = form.cleaned_data["message"]
+                vfll = form.cleaned_data["vfll"]
+                memberships = form.cleaned_data["memberships"]
+                memberships_labels = form.selected_memberships_labels()
+                attention = form.cleaned_data["attention"]
+                attention_other = form.cleaned_data["attention_other"]
+                education_bonus = form.cleaned_data["education_bonus"]
+                check = form.cleaned_data["check"]
+                if event.is_full():
+                    attend_status = "waiting"
+                else:
+                    attend_status = "registered"
 
-            # make name of this registration from event label and date
+                # make name of this registration from event label and date
 
-            name = f"{event.label} | {timezone.now()}"
+                name = f"{event.label} | {timezone.now()}"
 
-            new_member = EventMember.objects.create(
-                name=name,
-                event=event,
-                firstname=firstname,
-                lastname=lastname,
-                street=street,
-                address_line=address_line,
-                city=city,
-                postcode=postcode,
-                state=state,
-                email=email,
-                phone=phone,
-                message=message,
-                vfll=vfll,
-                memberships=memberships,
-                attention=attention,
-                attention_other=attention_other,
-                education_bonus=education_bonus,
-                check=check,
-                attend_status=attend_status,
-            )
+                new_member = EventMember.objects.create(
+                    name=name,
+                    event=event,
+                    firstname=firstname,
+                    lastname=lastname,
+                    street=street,
+                    address_line=address_line,
+                    city=city,
+                    postcode=postcode,
+                    state=state,
+                    email=email,
+                    phone=phone,
+                    message=message,
+                    vfll=vfll,
+                    memberships=memberships,
+                    attention=attention,
+                    attention_other=attention_other,
+                    education_bonus=education_bonus,
+                    check=check,
+                    attend_status=attend_status,
+                )
+            elif event.registration_form == "m":
+                firstname = form.cleaned_data["firstname"]
+                lastname = form.cleaned_data["lastname"]
+                email = form.cleaned_data["email"]
+                takes_part_in_mv = form.cleaned_data["takes_part_in_mv"]
+                takes_part_in_zw = form.cleaned_data["takes_part_in_zw"]
+                mv_check = form.cleaned_data["mv_check"]
+                zw_check = form.cleaned_data["zw_check"]
+                vote_transfer = form.cleaned_data["vote_transfer"]
+                vote_transfer_check = form.cleaned_data["vote_transfer_check"]
 
             """
             zusätzlich wird ein eindeutiges Label für diese Anmeldun kreiert, um das Label
@@ -438,7 +460,7 @@ def event_add_member(request, slug):
             return redirect("event-detail", event.slug)
     return render(
         request,
-        "events/add_event_member_tw.html",
+        form_template,
         {"form": form, "event": event},
     )
 

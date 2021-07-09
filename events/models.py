@@ -231,6 +231,18 @@ class Event(BaseModel):
 
     registration_possible = models.BooleanField("Anmeldung möglich", default=True)
 
+    REGISTRATION_FORM_CHOICES = (
+        ("s", "Standard"),
+        ("m", "MV/ZW"),
+    )
+
+    registration_form = models.CharField(
+        "Anmeldeformular",
+        max_length=1,
+        choices=REGISTRATION_FORM_CHOICES,
+        default="s",
+    )
+
     registration_recipient = models.EmailField(
         verbose_name="Anmelde-Email an",
         max_length=254,
@@ -293,7 +305,7 @@ class Event(BaseModel):
         verbose_name_plural = "Veranstaltungen"
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.first_day})"
 
     def clean(self):
         """
@@ -600,6 +612,27 @@ class EventMember(AddressModel):
     moodle_id = models.PositiveIntegerField("MoodleID", default=0)
     roles = models.ManyToManyField(MemberRole, through="EventMemberRole")
     enroled = models.BooleanField(">m", default=False)
+
+    # für fachtagungen
+    takes_part = models.BooleanField("Teilnahme", default=True)
+
+    member_type = models.CharField(
+        "Art der Mitgliedschaft",
+        max_length=1,
+        null=True,
+        blank=True,
+        default=None,
+    )
+
+    vote_transfer = models.CharField(
+        "Stimmübertragung",
+        max_length=255,
+        blank=True,
+    )
+    vote_transfer_check = models.BooleanField(
+        "Check Stimmübertragung",
+        default=True,
+    )
 
     class Meta:
         verbose_name = "Teilnehmer*in"

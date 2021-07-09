@@ -517,6 +517,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             {
                 "fields": (
                     "capacity",
+                    "registration_form",
                     "registration",
                     "registration_possible",
                     "registration_recipient",
