@@ -5,7 +5,7 @@ from .models import EventCategory
 def category_renderer(request):
     return {
         #'all_categories': EventCategory.objects.all(),
-        "all_categories": EventCategory.objects.annotate(
-            events_count=Count("events")
-        ).filter(events_count__gt=0)
+        "all_categories": EventCategory.objects.annotate(events_count=Count("events"))
+        .filter(events_count__gt=0)
+        .order_by("position")
     }
