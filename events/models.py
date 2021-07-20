@@ -145,6 +145,7 @@ class EventSponsor(BaseModel):
 
 
 class Event(BaseModel):
+    """Events"""
 
     PUB_STATUS_CHOICES = (
         ("PUB", "öffentlich"),
@@ -153,7 +154,10 @@ class Event(BaseModel):
     )
 
     category = models.ForeignKey(
-        EventCategory, verbose_name="Kategorie", on_delete=models.CASCADE
+        EventCategory,
+        verbose_name="Kategorie",
+        related_name="events",
+        on_delete=models.CASCADE,
     )
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -613,7 +617,7 @@ class EventMember(AddressModel):
     roles = models.ManyToManyField(MemberRole, through="EventMemberRole")
     enroled = models.BooleanField(">m", default=False)
 
-    # für fachtagungen
+    # für vfll intern
     takes_part = models.BooleanField("Teilnahme", default=True)
 
     member_type = models.CharField(
