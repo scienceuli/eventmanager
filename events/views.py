@@ -10,6 +10,9 @@ from django.contrib.auth.decorators import login_required
 
 from django.core.mail import send_mail, BadHeaderError
 
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.decorators import login_required, user_passes_test
+
 from django.conf import settings
 
 from django.views.generic import (

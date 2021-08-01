@@ -10,6 +10,7 @@ from django.contrib import messages
 from django.core import mail
 from django.test import Client
 
+
 from events.models import (
     Event,
     EventFormat,
