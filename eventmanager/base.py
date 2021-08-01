@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django_filters",
+    "django_tables2",
     "rest_framework",
     # third party
     "crispy_forms",
@@ -141,9 +142,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Crsipy forms
 
-CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+# CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 
-CRISPY_TEMPLATE_PACK = "tailwind"
+# CRISPY_TEMPLATE_PACK = "tailwind"
+CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 
 # Ckeditor config

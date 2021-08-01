@@ -1,11 +1,29 @@
+import csv
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import request, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
 
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.decorators import login_required
+
+from django.core.mail import send_mail, BadHeaderError
+
+from django.conf import settings
+
+from django.views.generic import (
+    ListView,
+    CreateView,
+    UpdateView,
+    DetailView,
+    DeleteView,
+)
+
+from django_tables2 import SingleTableView
+
 from datetime import datetime
 from datetime import date
-from django.utils import timezone
 
 from rest_framework.views import APIView
 from rest_framework import permissions, status
@@ -16,25 +34,18 @@ from rest_framework.decorators import (
 )
 from rest_framework.response import Response
 
-
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-
-from django.core.mail import send_mail, BadHeaderError
-
-from django.conf import settings
-
 from events.filter import EventFilter
+
+from .utils import yes_no_to_boolean
+
+# import the logging library
+import logging
+
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
 
 #
 
-from django.views.generic import (
-    ListView,
-    CreateView,
-    UpdateView,
-    DetailView,
-    DeleteView,
-)
 from .models import (
     EventCategory,
     Event,
@@ -42,6 +53,8 @@ from .models import (
     EventMember,
     EventHighlight,
 )
+
+from .tables import EventMembersTable
 
 from .forms import EventMemberForm, SymposiumForm
 
@@ -59,6 +72,15 @@ import locale
 
 # for German locale
 locale.setlocale(locale.LC_TIME, "de_DE")
+
+
+def is_member_of_mv_orga(user):
+    return user.groups.filter(name="mv_orga").exists()
+
+
+class GroupTestMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.groups.filter(name="mv_orga").exists()
 
 
 def home(request):
@@ -285,8 +307,12 @@ def search_event(request):
 # @login_required(login_url="login")
 def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
-    mail_to_admin_template_name = "anmeldung"
-    mail_to_member_template_name = "bestaetigung"
+    if event.registration_form == "s":
+        mail_to_admin_template_name = "anmeldung"
+        mail_to_member_template_name = "bestaetigung"
+    elif event.registration_form == "m":
+        mail_to_admin_template_name = "mv_zw_anmeldung"
+        mail_to_member_template_name = "mv_zw_bestaetigung"
 
     if event.registration_form == "s":
         form_template = "events/add_event_member_tw.html"
@@ -359,23 +385,69 @@ def event_add_member(request, slug):
                 lastname = form.cleaned_data["lastname"]
                 email = form.cleaned_data["email"]
                 takes_part_in_mv = form.cleaned_data["takes_part_in_mv"]
+                member_type = form.cleaned_data["member_type"]
+                member_type_label = form.member_type_label()
                 takes_part_in_zw = form.cleaned_data["takes_part_in_zw"]
                 mv_check = form.cleaned_data["mv_check"]
                 zw_check = form.cleaned_data["zw_check"]
                 vote_transfer = form.cleaned_data["vote_transfer"]
                 vote_transfer_check = form.cleaned_data["vote_transfer_check"]
 
+                if event.is_full():
+                    attend_status = "waiting"
+                else:
+                    attend_status = "registered"
+
+                if takes_part_in_mv == "y":
+                    name = f"MV 2021 | {timezone.now()}"
+                    try:
+                        event = Event.objects.get(label="Online-MV2021")
+                        new_member = EventMember.objects.create(
+                            name=name,
+                            event=event,
+                            firstname=firstname,
+                            lastname=lastname,
+                            email=email,
+                            takes_part=True,
+                            member_type=member_type,
+                            vote_transfer=vote_transfer,
+                            vote_transfer_check=vote_transfer_check,
+                            check=mv_check,
+                            attend_status=attend_status,
+                        )
+                    except Event.DoesNotExist:
+                        logger.error("Event does not exist")
+
+                if takes_part_in_zw == "y":
+                    name = f"ZW 2021 | {timezone.now()}"
+                    try:
+                        event = Event.objects.get(label="zukunft2021")
+                        new_member = EventMember.objects.create(
+                            name=name,
+                            event=event,
+                            firstname=firstname,
+                            lastname=lastname,
+                            email=email,
+                            takes_part=True,
+                            check=zw_check,
+                            attend_status=attend_status,
+                        )
+                    except Event.DoesNotExist:
+                        logger.error("Event does not exist")
+
             """
-            zusätzlich wird ein eindeutiges Label für diese Anmeldun kreiert, um das Label
+            zusätzlich wird ein eindeutiges Label für diese Anmeldung kreiert, um das Label
             für Mailversand zu haben.
-            Das wird in in models.py in der save method hinzugefügt
+            Das wird in models.py in der save method hinzugefügt
             """
 
             member_label = EventMember.objects.latest("date_created").label
 
             ## mail preparation
-
-            subject = f"Anmeldung am Kurs {event.name}"
+            if event.registration_form == "s":
+                subject = f"Anmeldung am Kurs {event.name}"
+            elif event.registration_form == "m":
+                subject = f"Anmeldung zur MV / Zukunftswerkstatt"
 
             # mails to vfll
             addresses_list = []
@@ -392,70 +464,118 @@ def event_add_member(request, slug):
 
             addresses_string = " oder ".join(addresses_list)
 
-            # Dozenten
-            speaker_list = []
-            if event.speaker:
-                for sp in event.speaker.all():
-                    speaker_list.append(sp.full_name)
+            # Dozenten - nur bei Fortbildungen
+            if event.registration_form == "s":
+                speaker_list = []
+                if event.speaker:
+                    for sp in event.speaker.all():
+                        speaker_list.append(sp.full_name)
 
-            if len(speaker_list) == 0:
-                speaker_string = "NN"
-            else:
-                speaker_string = ", ".join(speaker_list)
+                if len(speaker_list) == 0:
+                    speaker_string = "NN"
+                else:
+                    speaker_string = ", ".join(speaker_list)
 
-            formatting_dict = {
-                "firstname": firstname,
-                "lastname": lastname,
-                "address_line": address_line,
-                "street": street,
-                "city": city,
-                "postcode": postcode,
-                "state": state,
-                "email": email,
-                "phone": phone,
-                "vfll": boolean_translate(vfll),
-                "memberships": memberships_labels,
-                "education_bonus": boolean_translate(education_bonus),
-                "message": message,
-                "check": boolean_translate(check),
-                "event": event.name,
-                "attend_status": attend_status,
-                "label": event.label,
-                "start": event.get_first_day_start_date(),
-                "addresses_string": addresses_string,
-                "speaker_string": speaker_string,
+                formatting_dict = {
+                    "firstname": firstname,
+                    "lastname": lastname,
+                    "address_line": address_line,
+                    "street": street,
+                    "city": city,
+                    "postcode": postcode,
+                    "state": state,
+                    "email": email,
+                    "phone": phone,
+                    "vfll": boolean_translate(vfll),
+                    "memberships": memberships_labels,
+                    "education_bonus": boolean_translate(education_bonus),
+                    "message": message,
+                    "check": boolean_translate(check),
+                    "event": event.name,
+                    "attend_status": attend_status,
+                    "label": event.label,
+                    "start": event.get_first_day_start_date(),
+                    "addresses_string": addresses_string,
+                    "speaker_string": speaker_string,
+                }
+            elif event.registration_form == "m":
+                transfer_dict = {
+                    "y": "",
+                    "n": f"Du nimmst an der Mitgliederversammlung nicht teil und überträgst deine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an: {vote_transfer}",
+                }
+                waiting_string = ""
+                if takes_part_in_zw and attend_status == "waiting":
+                    waiting_string = "Die Zukunftswerkstatt ist bereits ausgebucht, wir führen deinen Namen gern auf einer Warteliste. Sobald ein Platz frei wird, informieren wir dich."
+
+                event_list = []
+                mw_string = ""
+                if takes_part_in_mv == "y":
+                    event_list.append("Mitgliederversammlung")
+                    mw_string = "Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt."
+                if takes_part_in_zw == "y":
+                    event_list.append("Zukunftswerkstatt")
+                formatting_dict = {
+                    "firstname": firstname,
+                    "lastname": lastname,
+                    "event": "\n".join(event_list),
+                    "start": event.get_first_day_start_date(),
+                    "email": email,
+                    "takes_part_in_mv": takes_part_in_mv,
+                    "member_type": " ".join(member_type_label),
+                    "transfer_string": transfer_dict[takes_part_in_mv],
+                    "mw_string": mw_string,
+                    "waiting_string": waiting_string,
+                    "takes_part_in_zw": takes_part_in_zw,
+                    "mv_check": mv_check,
+                    "zw_check": zw_check,
+                    "vote_transfer": vote_transfer,
+                    "vote_transfer_check": vote_transfer_check,
+                    "attend_status": attend_status,
+                }
+
+            messages_dict = {
+                "s": "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
+                "m": "Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
             }
+            messages.success(request, messages_dict[event.registration_form])
 
-            try:
-                send_email(
-                    addresses,
-                    subject,
-                    mail_to_admin_template_name,
-                    formatting_dict=formatting_dict,
-                )
-                messages.success(
-                    request,
-                    "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
-                )
-                # save new member
-                new_member = EventMember.objects.latest("date_created")
-                new_member.mail_to_admin = True
-                new_member.save()
-                # mail to member
+            # save new member
+            new_member = EventMember.objects.latest("date_created")
+            new_member.save()
+            if event.registration_form == "s":
+                try:
+                    send_email(
+                        addresses,
+                        subject,
+                        mail_to_admin_template_name,
+                        formatting_dict=formatting_dict,
+                    )
+                    print("mail to event admin sent")
+                    new_member.mail_to_admin = True
+                    new_member.save()
+                except BadHeaderError:
+                    return HttpResponse("Invalid header found.")
+
+            # mail to member
+
+            # TODO auch für FoBis freischalten, wenn Fobis einverstanden
+            if event.registration_form == "m":
                 print(f"member email: {email}")
                 member_addresses_list = []
                 member_addresses_list.append(email)
                 member_addresses = {"to": member_addresses_list}
-                # TODO freischalten, wenn Fobis einverstanden
-                # send_email(
-                #    member_addresses,
-                #    subject,
-                #    mail_to_member_template_name,
-                #    formatting_dict=formatting_dict,
-                # )
-
-            except BadHeaderError:
-                return HttpResponse("Invalid header found.")
+                try:
+                    send_email(
+                        member_addresses,
+                        subject,
+                        mail_to_member_template_name,
+                        formatting_dict=formatting_dict,
+                    )
+                    print("mail to event member sent")
+                    new_member.mail_to_member = True
+                    new_member.save()
+                except BadHeaderError:
+                    return HttpResponse("Invalid header found.")
 
             return redirect("event-detail", event.slug)
     return render(
@@ -515,3 +635,34 @@ class EventApi(APIView):
         )
         serializer = EventSerializer(events, many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class EventMembersListView(GroupTestMixin, SingleTableView):
+    model = EventMember
+    table_class = EventMembersTable
+    template_name = "events/members_list.html"
+
+    def get_queryset(self):
+        return EventMember.objects.filter(event__label=self.kwargs["event"])
+
+
+@login_required
+@user_passes_test(is_member_of_mv_orga)
+def export_members_csv(request):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="members.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(["Vorname", "Nachname", "Email"])
+
+    members = EventMember.objects.filter(event__label="Online-MV2021").values_list(
+        "firstname", "lastname", "email"
+    )
+    for member in members:
+        writer.writerow(member)
+
+    return response
+
+
+def members_dashboard_view(request):
+    return render(request, "events/members_dashboard.html")

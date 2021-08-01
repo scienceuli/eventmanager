@@ -94,3 +94,9 @@ def boolean_translate(boolean_value):
     if boolean_value:
         return "Ja"
     return "Nein"
+
+
+def yes_no_to_boolean(value):
+    if value == "y":
+        return True
+    return False

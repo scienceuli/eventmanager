@@ -1,0 +1,14 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+{% with event_label='Online-MV2021' %}
+<div class="max-w-2xl mx-auto py-8">
+    <p><a href="{% url 'members' event_label %}">Online MV</a></p>
+</div>
+{% endwith %}
+{% with event_label='zukunft2021' %}
+<div class="max-w-2xl mx-auto py-8">
+    <p><a href="{% url 'members' event_label %}">Zukunfts WS</a></p>
+</div>
+{% endwith %}
+{% endblock %}

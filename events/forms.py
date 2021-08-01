@@ -171,6 +171,13 @@ MEMBER_TYPE_CHOICES = (
 
 
 class SymposiumForm(forms.Form):
+    def member_type_label(self):
+        return [
+            label
+            for value, label in self.fields["member_type"].choices
+            if value in self["member_type"].value()
+        ]
+
     firstname = forms.CharField(
         label="Vorname", widget=forms.TextInput(attrs={"placeholder": "Vorname"})
     )
@@ -189,18 +196,21 @@ class SymposiumForm(forms.Form):
     member_type = forms.ChoiceField(label="Ich bin", choices=MEMBER_TYPE_CHOICES)
 
     vote_transfer = forms.CharField(
-        label="Ich nehme an der Mitgliederversammlung nicht teil und übertrage meine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an:",
+        label="Ich nehme an der Mitgliederversammlung nicht teil und übertrage als ordentliches Mitglied meine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an:",
         widget=forms.TextInput(attrs={"placeholder": "Stimmübertragung an"}),
+        required=False,
     )
 
-    vote_transfer_check = forms.ChoiceField(
+    vote_transfer_check = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
         label="Ich habe mich rückversichert, dass die Person, der ich meine Stimme übertrage, ordentliches Mitglied im VFLL ist und an der virtuellen Mitgliederversammlung teilnehmen wird.",
-        choices=YES_NO_CHOICES,
     )
 
-    mv_check = forms.ChoiceField(
-        label="Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, E-Mail-Adresse) auf der internen Teilnahmeliste der Mitgliederversammlung stehen, die an Vorstand, Wahlleitung, Geschäftsstelle und eine Person von Votingtech weitergegeben wird.",
-        choices=YES_NO_CHOICES,
+    mv_check = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+        label="Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, E-Mail-Adresse) auf der internen Teilnahmeliste der Mitgliederversammlung stehen, die an Vorstand, Wahlleitung und Geschäftsstelle weitergegeben wird.",
     )
 
     takes_part_in_zw = forms.ChoiceField(
@@ -208,14 +218,17 @@ class SymposiumForm(forms.Form):
         choices=TAKES_PART_CHOICES,
     )
 
-    zw_check = forms.ChoiceField(
+    zw_check = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
         label="Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, E-Mail-Adresse) auf der internen Teilnahmeliste der „Zukunftswerkstatt Freies Lektorat“ stehen, die an den Vorstand, die Geschäftsstelle und zwei Personen der boscop eG als Veranstaltungsbetreuende weitergegeben wird.",
-        choices=YES_NO_CHOICES,
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
+        self.helper.form_error_title = "Fehler im Formular"
+        self.error_text_inline = False
         self.helper.layout = Layout(
             Fieldset(
                 "Persönliche Daten",
@@ -226,7 +239,7 @@ class SymposiumForm(forms.Form):
                     """
                     <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse 
                     ist Voraussetzung für die Zusendung eines Zugangscodes für das
-                    digitale Wahltool Votingtech während der Mitgliederversammlung.<br/> 
+                    digitale Wahltool Votingtech und einer Einladungsmail für das Videokonferenztool Clickmeeting – beide Tools werden während der Mitgliederversammlung genutzt.<br/> 
                     Ebenso wird ein Link zum Zoom-Raum für die „Zukunftswerkstatt 
                     Freies Lektorat“ versandt.</p>
                     """
@@ -237,38 +250,59 @@ class SymposiumForm(forms.Form):
                 "1. Mitgliederversammlung",
                 InlineRadios(
                     "takes_part_in_mv",
+                    required=True,
                 ),
                 InlineRadios(
                     "member_type",
+                    required=True,
                 ),
                 "vote_transfer",
-                InlineRadios("vote_transfer_check"),
+                "vote_transfer_check",
             ),
             Fieldset(
                 "Einverständniserklärung",
-                InlineRadios("mv_check"),
+                HTML(
+                    """
+                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig, 
+                    um den technisch-organisatorischen Zugang zur Veranstaltung zu 
+                    gewährleisten.</i></p>
+                    """
+                ),
+                "mv_check",
+                HTML(
+                    """
+                    <hr class="my-12 pt-4"/>
+                    """
+                ),
                 css_class="border-b-2 border-gray-900 pb-2 mb-4",
             ),
             Fieldset(
                 "2. Zukunftswerkstatt",
-                InlineRadios("takes_part_in_zw"),
+                InlineRadios("takes_part_in_zw", required=True),
             ),
             Fieldset(
                 "Einverständniserklärung",
-                InlineRadios("zw_check"),
                 HTML(
                     """
-                    <p class="mt-4"><b>Für den Fall einer Nichtteilnahme nach Anmeldung zur „Zukunftswerkstatt Freies Lektorat“ bitte beachten:</b></p>
-                    <p>Die Anzahl der Teilnehmenden an der „Zukunftswerkstatt Freies Lektorat“ ist begrenzt. Wer nicht teilnehmen kann, 
-                    möge sich bitte per E-Mail an geschaeftsstelle@vfll.de wieder abmelden. 
-                    Über den frei gewordenen Platz freut sich dann ein anderes Mitglied.</p>
+                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig, 
+                    um den technisch-organisatorischen Zugang zur Veranstaltung zu 
+                    gewährleisten.</i></p>
+                    """
+                ),
+                "zw_check",
+                HTML(
+                    """
+                    <p class="mt-4"><b>Falls ihr euch für die „Zukunftswerkstatt Freies Lektorat“ 
+                    angemeldet habt und doch nicht teilnehmen könnt, 
+                    bitten wir euch um eine frühzeitige Absage per <br/>
+                    E-Mail an: geschaeftsstelle@vfll.de. </b></p>
                     """
                 ),
                 HTML(
                     """
                     <p class="mt-4"><b>Datenschutzhinweis:</b><br/>
-                    Wir verwenden Deine Angaben ausschließlich zur Durchführung 
-                    der Veranstaltungen des Verbands der freien Lektorinnen und 
+                    Wir verwenden deine Angaben ausschließlich zur Durchführung 
+                    der Veranstaltungen des Verbands der Freien Lektorinnen und 
                     Lektoren e.V. Deine Daten werden nicht an unbefugte Dritte 
                     weitergegeben. Verantwortlich im Sinne der DSGVO ist der 
                     Vorstand des Verbands der Freien Lektorinnen und Lektoren e.V.,
@@ -290,13 +324,40 @@ class SymposiumForm(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        fee = cleaned_data.get("fee")
-        fee_amount = cleaned_data.get("fee_amount")
+        vote_transfer = cleaned_data.get("vote_transfer")
+        vote_transfer_check = cleaned_data.get("vote_transfer_check")
+        takes_part_in_mv = cleaned_data.get("takes_part_in_mv")
+        takes_part_in_zw = cleaned_data.get("takes_part_in_zw")
+        mv_check = cleaned_data.get("mv_check")
+        zw_check = cleaned_data.get("zw_check")
 
-        if fee == "k":
-            if not fee_amount:
-                self.add_error("fee_amount", "Bitte einen Betrag angeben.")
-                # raise forms.ValidationError("Bitte einen Betrag angeben.")
-            elif fee_amount < 195:
-                self.add_error("fee_amount", "Bitte mind. 195 Euro eingeben")
-                # raise forms.ValidationError("Bitte mind. 195 Euro eingeben")
+        if takes_part_in_mv != "y":
+            if vote_transfer and not vote_transfer_check:
+                self.add_error(
+                    "vote_transfer_check", "Bitte für Stimmübertragung bestätigen"
+                )
+            if takes_part_in_zw != "y":
+                self.add_error(
+                    "takes_part_in_mv",
+                    "Bitte mindestens eine Teilnahme (MV oder Zukunftswerkstatt) angeben!",
+                )
+        else:
+            if vote_transfer:
+                self.add_error(
+                    "vote_transfer", "Stimmübertragung nur bei Nichtteilnahme möglich"
+                )
+            if vote_transfer_check:
+                self.add_error(
+                    "vote_transfer_check",
+                    "Stimmübertragung nur bei Nichtteilnahme möglich",
+                )
+            if not mv_check:
+                self.add_error(
+                    "mv_check",
+                    "Bestätigung der Einverständniserklärung notwendig für Teilnahme",
+                )
+        if takes_part_in_zw == "y" and not zw_check:
+            self.add_error(
+                "zw_check",
+                "Bestätigung der Einverständniserklärung notwendig für Teilnahme",
+            )

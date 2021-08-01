@@ -442,7 +442,9 @@ class Event(BaseModel):
 
     def save(self, *args, **kwargs):
         max_length = self._meta.get_field("slug").max_length
-        last_id = Event.objects.latest("id").id
+        last_id = 0
+        if Event.objects.exists():
+            last_id = Event.objects.latest("id").id
         if not self.id:
             self.slug = slugify(f"{self.name}-{str(last_id+1)}")[:max_length]
         add = not self.pk
@@ -612,13 +614,14 @@ class EventMember(AddressModel):
         verbose_name="Status", choices=ATTEND_STATUS_CHOICES, max_length=10
     )
     mail_to_admin = models.BooleanField("m > admin", default=False)
+    mail_to_member = models.BooleanField("m > member", default=False)
     via_form = models.BooleanField("AF", default=False)
     moodle_id = models.PositiveIntegerField("MoodleID", default=0)
     roles = models.ManyToManyField(MemberRole, through="EventMemberRole")
     enroled = models.BooleanField(">m", default=False)
 
     # für vfll intern
-    takes_part = models.BooleanField("Teilnahme", default=True)
+    takes_part = models.BooleanField("Teilnahme", default=False)
 
     member_type = models.CharField(
         "Art der Mitgliedschaft",
