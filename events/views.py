@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import request, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
+from django.urls import reverse_lazy
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
@@ -502,18 +503,16 @@ def event_add_member(request, slug):
                     "speaker_string": speaker_string,
                 }
             elif event.registration_form == "m":
-                
-                
-                if takes_part_in_mv == 'n' and vote_transfer:
+
+                if takes_part_in_mv == "n" and vote_transfer:
                     transfer_string = f"Du nimmst an der Mitgliederversammlung nicht teil und überträgst deine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an: {vote_transfer}"
                 else:
                     transfer_string = ""
 
-                if takes_part_in_mv == 'y':
+                if takes_part_in_mv == "y":
                     member_type_string = "Du bist " + " ".join(member_type_label) + "."
                 else:
-                    member_type_string = ''
-
+                    member_type_string = ""
 
                 waiting_string = ""
                 if takes_part_in_zw and attend_status == "waiting":
@@ -526,9 +525,9 @@ def event_add_member(request, slug):
                     info_string = "Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt."
                 if takes_part_in_zw == "y":
                     event_list.append("Zukunftswerkstatt, 18./19.9.2021")
-                    if takes_part_in_mv != 'y':
+                    if takes_part_in_mv != "y":
                         info_string = "Weitere Informationen werden nach dem Anmeldeschluss, wenige Tage vor der Veranstaltung, versandt."
-                    
+
                 if takes_part_in_mv == "n" and takes_part_in_zw == "n":
                     event_list.append("Keine der beiden Veranstaltungen.")
                 formatting_dict = {
@@ -666,6 +665,12 @@ class EventMembersListView(GroupTestMixin, SingleTableView):
 class EventMemberDetailView(GroupTestMixin, DetailView):
     model = EventMember
     template_name = "events/member_detail.html"
+
+
+class EventMemberDeleteView(GroupTestMixin, DeleteView):
+    model = EventMember
+    success_url = reverse_lazy("members-dashboard")
+    template_name = "events/confirm_member_delete.html"
 
 
 @login_required
