@@ -651,7 +651,7 @@ class EventMembersListView(GroupTestMixin, SingleTableView):
 
 class EventMemberDetailView(GroupTestMixin, DetailView):
     model = EventMember
-    template_name = "events/mmber_detail.htmnl"
+    template_name = "events/member_detail.html"
 
 
 @login_required
