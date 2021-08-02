@@ -155,14 +155,13 @@ class SymposiumFormTests(TestCase):
                 "email": "hans@huber.de",
                 "member_type": "o",
                 "takes_part_in_mv": "n",
-                "vote_transfer": "Lisa",
                 "takes_part_in_zw": "n",
                 "mv_check": True,
             }
         )
         self.assertEqual(
-            form.errors["takes_part_in_mv"],
-            ["Bitte mindestens eine Teilnahme (MV oder Zukunftswerkstatt) angeben!"],
+            form.errors["vote_transfer"],
+            ["Bitte mindestens eine Teilnahme (MV oder Zukunftswerkstatt) angeben oder für die MV eine Stimmübertragung festlegen!"],
         )
 
 

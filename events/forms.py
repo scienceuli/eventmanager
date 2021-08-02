@@ -348,10 +348,10 @@ class SymposiumForm(forms.Form):
                     "vote_transfer",
                     "Stimmübertragung nur für ordentliche Mitglieder möglich",
                 )
-            if takes_part_in_zw != "y":
+            if takes_part_in_zw != "y" and not vote_transfer:
                 self.add_error(
-                    "takes_part_in_mv",
-                    "Bitte mindestens eine Teilnahme (MV oder Zukunftswerkstatt) angeben!",
+                    "vote_transfer",
+                    "Bitte mindestens eine Teilnahme (MV oder Zukunftswerkstatt) angeben oder für die MV eine Stimmübertragung festlegen!",
                 )
         else:
             if vote_transfer:
