@@ -534,7 +534,7 @@ def event_add_member(request, slug):
                 formatting_dict = {
                     "firstname": firstname,
                     "lastname": lastname,
-                    "event": "\n\n".join(event_list),
+                    "event": " / ".join(event_list),
                     "start": event.get_first_day_start_date(),
                     "email": email,
                     "takes_part_in_mv": takes_part_in_mv,
