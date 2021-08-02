@@ -672,5 +672,7 @@ def export_members_csv(request):
     return response
 
 
+@login_required
+@user_passes_test(is_member_of_mv_orga)
 def members_dashboard_view(request):
     return render(request, "events/members_dashboard.html")
