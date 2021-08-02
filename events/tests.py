@@ -368,6 +368,10 @@ class EventAddMemberViewTest(TestCase):
         mvmember = EventMember.objects.get(lastname="MVTest")
         # response = client.get(member.email)
         assert mvmember.email == "mvtimo@test.de"
+        assert mvmember.vote_transfer_check == False
+
+        # ref for email testing
+        # https://timonweb.com/django/testing-emails-in-django/
 
         assert len(mail.outbox) == 1  # "Inbox is not empty"
         assert mail.outbox[0].subject == "Anmeldung zur MV / Zukunftswerkstatt"

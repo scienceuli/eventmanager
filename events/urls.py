@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     EventListView,
+    EventMemberDetailView,
     FilteredEventListView,
     EventCreateView,
     EventCategoryListView,
@@ -17,6 +18,7 @@ from .views import (
     get_moodle_data,
     EventApi,
     EventMembersListView,
+    EventMemberDetailView,
     export_members_csv,
     members_dashboard_view,
 )
@@ -48,6 +50,11 @@ urlpatterns = [
     path("get_moodle_data/", get_moodle_data, name="get-moodle-data"),
     path("events-api/", EventApi.as_view(), name="Event"),
     path("members/<event>/", EventMembersListView.as_view(), name="members"),
+    path(
+        "members/detail/<int:pk>/",
+        EventMemberDetailView.as_view(),
+        name="member-detail",
+    ),
     path("members/export/csv/", export_members_csv, name="export-members-csv"),
     path("members_dashboard/", members_dashboard_view, name="members-dashboard"),
 ]

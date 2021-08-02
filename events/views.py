@@ -649,6 +649,11 @@ class EventMembersListView(GroupTestMixin, SingleTableView):
         return EventMember.objects.filter(event__label=self.kwargs["event"])
 
 
+class EventMemberDetailView(GroupTestMixin, DetailView):
+    model = EventMember
+    template_name = "events/mmber_detail.htmnl"
+
+
 @login_required
 @user_passes_test(is_member_of_mv_orga)
 def export_members_csv(request):

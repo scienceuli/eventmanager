@@ -638,7 +638,7 @@ class EventMember(AddressModel):
     )
     vote_transfer_check = models.BooleanField(
         "Check Stimmübertragung",
-        default=True,
+        default=False,
     )
 
     class Meta:
