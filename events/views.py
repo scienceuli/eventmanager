@@ -502,31 +502,45 @@ def event_add_member(request, slug):
                     "speaker_string": speaker_string,
                 }
             elif event.registration_form == "m":
-                transfer_dict = {
-                    "y": "",
-                    "n": f"Du nimmst an der Mitgliederversammlung nicht teil und überträgst deine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an: {vote_transfer}",
-                }
+                
+                
+                if takes_part_in_mv == 'n' and vote_transfer:
+                    transfer_string = f"Du nimmst an der Mitgliederversammlung nicht teil und überträgst deine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an: {vote_transfer}"
+                else:
+                    transfer_string = ""
+
+                if takes_part_in_mv == 'y':
+                    member_type_string = "Du bist " + " ".join(member_type_label) + "."
+                else:
+                    member_type_string = ''
+
+
                 waiting_string = ""
                 if takes_part_in_zw and attend_status == "waiting":
                     waiting_string = "Die Zukunftswerkstatt ist bereits ausgebucht, wir führen deinen Namen gern auf einer Warteliste. Sobald ein Platz frei wird, informieren wir dich."
 
                 event_list = []
-                mw_string = ""
+                info_string = ""
                 if takes_part_in_mv == "y":
-                    event_list.append("Mitgliederversammlung")
-                    mw_string = "Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt."
+                    event_list.append("Mitgliederversammlung, 17.9.2021")
+                    info_string = "Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt."
                 if takes_part_in_zw == "y":
-                    event_list.append("Zukunftswerkstatt")
+                    event_list.append("Zukunftswerkstatt, 18./19.9.2021")
+                    if takes_part_in_mv != 'y':
+                        info_string = "Weitere Informationen werden nach dem Anmeldeschluss, wenige Tage vor der Veranstaltung, versandt."
+                    
+                if takes_part_in_mv == "n" and takes_part_in_zw == "n":
+                    event_list.append("Keine der beiden Veranstaltungen.")
                 formatting_dict = {
                     "firstname": firstname,
                     "lastname": lastname,
-                    "event": "\n".join(event_list),
+                    "event": "\n\n".join(event_list),
                     "start": event.get_first_day_start_date(),
                     "email": email,
                     "takes_part_in_mv": takes_part_in_mv,
-                    "member_type": " ".join(member_type_label),
-                    "transfer_string": transfer_dict[takes_part_in_mv],
-                    "mw_string": mw_string,
+                    "member_type": member_type_string,
+                    "transfer_string": transfer_string,
+                    "info_string": info_string,
                     "waiting_string": waiting_string,
                     "takes_part_in_zw": takes_part_in_zw,
                     "mv_check": mv_check,
@@ -538,7 +552,7 @@ def event_add_member(request, slug):
 
             messages_dict = {
                 "s": "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
-                "m": "Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
+                "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
             }
             messages.success(request, messages_dict[event.registration_form])
 
