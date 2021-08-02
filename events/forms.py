@@ -1,4 +1,6 @@
 from django import forms
+from django.utils.safestring import mark_safe
+
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, HTML, Div, Submit, ButtonHolder
@@ -210,7 +212,9 @@ class SymposiumForm(forms.Form):
     mv_check = forms.BooleanField(
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
         required=False,
-        label="Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, E-Mail-Adresse) auf der internen Teilnahmeliste der Mitgliederversammlung stehen, die an Vorstand, Wahlleitung und Geschäftsstelle weitergegeben wird.",
+        label=mark_safe(
+            "Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, <br/>E-Mail-Adresse) auf der internen Teilnahmeliste der Mitgliederversammlung stehen, die an Vorstand, Wahlleitung und Geschäftsstelle weitergegeben wird."
+        ),
     )
 
     takes_part_in_zw = forms.ChoiceField(
@@ -221,7 +225,9 @@ class SymposiumForm(forms.Form):
     zw_check = forms.BooleanField(
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
         required=False,
-        label="Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, E-Mail-Adresse) auf der internen Teilnahmeliste der „Zukunftswerkstatt Freies Lektorat“ stehen, die an den Vorstand, die Geschäftsstelle und zwei Personen der boscop eG als Veranstaltungsbetreuende weitergegeben wird.",
+        label=mark_safe(
+            "Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, <br/>E-Mail-Adresse) auf der internen Teilnahmeliste der „Zukunftswerkstatt Freies Lektorat“ stehen, die an den Vorstand, die Geschäftsstelle und zwei Personen der boscop eG als Veranstaltungsbetreuende weitergegeben wird."
+        ),
     )
 
     def __init__(self, *args, **kwargs):
