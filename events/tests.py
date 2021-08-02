@@ -127,6 +127,26 @@ class SymposiumFormTests(TestCase):
             ["Stimmübertragung nur bei Nichtteilnahme möglich"],
         )
 
+    def test_vote_transfer_only_for_standard_members(self):
+        form = SymposiumForm(
+            data={
+                "firstname": "Hans",
+                "lastname": "Huber",
+                "email": "hans@huber.de",
+                "member_type": "k",
+                "takes_part_in_mv": "n",
+                "vote_transfer": "Lisa",
+                "vote_transfer_check": True,
+                "takes_part_in_zw": "y",
+                "mv_check": True,
+                "zw_check": True,
+            }
+        )
+        self.assertEqual(
+            form.errors["vote_transfer"],
+            ["Stimmübertragung nur für ordentliche Mitglieder möglich"],
+        )
+
     def test_takes_part(self):
         form = SymposiumForm(
             data={

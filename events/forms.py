@@ -330,11 +330,17 @@ class SymposiumForm(forms.Form):
         takes_part_in_zw = cleaned_data.get("takes_part_in_zw")
         mv_check = cleaned_data.get("mv_check")
         zw_check = cleaned_data.get("zw_check")
+        member_type = cleaned_data.get("member_type")
 
         if takes_part_in_mv != "y":
             if vote_transfer and not vote_transfer_check:
                 self.add_error(
                     "vote_transfer_check", "Bitte für Stimmübertragung bestätigen"
+                )
+            if vote_transfer and member_type != "o":
+                self.add_error(
+                    "vote_transfer",
+                    "Stimmübertragung nur für ordentliche Mitglieder möglich",
                 )
             if takes_part_in_zw != "y":
                 self.add_error(
