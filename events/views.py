@@ -48,6 +48,8 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+logging.basicConfig(filename="mail_sent.log", encoding="utf-8", level=logging.DEBUG)
+
 #
 
 from .models import (
@@ -582,6 +584,7 @@ def event_add_member(request, slug):
             # TODO auch für FoBis freischalten, wenn Fobis einverstanden
             if event.registration_form == "m":
                 print(f"member email: {email}")
+                logger.debug(f"Anmeldung email: {email}")
                 member_addresses_list = []
                 member_addresses_list.append(email)
                 member_addresses = {"to": member_addresses_list}
@@ -593,6 +596,7 @@ def event_add_member(request, slug):
                         formatting_dict=formatting_dict,
                     )
                     print("mail to event member sent")
+                    logger.info(f"{datetime.now()}: Mail an {email} verschickt")
                     new_member.mail_to_member = True
                     new_member.save()
                 except BadHeaderError:
