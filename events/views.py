@@ -402,7 +402,12 @@ def event_add_member(request, slug):
                 else:
                     attend_status = "registered"
 
-                if takes_part_in_mv == "y":
+                yes_no_dict = {
+                    "y": True,
+                    "n": False,
+                }
+
+                if takes_part_in_mv == "y" or vote_transfer:
                     name = f"MV 2021 | {timezone.now()}"
                     try:
                         event = Event.objects.get(label="Online-MV2021")
@@ -412,7 +417,7 @@ def event_add_member(request, slug):
                             firstname=firstname,
                             lastname=lastname,
                             email=email,
-                            takes_part=True,
+                            takes_part=yes_no_dict[takes_part_in_mv],
                             member_type=member_type,
                             vote_transfer=vote_transfer,
                             vote_transfer_check=vote_transfer_check,
