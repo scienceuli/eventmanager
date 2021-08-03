@@ -42,5 +42,6 @@ class EventMembersTable(tables.Table):
             "member_type",
             "vote_transfer",
             "vote_transfer_check",
+            "date_created",
             "attend_status",
         )
