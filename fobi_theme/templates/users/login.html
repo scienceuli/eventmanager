@@ -1,23 +1,6 @@
-<!DOCTYPE html>
-<html>
-  {% load static %}
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>FOBI | Log in</title>
-  <!-- Tell the browser to be responsive to screen width -->
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  {% include 'base/header.html' %}
-  <!-- Font Awesome -->
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-  <!-- icheck bootstrap -->
-  <link rel="stylesheet" href="../../plugins/icheck-bootstrap/icheck-bootstrap.min.css">
-  <!-- Theme style -->
-  <!-- Google Font: Source Sans Pro -->
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
-</head>
-<body class="hold-transition login-page">
+{% extends 'base/auth_base.html' %}
+
+{% block content %}
 <div class="login-box">
   <div class="login-logo">
     <a href="#"><b>FOBI </b>Login</a>
@@ -56,18 +39,19 @@
           </div>
           <!-- /.col -->
           <div class="col-4">
-            <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+            <button type="submit" class="btn btn-primary btn-block">Einloggen</button>
           </div>
           <!-- /.col -->
         </div>
       </form>
 
-      
+
       <!-- /.social-auth-links -->
-      {% comment %}
+
       <p class="mb-1">
-        <a href="forgot-password.html">Passwort vergessen</a>
+        <a href="{% url 'password_reset' %}">Passwort vergessen?</a>
       </p>
+      {% comment %}
       <p class="mb-0">
         <a href="{% url 'register' %}" class="text-center">Registrieren</a>
       </p>
@@ -78,7 +62,4 @@
 </div>
 <!-- /.login-box -->
 
-{% include 'base/js.html' %}
-
-</body>
-</html>
+{% endblock %}

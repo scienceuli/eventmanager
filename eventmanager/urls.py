@@ -19,23 +19,57 @@ from django.urls import path, include
 from django.contrib.staticfiles.urls import static, staticfiles_urlpatterns
 
 from users import views as user_views
+from django.contrib.auth import views as auth_views
 
 from django.conf import settings
 
 # from .views import dashboard, login_page, logut_page
 from events.views import admin_event_pdf
 
+from users.forms import EmailValidationOnForgotPassword
+
 urlpatterns = [
-    #path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
-    #path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLS
-    path('grappelli/', include('grappelli.urls')), # grappelli URLS
-    path('admin/', admin.site.urls),
-    path('login/', user_views.login_page, name='login'),
-    path('logout/', user_views.logout_page, name='logout'),
+    # path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
+    # path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLS
+    path("grappelli/", include("grappelli.urls")),  # grappelli URLS
+    path("admin/", admin.site.urls),
+    path("login/", user_views.login_page, name="login"),
+    path("logout/", user_views.logout_page, name="logout"),
+    path(
+        "password_reset/",
+        auth_views.PasswordResetView.as_view(
+            form_class=EmailValidationOnForgotPassword,
+            from_email="password-reset@vfll.de",
+            template_name="users/password_reset.html",
+            email_template_name="users/password_reset_email.html",
+        ),
+        name="password_reset",
+    ),
+    path(
+        "password_reset_done/",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="users/password_reset_done.html"
+        ),
+        name="password_reset_done",
+    ),
+    path(
+        "reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="users/password_reset_confirm.html"
+        ),
+        name="password_reset_confirm",
+    ),
+    path(
+        "reset/done/",
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="users/password_reset_complete.html"
+        ),
+        name="password_reset_complete",
+    ),
     # path('register/',user_views.register,name='register'),
-    path('', include('events.urls')),
-    path('ckeditor/', include('ckeditor_uploader.urls')),
-    path('<int:event_id>/pdf/', admin_event_pdf, name='admin-event-pdf'),
+    path("", include("events.urls")),
+    path("ckeditor/", include("ckeditor_uploader.urls")),
+    path("<int:event_id>/pdf/", admin_event_pdf, name="admin-event-pdf"),
 ]
 
 
