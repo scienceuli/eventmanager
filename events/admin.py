@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.http import HttpResponseRedirect
 from django.utils.safestring import mark_safe
 from django.utils.http import urlencode
 from django.utils.html import format_html
@@ -140,6 +141,7 @@ class EventMemberAdmin(admin.ModelAdmin):
     fieldsets = (
         ("Veranstaltung", {"fields": ("event", "name")}),
         ("Name/Email/Tel", {"fields": ("firstname", "lastname", "email", "phone")}),
+        ("Status", {"fields": ("attend_status",)}),
         (
             "Anschrift",
             {"fields": ("address_line", "street", "postcode", "city", "state")},
@@ -167,6 +169,9 @@ class EventMemberAdmin(admin.ModelAdmin):
             path(f"import-csv/", self.import_csv),
         ]
         return my_urls + urls
+
+    def response_change(self, request, obj):
+        return HttpResponseRedirect("../../../event/%s/change" % obj.event.id)
 
     def import_csv(self, request):
         if request.method == "POST":
@@ -240,7 +245,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "moodle_id",
     )
     # inline_actions = ['enrol_to_moodle_course']
-    readonly_fields = ("change_link", "enroled", "moodle_id")
+    readonly_fields = ("change_link", "enroled", "attend_status", "moodle_id")
 
     # def has_add_permission(self, request, obj=None):
     #    if obj and obj.is_past():
@@ -264,6 +269,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
 
     def get_inline_actions(self, request, obj=None):
         actions = super(EventMemberInline, self).get_inline_actions(request, obj)
+        actions.append("save_user")
         if obj and obj.event.moodle_id > 0:
             if obj.enroled == False:
                 actions.append("enrol_to_moodle_course")
@@ -322,6 +328,11 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         obj.delete()
 
     delete_user.short_description = "DEL"
+
+    def save_user(self, request, obj, parent_obj):
+        obj.save()
+
+    save_user.short_description = "S"
 
 
 class EventSpeakerThroughInline(admin.TabularInline):
