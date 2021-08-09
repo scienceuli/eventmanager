@@ -330,9 +330,9 @@ class Event(BaseModel):
         #    delta = self.end_date - self.start_date
         #    if delta.days >= 14:
         #        raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
-        if self.capacity < self.members.count():
+        if self.capacity < self.members.filter(attend_status="registerd").count():
             raise ValidationError(
-                "Die Teilnehmer*innenzahl darf nicht größer als die Kapaizität sein."
+                "Die Teilnehmer*innenzahl darf nicht größer als die Kapazität sein."
             )
 
     def get_absolute_url(self):
