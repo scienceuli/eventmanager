@@ -457,6 +457,7 @@ class Event(BaseModel):
             kwargs["force_insert"] = False  # create() uses this, which causes error.
 
         self.first_day = self.get_first_day_start_date()
+
         super(Event, self).save(*args, **kwargs)
 
 

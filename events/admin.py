@@ -269,7 +269,11 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
 
     def get_inline_actions(self, request, obj=None):
         actions = super(EventMemberInline, self).get_inline_actions(request, obj)
-        actions.append("save_user")
+        if obj and obj.attend_status == "registered":
+            actions.append("change_attend_status_to_waiting")
+        elif obj and obj.attend_status == "waiting":
+            actions.append("change_attend_status_to_registered")
+
         if obj and obj.event.moodle_id > 0:
             if obj.enroled == False:
                 actions.append("enrol_to_moodle_course")
@@ -329,10 +333,17 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
 
     delete_user.short_description = "DEL"
 
-    def save_user(self, request, obj, parent_obj):
+    def change_attend_status_to_waiting(self, request, obj, parent_obj):
+        obj.attend_status = "waiting"
         obj.save()
 
-    save_user.short_description = "S"
+    change_attend_status_to_waiting.short_description = ">W"
+
+    def change_attend_status_to_registered(self, request, obj, parent_obj):
+        obj.attend_status = "registered"
+        obj.save()
+
+    change_attend_status_to_registered.short_description = ">A"
 
 
 class EventSpeakerThroughInline(admin.TabularInline):
@@ -778,6 +789,20 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                 cls.objects.bulk_create(list_of_fks)
 
     copy_event.short_description = "Copy Event"
+
+    def save_model(self, request, obj, form, change):
+        print("save_model called")
+        pass
+        # super().save_model(request, obj, form, change)
+
+    def save_related(self, request, form, formsets, change):
+        print("save_related called")
+        form.save_m2m()
+        for formset in formsets:
+            print(formset)
+            self.save_formset(request, form, formset, change=change)
+        # super().save_related(request, form, formsets, change)
+        super(EventAdmin, self).save_model(request, form.instance, form, change)
 
 
 admin.site.register(EventCategory, EventCategoryAdmin)
