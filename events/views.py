@@ -557,7 +557,10 @@ def event_add_member(request, slug):
                 }
 
             messages_dict = {
-                "s": "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
+                "s": (
+                    "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
+                    "Vielen Dank für Ihre Anmeldung. Sie wurden auf die Warteliste gesetzt und werden benachrichtigt, wenn ein Platz frei wird.",
+                )[attend_status == "waiting"],
                 "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool (falls du an der MV teilnimmst) werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
             }
             messages.success(request, messages_dict[event.registration_form])
