@@ -6,7 +6,7 @@ from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, HTML, Div, Submit, ButtonHolder
 from crispy_forms.bootstrap import PrependedAppendedText, InlineRadios
 
-from events.models import EventMember
+from events.models import Event, EventMember
 
 
 class EventMemberForm(forms.Form):
@@ -231,7 +231,8 @@ class SymposiumForm(forms.Form):
     )
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        self.event_label = kwargs.pop("event_label", "")
+        super(SymposiumForm, self).__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.form_error_title = "Fehler im Formular"
         self.error_text_inline = False
@@ -374,6 +375,19 @@ class SymposiumForm(forms.Form):
                 "Bestätigung der Einverständniserklärung notwendig für Teilnahme",
             )
 
+    def clean_email(self):
+        data = self.cleaned_data["email"]
+        if (
+            EventMember.objects.filter(
+                email=data, event__label=self.event_label
+            ).count()
+            > 0
+        ):
+            raise forms.ValidationError(
+                "Es gibt bereits eine Anmeldung mit dieser E-Mail-Adresse."
+            )
+        return data
+
 
 class AddMemberForm(forms.ModelForm):
     class Meta:
@@ -383,3 +397,9 @@ class AddMemberForm(forms.ModelForm):
             "lastname",
             "email",
         ]
+
+
+class EventUpdateCapacityForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ["capacity"]

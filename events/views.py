@@ -1,4 +1,5 @@
 import csv
+from events.actions import convert_boolean_field
 
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import request, HttpResponse, HttpResponseRedirect
@@ -62,7 +63,12 @@ from .models import (
 
 from .tables import EventMembersTable
 
-from .forms import EventMemberForm, SymposiumForm, AddMemberForm
+from .forms import (
+    EventMemberForm,
+    SymposiumForm,
+    AddMemberForm,
+    EventUpdateCapacityForm,
+)
 
 from .api import call
 
@@ -329,12 +335,13 @@ def event_add_member(request, slug):
         if event.registration_form == "s":
             form = EventMemberForm()
         elif event.registration_form == "m":
-            form = SymposiumForm()
+            print(f"event label: {event.label}")
+            form = SymposiumForm(event_label=event.label)
     else:
         if event.registration_form == "s":
             form = EventMemberForm(request.POST)
         elif event.registration_form == "m":
-            form = SymposiumForm(request.POST)
+            form = SymposiumForm(request.POST, event_label=event.label)
         if form.is_valid():
             if event.registration_form == "s":
                 firstname = form.cleaned_data["firstname"]
@@ -609,7 +616,7 @@ def event_add_member(request, slug):
     return render(
         request,
         form_template,
-        {"form": form, "event": event},
+        {"form": form},
     )
 
 
@@ -733,6 +740,15 @@ class EventMemberDeleteView(GroupTestMixin, DeleteView):
     template_name = "events/confirm_member_delete.html"
 
 
+class EventUpdateCapacityView(GroupTestMixin, UpdateView):
+    model = Event
+    template_name = "events/update_capacity_form.html"
+    form_class = EventUpdateCapacityForm
+
+    def get_success_url(self):
+        return reverse_lazy("members-dashboard")
+
+
 @login_required
 @user_passes_test(is_member_of_mv_orga)
 def export_members_csv(request):
@@ -761,11 +777,13 @@ def members_dashboard_view(request):
         "count_members_of_zw": EventMember.objects.filter(
             event__label="zukunft2021"
         ).count(),
+        "capacity_of_zw": Event.objects.get(label="zukunft2021").capacity,
         "list_of_mv_member_duplicates": Event.objects.get(
             label="Online-MV2021"
         ).get_duplicate_members(),
         "list_of_zw_member_duplicates": Event.objects.get(
             label="zukunft2021"
         ).get_duplicate_members(),
+        "zw_event_id": Event.objects.get(label="zukunft2021").id,
     }
     return render(request, "events/members_dashboard.html", context)

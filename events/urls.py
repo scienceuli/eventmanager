@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     EventListView,
     EventMemberDetailView,
+    EventUpdateCapacityView,
     FilteredEventListView,
     EventCreateView,
     EventCategoryListView,
@@ -10,6 +11,7 @@ from .views import (
     EventUpdateView,
     EventDetailView,
     EventDeleteView,
+    EventUpdateCapacityView,
     search_event,
     moodle,
     home,
@@ -45,6 +47,11 @@ urlpatterns = [
     ),
     path("event/<int:pk>/edit/", EventUpdateView.as_view(), name="event-edit"),
     path("detail/<slug:slug>", EventDetailView.as_view(), name="event-detail"),
+    path(
+        "event/<int:pk>/update_capacity/",
+        EventUpdateCapacityView.as_view(),
+        name="update-capacity",
+    ),
     path("delete/<int:pk>", EventDeleteView.as_view(), name="event-delete"),
     path("event_add_member/<slug:slug>", event_add_member, name="event-add-member"),
     path("search_event/", search_event, name="search-event"),

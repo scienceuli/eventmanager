@@ -799,7 +799,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         print("save_related called")
         form.save_m2m()
         for formset in formsets:
-            print(formset)
+            # print(formset)
             self.save_formset(request, form, formset, change=change)
         # super().save_related(request, form, formsets, change)
         super(EventAdmin, self).save_model(request, form.instance, form, change)

@@ -23,7 +23,7 @@ from events.models import (
 
 from events.forms import SymposiumForm
 
-from events.views import event_add_member
+from events.views import event_add_member, EventMembersListView
 from events.email_template import EmailTemplate
 
 
@@ -71,6 +71,12 @@ class EventCategoryTest(TestCase):
 
 
 class SymposiumFormTests(TestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username="test", password="12test12", email="test@example.com"
+        )
+        self.user.save()
+
     def test_mv_check_missing(self):
         form = SymposiumForm(
             data={
@@ -443,6 +449,11 @@ class EventViewsTests(TestCase):
 
     # assert mail.outbox[0].from_email == "from@example.com"
     # assert mail.outbox[0].to == ["to@example.com"]
+
+    def test_listview_mv_members_url_exists_at_desired_location(self):
+        request = self.factory.get("/members/Online-MV2021")
+        response = EventMembersListView.as_view()(request)
+        self.assertEqual(response.status_code, 200)
 
     def test_lists_all_mv_members(self):
         # Get second page and confirm it has (exactly) remaining 3 items
