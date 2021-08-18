@@ -15,6 +15,7 @@
         <a class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-red-500 hover:border-transparent rounded" href="{% url 'member-create' event_label %}">Teilnehmer anlegen</a>
         {% endwith %}
         <a class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded" href="{% url 'members' event_label %}?flag=duplicates">Duplikate</a>
+        <a class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded" href="{% url 'members-dashboard' %}">Zur Übersicht</a>
     </div>
     <div class="flex flex-col pt-4">
         <div class="item font-bold pb-2">Suche:</div>
