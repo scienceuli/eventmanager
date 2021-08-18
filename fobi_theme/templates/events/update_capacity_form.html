@@ -21,6 +21,7 @@
         <form method="post">{% csrf_token %}
             {{ form|crispy }}
             <input type="submit" value="Update">
+            <a class="ml-2" href="{% url 'members-dashboard' %}">Abbrechen</a>
         </form>
 
     </div>
