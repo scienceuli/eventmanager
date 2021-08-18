@@ -62,7 +62,7 @@ from .models import (
 
 from .tables import EventMembersTable
 
-from .forms import EventMemberForm, SymposiumForm
+from .forms import EventMemberForm, SymposiumForm, AddMemberForm
 
 from .api import call
 
@@ -671,12 +671,60 @@ class EventMembersListView(GroupTestMixin, SingleTableView):
     template_name = "events/members_list.html"
 
     def get_queryset(self):
-        return EventMember.objects.filter(event__label=self.kwargs["event"])
+        event_members = EventMember.objects.filter(event__label=self.kwargs["event"])
+        query_ln = self.request.GET.get("member_lastname")
+        query_fn = self.request.GET.get("member_firstname")
+        query_email = self.request.GET.get("member_email")
+        flag = self.request.GET.get("flag")
+        print(f"flag: {flag}")
+
+        if query_fn:
+            event_members = event_members.filter(firstname__icontains=query_fn)
+        if query_ln:
+            event_members = event_members.filter(lastname__icontains=query_ln)
+        if query_email:
+            event_members = event_members.filter(email__icontains=query_email)
+        if flag == "duplicates":
+            duplicate_email_list = Event.objects.get(
+                label=self.kwargs["event"]
+            ).get_duplicate_members()
+            event_members = event_members.filter(email__in=duplicate_email_list)
+
+        return event_members
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        # Add a context
+        context["event_label"] = self.kwargs["event"]
+        print(context)
+        return context
 
 
 class EventMemberDetailView(GroupTestMixin, DetailView):
     model = EventMember
     template_name = "events/member_detail.html"
+
+
+class EventMemberCreateView(GroupTestMixin, CreateView):
+    model = EventMember
+    template_name = "events/create_member_form.html"
+    form_class = AddMemberForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.event = get_object_or_404(Event, label=kwargs["event"])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.takes_part = True
+        self.object.check = True
+        self.object.event = self.event
+        self.object.attend_status = "registered"
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("members", kwargs={"event": self.event.label})
 
 
 class EventMemberDeleteView(GroupTestMixin, DeleteView):
@@ -706,4 +754,18 @@ def export_members_csv(request):
 @login_required
 @user_passes_test(is_member_of_mv_orga)
 def members_dashboard_view(request):
-    return render(request, "events/members_dashboard.html")
+    context = {
+        "count_members_of_mv": EventMember.objects.filter(
+            event__label="Online-MV2021"
+        ).count(),
+        "count_members_of_zw": EventMember.objects.filter(
+            event__label="zukunft2021"
+        ).count(),
+        "list_of_mv_member_duplicates": Event.objects.get(
+            label="Online-MV2021"
+        ).get_duplicate_members(),
+        "list_of_zw_member_duplicates": Event.objects.get(
+            label="zukunft2021"
+        ).get_duplicate_members(),
+    }
+    return render(request, "events/members_dashboard.html", context)

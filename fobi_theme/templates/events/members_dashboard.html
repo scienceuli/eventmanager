@@ -1,0 +1,27 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+{% with event_label='Online-MV2021' %}
+
+<div class="max-w-2xl mx-auto py-8">
+    <h3 class="font-bold">Online MV</h3>
+    <p><a href="{% url 'members' event_label %}">Übersicht Teilnehmer</a></p>
+    <p>{{ count_members_of_mv }} Anmeldungen (Stand {% now "j. F Y H:i" %})</p>
+    <p>Doppelte Anmeldungen:</p>
+    {% for item in list_of_mv_member_duplicates %}
+    <p>{{ item }}</p>
+    {% endfor %}
+</div>
+{% endwith %}
+{% with event_label='zukunft2021' %}
+<div class="max-w-2xl mx-auto py-8">
+    <h3 class="font-bold">Zukunfts WS</h3>
+    <p><a href="{% url 'members' event_label %}">Übersicht Teilnehmer</a></p>
+    <p>{{ count_members_of_zw }} Anmeldungen (Stand {% now "j. F Y H:i" %})</p>
+    <p>Doppelte Anmeldungen:</p>
+    {% for item in list_of_zw_member_duplicates %}
+    <p>{{ item }}</p>
+    {% endfor %}
+</div>
+{% endwith %}
+{% endblock %}

@@ -13,6 +13,8 @@ from ckeditor.fields import RichTextField
 
 from .abstract import BaseModel, AddressModel
 
+from events.utils import find_duplicates_in_list
+
 
 class EventCategory(BaseModel):
     name = models.CharField(max_length=255, unique=True)
@@ -411,6 +413,10 @@ class Event(BaseModel):
         if capacity - count <= 3:
             return True
         return False
+
+    def get_duplicate_members(self):
+        email_list = list(self.members.values_list("email", flat=True))
+        return find_duplicates_in_list(email_list)
 
     def get_first_day(self):
         try:

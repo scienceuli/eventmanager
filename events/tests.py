@@ -161,7 +161,9 @@ class SymposiumFormTests(TestCase):
         )
         self.assertEqual(
             form.errors["vote_transfer"],
-            ["Bitte mindestens eine Teilnahme (MV oder Zukunftswerkstatt) angeben oder für die MV eine Stimmübertragung festlegen!"],
+            [
+                "Bitte mindestens eine Teilnahme (MV oder Zukunftswerkstatt) angeben oder für die MV eine Stimmübertragung festlegen!"
+            ],
         )
 
 
@@ -193,7 +195,7 @@ class SigninTest(TestCase):
         self.assertFalse(user is not None and user.is_authenticated)
 
 
-class EventAddMemberViewTest(TestCase):
+class EventViewsTests(TestCase):
     def setUp(self) -> None:
         self.eventcategory = EventCategory(
             name="name",
@@ -315,6 +317,8 @@ class EventAddMemberViewTest(TestCase):
             "django.contrib.messages.storage.cookie.CookieStorage"
         )
         self.factory = RequestFactory()
+
+        self.client = Client()
 
     def test_update_event_capacity(self):
         event = self.event
@@ -439,3 +443,11 @@ class EventAddMemberViewTest(TestCase):
 
     # assert mail.outbox[0].from_email == "from@example.com"
     # assert mail.outbox[0].to == ["to@example.com"]
+
+    def test_lists_all_mv_members(self):
+        # Get second page and confirm it has (exactly) remaining 3 items
+        response = self.client.get("/members/Online-MV2021/")
+        table = response.context["object_list"]
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(table.rows), 1)
+        self.assertEqual(table.rows[0].get_cell("lastname"), "MVTest")

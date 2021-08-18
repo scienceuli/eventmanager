@@ -100,3 +100,16 @@ def yes_no_to_boolean(value):
     if value == "y":
         return True
     return False
+
+
+def find_duplicates_in_list(L):
+    seen = set()
+    seen2 = set()
+    seen_add = seen.add
+    seen2_add = seen2.add
+    for item in L:
+        if item in seen:
+            seen2_add(item)
+        else:
+            seen_add(item)
+    return list(seen2)

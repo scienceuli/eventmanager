@@ -373,3 +373,13 @@ class SymposiumForm(forms.Form):
                 "zw_check",
                 "Bestätigung der Einverständniserklärung notwendig für Teilnahme",
             )
+
+
+class AddMemberForm(forms.ModelForm):
+    class Meta:
+        model = EventMember
+        fields = [
+            "firstname",
+            "lastname",
+            "email",
+        ]

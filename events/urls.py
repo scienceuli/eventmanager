@@ -20,6 +20,7 @@ from .views import (
     EventMembersListView,
     EventMemberDetailView,
     EventMemberDeleteView,
+    EventMemberCreateView,
     export_members_csv,
     members_dashboard_view,
 )
@@ -60,6 +61,9 @@ urlpatterns = [
         "members/delete/<int:pk>/",
         EventMemberDeleteView.as_view(),
         name="member-delete",
+    ),
+    path(
+        "members/create/<event>", EventMemberCreateView.as_view(), name="member-create"
     ),
     path("members/export/csv/", export_members_csv, name="export-members-csv"),
     path("members_dashboard/", members_dashboard_view, name="members-dashboard"),
