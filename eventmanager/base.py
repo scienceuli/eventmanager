@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django_filters",
     "django_tables2",
+    "django_countries",
     "rest_framework",
     # third party
     "crispy_forms",

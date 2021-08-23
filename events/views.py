@@ -333,7 +333,7 @@ def event_add_member(request, slug):
 
     if request.method == "GET":
         if event.registration_form == "s":
-            form = EventMemberForm()
+            form = EventMemberForm(initial={"country": "DE"})
         elif event.registration_form == "m":
             print(f"event label: {event.label}")
             form = SymposiumForm(event_label=event.label)
@@ -362,6 +362,7 @@ def event_add_member(request, slug):
                 attention = form.cleaned_data["attention"]
                 attention_other = form.cleaned_data["attention_other"]
                 education_bonus = form.cleaned_data["education_bonus"]
+                free_text_field = form.cleaned_data["free_text_field"]
                 check = form.cleaned_data["check"]
                 if event.is_full():
                     attend_status = "waiting"
@@ -390,6 +391,7 @@ def event_add_member(request, slug):
                     attention=attention,
                     attention_other=attention_other,
                     education_bonus=education_bonus,
+                    free_text_field=free_text_field,
                     check=check,
                     attend_status=attend_status,
                 )
@@ -507,6 +509,7 @@ def event_add_member(request, slug):
                     "vfll": boolean_translate(vfll),
                     "memberships": memberships_labels,
                     "education_bonus": boolean_translate(education_bonus),
+                    "free_text_field": free_text_field,
                     "message": message,
                     "check": boolean_translate(check),
                     "event": event.name,
@@ -616,7 +619,7 @@ def event_add_member(request, slug):
     return render(
         request,
         form_template,
-        {"form": form},
+        {"form": form, "event": event},
     )
 
 
@@ -720,6 +723,9 @@ class EventMemberCreateView(GroupTestMixin, CreateView):
 
     def dispatch(self, request, *args, **kwargs):
         self.event = get_object_or_404(Event, label=kwargs["event"])
+        self.event_members = EventMember.objects.filter(
+            event__label=kwargs["event"]
+        ).filter(attend_status="registered")
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
@@ -727,7 +733,10 @@ class EventMemberCreateView(GroupTestMixin, CreateView):
         self.object.takes_part = True
         self.object.check = True
         self.object.event = self.event
-        self.object.attend_status = "registered"
+        if self.event_members.count() >= self.event.capacity:
+            self.object.attend_status = "waiting"
+        else:
+            self.object.attend_status = "registered"
         return super().form_valid(form)
 
     def get_success_url(self):

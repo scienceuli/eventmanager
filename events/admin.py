@@ -522,11 +522,12 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
         (
-            "Ort, Kosten, Dauer",
+            "Ort, Kosten, Dauer, Regio",
             {
                 "fields": (
                     "location",
                     "duration",
+                    "regio_group",
                     "fees",
                     "catering",
                     "lodging",
@@ -535,7 +536,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
         (
-            "Kapazität, Anmeldung, Hinweise, Status",
+            "Kapazität, Anmeldung, Hinweise, Freitextfeld, Status",
             {
                 "fields": (
                     "capacity",
@@ -545,6 +546,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "registration_recipient",
                     "close_date",
                     "status",
+                    "free_text_field_intro",
                     "notes",
                 )
             },

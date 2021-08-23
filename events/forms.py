@@ -1,25 +1,28 @@
 from django import forms
 from django.utils.safestring import mark_safe
+from django.utils.translation import ugettext_lazy as _
 
 
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import Layout, Fieldset, HTML, Div, Submit, ButtonHolder
 from crispy_forms.bootstrap import PrependedAppendedText, InlineRadios
 
+from django_countries.fields import CountryField
+from django_countries.widgets import CountrySelectWidget
+
+
 from events.models import Event, EventMember
+
+from .choices import (
+    MEMBERSHIP_CHOICES,
+    ATTENTION_CHOICES,
+    MEMBER_TYPE_CHOICES,
+    TAKES_PART_CHOICES,
+    YES_NO_CHOICES,
+)
 
 
 class EventMemberForm(forms.Form):
-
-    MEMBERSHIP_CHOICES = (
-        ("vdu", "VdÜ"),
-        ("bf", "BücherFrauen"),
-        ("il", "Illustratoren Organisation"),
-        ("tv", "Texterverband"),
-        ("jv", "Junge Verlagsmenschen"),
-        ("sp", "Selfpublisher-Verband"),
-        ("at", "ATICOM"),
-    )
 
     # ref: https://stackoverflow.com/questions/9993939/django-display-values-of-the-selected-multiple-choice-field-in-a-template
     def selected_memberships_labels(self):
@@ -28,12 +31,6 @@ class EventMemberForm(forms.Form):
             for value, label in self.fields["memberships"].choices
             if value in self["memberships"].value()
         ]
-
-    ATTENTION_CHOICES = (
-        ("vfll", "VFLL-Website oder -Blog"),
-        ("pers", "persönliche Einladung"),
-        ("info", "Info einer anderen Organisation"),
-    )
 
     firstname = forms.CharField(
         widget=forms.TextInput(
@@ -81,9 +78,18 @@ class EventMemberForm(forms.Form):
                 "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
             }
         ),
-        label="Bundesland",
+        label="Land",
         required=False,
     )
+
+    country = CountryField().formfield(
+        widget=CountrySelectWidget(
+            attrs={
+                "class": "mt-1 block w-full p-3 text-gray-700 bg-gray-200 focus:outline-none  focus:bg-gray-300 sm:text-sm "
+            }
+        )
+    )
+
     postcode = forms.CharField(
         widget=forms.TextInput(
             attrs={
@@ -142,6 +148,14 @@ class EventMemberForm(forms.Form):
         label="Anmerkungen", widget=forms.Textarea, required=False
     )
 
+    free_text_field = forms.CharField(
+        widget=forms.Textarea(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        )
+    )
+
     check = forms.BooleanField(
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}), required=False
     )
@@ -152,24 +166,6 @@ class EventMemberForm(forms.Form):
     #        raise ValidationError("Bitte bestätigen Sie die Einverständniserklärung.")
     #
     #    return data
-
-
-TAKES_PART_CHOICES = (
-    ("y", "teil"),
-    ("n", "nicht teil"),
-)
-
-YES_NO_CHOICES = (
-    ("y", "ja"),
-    ("n", "nein"),
-)
-
-MEMBER_TYPE_CHOICES = (
-    ("o", "ordentliches Mitglied"),
-    ("k", "Kandidat/Kandidatin"),
-    ("f", "Fördermitglied"),
-    ("e", "Ehrenmitglied"),
-)
 
 
 class SymposiumForm(forms.Form):

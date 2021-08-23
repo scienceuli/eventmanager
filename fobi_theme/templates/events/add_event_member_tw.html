@@ -56,8 +56,8 @@
             {{ form.city }}
           </span>
         </div>
-        <label for="state" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Bundesland</label>
-        {{ form.state }}
+        <label for="country" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Land</label>
+        {{ form.country }}
         <label for="email" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">E-Mail</label>
         {{ form.email }}
         <label for="phone" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Telefon</label>
@@ -96,6 +96,17 @@
 
 
       </div>
+      {% if event.free_text_field_intro %}
+      <div class="grid grid-cols-1 py-5">
+        <div class="pt-2 text-xs font-semibold text-gray-600 uppercase">
+          {{ event.free_text_field_intro|safe }}
+
+        </div>
+        {{ form.free_text_field }}
+      </div>
+      {% endif %}
+
+
 
       <div class="grid grid-cols-1 py-5">
         <p class="leading-tight">

@@ -11,7 +11,10 @@ from django.template.defaultfilters import truncatechars
 from ckeditor_uploader.fields import RichTextUploadingField
 from ckeditor.fields import RichTextField
 
+
 from .abstract import BaseModel, AddressModel
+
+from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
 
 from events.utils import find_duplicates_in_list
 
@@ -149,12 +152,6 @@ class EventSponsor(BaseModel):
 class Event(BaseModel):
     """Events"""
 
-    PUB_STATUS_CHOICES = (
-        ("PUB", "öffentlich"),
-        ("UNPUB", "draft"),
-        ("ARCH", "archiviert"),
-    )
-
     category = models.ForeignKey(
         EventCategory,
         verbose_name="Kategorie",
@@ -202,6 +199,13 @@ class Event(BaseModel):
     )
     sponsors = models.ManyToManyField(
         EventSponsor, verbose_name="Pate,Patin", through="EventSponsorThrough"
+    )
+    regio_group = models.CharField(
+        "Regionalgruppe",
+        max_length=3,
+        null=True,
+        blank=True,
+        choices=REGIO_GROUP_CHOICES,
     )
     methods = models.CharField(
         verbose_name="Methoden", max_length=255, null=True, blank=True
@@ -259,6 +263,11 @@ class Event(BaseModel):
     notes = RichTextField(
         verbose_name="Hinweise", null=True, blank=True, config_name="short"
     )
+
+    free_text_field_intro = RichTextField(
+        verbose_name="Freitextfeld Intro", null=True, blank=True, config_name="short"
+    )
+
     start_date = models.DateTimeField(
         verbose_name="Beginn",
         null=True,
@@ -607,6 +616,7 @@ class EventMember(AddressModel):
     attention_other = models.CharField("sonstige", max_length=64, blank=True)
     education_bonus = models.BooleanField("Bildungsprämie", default=False)
     message = models.TextField("Anmerkung", blank=True)
+    free_text_field = models.TextField("Freitext", blank=True)
     check = models.BooleanField(default=False)
 
     label = models.CharField(max_length=64)
