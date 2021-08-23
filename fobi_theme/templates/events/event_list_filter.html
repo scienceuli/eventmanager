@@ -84,10 +84,12 @@
             {{ event.name }}
           </a>
         </p>
+        {% if event.label != 'zukunft2021' %}
         {% if event.is_full %}
         <p class="text-left text-base italic">Leider ausgebucht!</p>
         {% elif event.few_remaining_places %}
         <p class="text-left text-base italic">Nur noch wenige freie Plätze!</p>
+        {% endif %}
         {% endif %}
       </div>
     </div>
