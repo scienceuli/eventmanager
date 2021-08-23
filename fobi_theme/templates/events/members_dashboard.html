@@ -18,6 +18,8 @@
     <h3 class="font-bold">Zukunfts WS</h3>
     <p class="my-4"><a href="{% url 'members' event_label %}" class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">Übersicht Teilnehmer</a></p>
     <p>{{ count_members_of_zw }} Anmeldungen (Stand {% now "j. F Y H:i" %}) von maximal <a href="{% url 'update-capacity' zw_event_id %}" class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">{{ capacity_of_zw }}</a></p>
+    <p>davon bestätigt: {{ count_members_of_zw_registered }}</p>
+    <p>Warteliste: {{ count_members_of_zw_waiting }}</p>
     <p>Doppelte Anmeldungen:</p>
     {% for item in list_of_zw_member_duplicates %}
     <p>{{ item }}</p>

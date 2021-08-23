@@ -408,11 +408,6 @@ def event_add_member(request, slug):
                 vote_transfer = form.cleaned_data["vote_transfer"]
                 vote_transfer_check = form.cleaned_data["vote_transfer_check"]
 
-                if event.is_full():
-                    attend_status = "waiting"
-                else:
-                    attend_status = "registered"
-
                 yes_no_dict = {
                     "y": True,
                     "n": False,
@@ -422,6 +417,10 @@ def event_add_member(request, slug):
                     name = f"MV 2021 | {timezone.now()}"
                     try:
                         event = Event.objects.get(label="Online-MV2021")
+                        if event.is_full():
+                            attend_status = "waiting"
+                        else:
+                            attend_status = "registered"
                         new_member = EventMember.objects.create(
                             name=name,
                             event=event,
@@ -442,6 +441,10 @@ def event_add_member(request, slug):
                     name = f"ZW 2021 | {timezone.now()}"
                     try:
                         event = Event.objects.get(label="zukunft2021")
+                        if event.is_full():
+                            attend_status = "waiting"
+                        else:
+                            attend_status = "registered"
                         new_member = EventMember.objects.create(
                             name=name,
                             event=event,
@@ -786,6 +789,16 @@ def members_dashboard_view(request):
         "count_members_of_zw": EventMember.objects.filter(
             event__label="zukunft2021"
         ).count(),
+        "count_members_of_zw_waiting": EventMember.objects.filter(
+            event__label="zukunft2021"
+        )
+        .filter(attend_status="waiting")
+        .count(),
+        "count_members_of_zw_registered": EventMember.objects.filter(
+            event__label="zukunft2021"
+        )
+        .filter(attend_status="registered")
+        .count(),
         "capacity_of_zw": Event.objects.get(label="zukunft2021").capacity,
         "list_of_mv_member_duplicates": Event.objects.get(
             label="Online-MV2021"
