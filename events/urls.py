@@ -11,6 +11,7 @@ from .views import (
     EventUpdateView,
     EventDetailView,
     EventDeleteView,
+    EventMemberUpdateView,
     EventUpdateCapacityView,
     search_event,
     moodle,
@@ -63,6 +64,11 @@ urlpatterns = [
         "members/detail/<int:pk>/",
         EventMemberDetailView.as_view(),
         name="member-detail",
+    ),
+    path(
+        "members/update/<int:pk>/",
+        EventMemberUpdateView.as_view(),
+        name="member-update",
     ),
     path(
         "members/delete/<int:pk>/",

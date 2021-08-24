@@ -574,7 +574,7 @@ def event_add_member(request, slug):
                     "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
                     "Vielen Dank für Ihre Anmeldung. Sie wurden auf die Warteliste gesetzt und werden benachrichtigt, wenn ein Platz frei wird.",
                 )[attend_status == "waiting"],
-                "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool (falls du an der MV teilnimmst) werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
+                "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool (falls du an der MV teilnimmst) werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt. Falls die Zukunftswerkstatt ausgebucht ist, setzen wir dich gerne auf die Warteliste.",
             }
             messages.success(request, messages_dict[event.registration_form])
 
@@ -589,7 +589,7 @@ def event_add_member(request, slug):
                         mail_to_admin_template_name,
                         formatting_dict=formatting_dict,
                     )
-                    print("mail to event admin sent")
+                    # print("mail to event admin sent")
                     new_member.mail_to_admin = True
                     new_member.save()
                 except BadHeaderError:
@@ -719,6 +719,12 @@ class EventMemberDetailView(GroupTestMixin, DetailView):
     template_name = "events/member_detail.html"
 
 
+class EventMemberUpdateView(GroupTestMixin, UpdateView):
+    model = EventMember
+    fields = ["firstname", "lastname", "email", "attend_status"]
+    template_name = "events/member_update.html"
+
+
 class EventMemberCreateView(GroupTestMixin, CreateView):
     model = EventMember
     template_name = "events/create_member_form.html"
@@ -768,13 +774,80 @@ def export_members_csv(request):
     response["Content-Disposition"] = 'attachment; filename="members.csv"'
 
     writer = csv.writer(response)
-    writer.writerow(["Vorname", "Nachname", "Email"])
-
-    members = EventMember.objects.filter(event__label="Online-MV2021").values_list(
-        "firstname", "lastname", "email"
+    writer.writerow(
+        [
+            "Vorname",
+            "Nachname",
+            "E-Mail",
+            "Datum",
+            "Mitgliedschaft",
+            "MV",
+            "Stimmübertragung",
+            "Check Stimmübertragung",
+            "Einverständnis MV",
+            "ZW",
+            "Einverständnis ZW",
+            "Status",
+        ]
     )
-    for member in members:
+
+    members_mv = EventMember.objects.filter(event__label="Online-MV2021").values_list(
+        "firstname",
+        "lastname",
+        "email",
+        "date_created",
+        "member_type",
+        "vote_transfer",
+        "vote_transfer_check",
+        "check",
+    )
+    members_zw = EventMember.objects.filter(event__label="zukunft2021").values_list(
+        "firstname",
+        "lastname",
+        "email",
+        "date_created",
+        "member_type",
+        "check",
+        "attend_status",
+    )
+    for member in members_mv:
+        member = list(member)
+        member[3] = member[3].strftime("%d.%m.%y %H:%M")
+        member.insert(5, "x")
+        if (
+            EventMember.objects.filter(event__label="zukunft2021")
+            .filter(email=member[2])
+            .exists()
+        ):
+            member.append("x")
+            member.append(
+                EventMember.objects.filter(event__label="zukunft2021")
+                .filter(email=member[2])[0]
+                .check
+            )
+            member.append(
+                EventMember.objects.filter(event__label="zukunft2021")
+                .filter(email=member[2])[0]
+                .attend_status
+            )
+
         writer.writerow(member)
+    for member in members_zw:
+        member = list(member)
+        member[3] = member[3].strftime("%d.%m.%y %H:%M")
+
+        if (
+            not EventMember.objects.filter(event__label="Online-MV2021")
+            .filter(email=member[2])
+            .exists()
+        ):
+            member.insert(5, "")
+            member.insert(6, "")
+            member.insert(7, "")
+            member.insert(8, "")
+            member.insert(9, "x")
+
+            writer.writerow(member)
 
     return response
 

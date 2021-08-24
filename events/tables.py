@@ -2,10 +2,17 @@
 import django_tables2 as tables
 from django_tables2.utils import A
 
+import itertools
+
 from .models import EventMember
 
 
-class MemberEditLinkColumn(tables.LinkColumn):
+class MemberViewLinkColumn(tables.LinkColumn):
+    def render(self, record, value):
+        return super().render(record, value)
+
+
+class MemberUpdateLinkColumn(tables.LinkColumn):
     def render(self, record, value):
         return super().render(record, value)
 
@@ -16,11 +23,26 @@ class MemberDeleteLinkColumn(tables.LinkColumn):
 
 
 class EventMembersTable(tables.Table):
-    edit = MemberEditLinkColumn(
+
+    counter = tables.Column(empty_values=(), orderable=False)
+
+    def render_counter(self):
+        self.row_counter = getattr(self, "row_counter", itertools.count())
+        return next(self.row_counter) + self.page.start_index()
+        # self.page.sart_index() is default Table function and return number of start index per page
+
+    view = MemberViewLinkColumn(
         "member-detail",
         args=[A("pk")],
         orderable=False,
-        text="Edit",
+        text="View",
+        empty_values=(),
+    )
+    update = MemberUpdateLinkColumn(
+        "member-update",
+        args=[A("pk")],
+        orderable=False,
+        text="Update",
         empty_values=(),
     )
     delete = MemberDeleteLinkColumn(

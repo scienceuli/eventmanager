@@ -1,0 +1,16 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto pt-8">
+
+    <h1>Update: {{ object.firstname }} {{ object.lastname }}</h1>
+
+    <form method="post">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Update">
+    </form>
+
+</div>
+
+{% endblock %}
