@@ -1,13 +1,18 @@
 from django.contrib import admin, messages
 from django.http import HttpResponseRedirect
+from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.http import urlencode
 from django.utils.html import format_html
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, path
+from django.utils.encoding import force_text
 from django import forms
 from django.db.models import Min, Max
 from django.forms.models import BaseInlineFormSet
+
+from django.contrib.admin import SimpleListFilter
+
 
 import io, csv
 
@@ -471,6 +476,57 @@ def admin_event_pdf(obj):
 admin_event_pdf.short_description = "Pdf"
 
 
+# admin filter: per default only future events
+class PeriodFilter(SimpleListFilter):
+    """
+    Filter the Events Happening in the Past and Future
+    ref: https://stackoverflow.com/questions/851636/default-filter-in-django-admin
+    """
+
+    default_value = "future"
+    title = "Zeitraum"
+    parameter_name = "period"
+
+    def lookups(self, request, model_admin):
+        """
+        List the Choices available for this filter.
+        """
+        return (
+            ("all", "Alle"),
+            ("future", "noch nicht gestartet"),
+            ("past", "abgeschlossen"),
+        )
+
+    def choices(self, changelist):
+        """
+        Overwrite this method to prevent the default "All".
+        """
+        value = self.value() or self.default_value
+        for lookup, title in self.lookup_choices:
+            yield {
+                "selected": value == force_text(lookup),
+                "query_string": changelist.get_query_string(
+                    {
+                        self.parameter_name: lookup,
+                    },
+                    [],
+                ),
+                "display": title,
+            }
+
+    def queryset(self, request, queryset):
+        """
+        Returns the Queryset depending on the Choice.
+        """
+        value = self.value() or self.default_value
+        now = timezone.now()
+        if value == "future":
+            return queryset.filter(first_day__gte=now)
+        if value == "past":
+            return queryset.filter(first_day__lt=now)
+        return queryset.all()
+
+
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     change_list_template = "admin/event_change_list.html"
     change_form_template = "admin/event_change_form.html"
@@ -488,7 +544,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "status",
         admin_event_pdf,
     )
-    list_filter = ("eventformat", "category", "status")
+    list_filter = (PeriodFilter, "eventformat", "category", "status")
     ordering = ("name",)
     search_fields = ("name",)
     readonly_fields = (
