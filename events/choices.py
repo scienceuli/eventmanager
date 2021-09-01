@@ -7,6 +7,7 @@ PUB_STATUS_CHOICES = (
 )
 
 REGIO_GROUP_CHOICES = (
+    ("KA", "---"),
     ("BAY", "Bayern"),
     ("BER", "Berlin"),
     ("FFM", "Frankfurt"),

@@ -203,9 +203,8 @@ class Event(BaseModel):
     regio_group = models.CharField(
         "Regionalgruppe",
         max_length=3,
-        null=True,
-        blank=True,
         choices=REGIO_GROUP_CHOICES,
+        default="KA",
     )
     methods = models.CharField(
         verbose_name="Methoden", max_length=255, null=True, blank=True
@@ -665,6 +664,9 @@ class EventMember(AddressModel):
 
     def __str__(self):
         return str(f"Anmeldung von {self.lastname}, {self.firstname}")
+
+    def get_absolute_url(self):
+        return reverse("member-detail", kwargs={"pk": self.pk})
 
     def save(self, *args, **kwargs):
         add = not self.pk

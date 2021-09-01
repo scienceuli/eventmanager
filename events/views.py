@@ -5,7 +5,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import request, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.utils import timezone
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
@@ -723,6 +723,12 @@ class EventMemberUpdateView(GroupTestMixin, UpdateView):
     model = EventMember
     fields = ["firstname", "lastname", "email", "attend_status"]
     template_name = "events/member_update.html"
+
+    def get_success_url(self):
+        pk = self.kwargs["pk"]
+
+        label = EventMember.objects.get(pk=pk).event.label
+        return reverse("members", kwargs={"event": label})
 
 
 class EventMemberCreateView(GroupTestMixin, CreateView):
