@@ -850,8 +850,8 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     def save_model(self, request, obj, form, change):
         print("save_model called")
-        pass
-        # super().save_model(request, obj, form, change)
+        # pass
+        super().save_model(request, obj, form, change)
 
     def save_related(self, request, form, formsets, change):
         print("save_related called")
