@@ -521,7 +521,7 @@ class PeriodFilter(SimpleListFilter):
         value = self.value() or self.default_value
         now = timezone.now()
         if value == "future":
-            return queryset.filter(first_day__gte=now)
+            return queryset.filter(first_day__gte=now) | queryset.filter(first_day=None)
         if value == "past":
             return queryset.filter(first_day__lt=now)
         return queryset.all()
@@ -812,6 +812,10 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             old_agendas = event.agendas.all()
             # m2m to copy
             old_speakers = event.speaker.all()
+            # alter Name
+            old_name = event.name
+            new_name = "Kopie von " + old_name
+            event.name = new_name
             event.pk = None
             event.slug = None
             event.label = None
