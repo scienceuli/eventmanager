@@ -1,13 +1,15 @@
 {% extends 'base/base.html' %}
 
+{% load tailwind_filters %}
+
 {% block content %}
 
 <div class="max-w-3xl mx-auto pt-8">
 
-    <h1>Update: {{ object.firstname }} {{ object.lastname }}</h1>
+    <h1>Daten für: {{ object.firstname }} {{ object.lastname }}</h1>
 
     <form method="post">{% csrf_token %}
-        {{ form.as_p }}
+        {{ form|crispy }}
         <input type="submit" value="Update">
     </form>
 

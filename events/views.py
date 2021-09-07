@@ -640,6 +640,7 @@ def get_moodle_data(request):
     return HttpResponse("moodle Daten aktualisiert")
 
 
+@login_required(login_url="login")
 def admin_event_pdf(request, event_id):
     event = get_object_or_404(Event, id=event_id)
     context = {"event": event}

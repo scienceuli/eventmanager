@@ -146,10 +146,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 # Crsipy forms
 
-# CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
+CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 
-# CRISPY_TEMPLATE_PACK = "tailwind"
-CRISPY_TEMPLATE_PACK = "bootstrap4"
+CRISPY_TEMPLATE_PACK = "tailwind"
+# CRISPY_TEMPLATE_PACK = "bootstrap4"
 
 
 # Ckeditor config
