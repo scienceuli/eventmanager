@@ -861,6 +861,46 @@ def export_members_csv(request):
 
 @login_required
 @user_passes_test(is_member_of_mv_orga)
+def export_mv_members_csv(request):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="members_mv.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            "Vorname",
+            "Nachname",
+            "E-Mail",
+            "Datum",
+            "Mitgliedschaft",
+            "Stimmübertragung",
+            "Check Stimmübertragung",
+            "Einverständnis MV",
+        ]
+    )
+
+    members_mv = EventMember.objects.filter(event__label="Online-MV2021").values_list(
+        "firstname",
+        "lastname",
+        "email",
+        "date_created",
+        "member_type",
+        "vote_transfer",
+        "vote_transfer_check",
+        "check",
+    )
+
+    for member in members_mv:
+        member = list(member)
+        member[3] = member[3].strftime("%d.%m.%y %H:%M")
+
+        writer.writerow(member)
+
+    return response
+
+
+@login_required
+@user_passes_test(is_member_of_mv_orga)
 def members_dashboard_view(request):
     context = {
         "count_members_of_mv": EventMember.objects.filter(
