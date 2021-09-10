@@ -689,8 +689,12 @@ class EventMembersListView(GroupTestMixin, SingleTableView):
         query_ln = self.request.GET.get("member_lastname")
         query_fn = self.request.GET.get("member_firstname")
         query_email = self.request.GET.get("member_email")
+        query_vote_transfer_yes = self.request.GET.get("member_vote_transfer_yes")
+        query_vote_transfer_no = self.request.GET.get("member_vote_transfer_no")
+
         flag = self.request.GET.get("flag")
         print(f"flag: {flag}")
+        print(f"vt: {query_vote_transfer_yes}")
 
         if query_fn:
             event_members = event_members.filter(firstname__icontains=query_fn)
@@ -698,6 +702,10 @@ class EventMembersListView(GroupTestMixin, SingleTableView):
             event_members = event_members.filter(lastname__icontains=query_ln)
         if query_email:
             event_members = event_members.filter(email__icontains=query_email)
+        if query_vote_transfer_yes:
+            event_members = event_members.exclude(vote_transfer__exact="")
+        if query_vote_transfer_no:
+            event_members = event_members.filter(vote_transfer__exact="")
         if flag == "duplicates":
             duplicate_email_list = Event.objects.get(
                 label=self.kwargs["event"]
@@ -862,6 +870,13 @@ def export_members_csv(request):
 @login_required
 @user_passes_test(is_member_of_mv_orga)
 def export_mv_members_csv(request):
+    # print(f"request: {request.GET}")
+    query_ln = request.GET.get("member_lastname")
+    query_fn = request.GET.get("member_firstname")
+    query_email = request.GET.get("member_email")
+    query_vote_transfer_yes = request.GET.get("member_vote_transfer_yes")
+    query_vote_transfer_no = request.GET.get("member_vote_transfer_no")
+
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = 'attachment; filename="members_mv.csv"'
 
@@ -879,7 +894,19 @@ def export_mv_members_csv(request):
         ]
     )
 
-    members_mv = EventMember.objects.filter(event__label="Online-MV2021").values_list(
+    members_mv = EventMember.objects.filter(event__label="Online-MV2021")
+    if query_fn:
+        members_mv = members_mv.filter(firstname__icontains=query_fn)
+    if query_ln:
+        members_mv = members_mv.filter(lastname__icontains=query_ln)
+    if query_email:
+        members_mv = members_mv.filter(email__icontains=query_email)
+    if query_vote_transfer_yes:
+        members_mv = members_mv.exclude(vote_transfer__exact="")
+    if query_vote_transfer_no:
+        members_mv = members_mv.filter(vote_transfer__exact="")
+
+    members_mv = members_mv.values_list(
         "firstname",
         "lastname",
         "email",

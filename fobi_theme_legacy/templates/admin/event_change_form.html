@@ -1,0 +1,27 @@
+{% extends "admin/change_form.html" %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script>
+        var dict = {
+            ">M": "Kurs in Moodle anlegen",
+            "xM": "Kurs in Moodle loeschen"
+        };
+        function get(object, key, default_value) {
+            var result = object[key];
+            return (typeof result !== "undefined") ? result : default_value;
+        };
+        (function() {
+            document.addEventListener("DOMContentLoaded", function(event) {
+                let inline_actions = document.querySelectorAll(".inline_actions input");
+                for (var i=0; i < inline_actions.length; i++) {
+                    inline_actions[i].addEventListener("click", function(e) {
+                        if(!confirm("Willst du wirklich >" + get(dict, e.target.value, e.target.value) + "< ausführen?")) {
+                            e.preventDefault();
+                        }
+                    });
+                }
+            });
+        })();
+    </script>
+{% endblock %}

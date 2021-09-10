@@ -1,0 +1,49 @@
+{% load static %}
+
+<!-- REQUIRED SCRIPTS -->
+
+<!-- jQuery -->
+<script src="{% static 'plugins/jquery/jquery.min.js' %}"></script>
+
+<!-- AJAX -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js" charset="utf-8"></script>
+
+
+
+<script src="{% static 'js/script.js' %}"></script>
+<!-- Close Button Messages -->
+<script>
+	function closeAlert(event) {
+		let element = event.target;
+		while (element.nodeName !== "BUTTON") {
+			element = element.parentNode;
+		}
+		element.parentNode.parentNode.removeChild(element.parentNode);
+	}
+</script>
+<script>
+	function closeDialog(event) {
+		let element = event.target;
+		while (element.nodeName !== "BUTTON") {
+			element = element.parentNode;
+		}
+		element.parentNode.parentNode.parentNode.parentNode.parentNode.parentNode.removeChild(element.parentNode.parentNode.parentNode.parentNode.parentNode);
+	}
+</script>
+
+<!-- Dropdown Menu Navbar -->
+
+<script>
+	function openDropdown(event, dropdownID) {
+		let element = event.target;
+		while (element.nodeName !== "BUTTON") {
+			element = element.parentNode;
+		}
+		var popper = new Popper(element, document.getElementById(dropdownID), {
+			placement: 'bottom-start'
+		});
+		document.getElementById(dropdownID).classList.toggle("hidden");
+		document.getElementById(dropdownID).classList.toggle("block");
+	}
+</script>

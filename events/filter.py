@@ -1,7 +1,7 @@
 import django_filters
 from django import forms
 
-from events.models import Event, EventCategory
+from events.models import Event, EventCategory, EventMember
 
 
 class EventFilter(django_filters.FilterSet):
@@ -31,3 +31,18 @@ class EventFilter(django_filters.FilterSet):
             "first_day",
         ]
         # fields = []
+
+
+class MVMembersFilter(django_filters.FilterSet):
+    class Meta:
+        model = EventMember
+        fields = [
+            "firstname",
+            "lastname",
+            "email",
+            "date_created",
+            "member_type",
+            "vote_transfer",
+            "vote_transfer_check",
+            "check",
+        ]

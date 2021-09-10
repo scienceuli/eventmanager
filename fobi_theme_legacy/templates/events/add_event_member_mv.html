@@ -1,0 +1,31 @@
+{% extends 'base/base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto flex flex-col px-4">
+    <div class="space-y-2">
+        <h2 class="text-xl font-bold pt-4">Anmeldung </h2>
+        <p>zur <span class="font-semibold">virtuellen Mitgliederversammlung</span> des VFLL am <span class="font-semibold">17. September 2021</span></p>
+        <p>und </p>
+        <p>zur <span class="font-semibold">Online-Veranstaltung „Zukunftswerkstatt Freies Lektorat“</span> am <span class="font-semibold">18. und 19. September 2021</span></p>
+
+        <p>Anmeldeschluss: Mittwoch, 8. September 2021</p>
+        <p>*: Pflichtangaben</p>
+
+    </div>
+
+
+    <div class="pt-4">
+
+        {% csrf_token %}
+        {% crispy form %}
+
+    </div>
+
+</div>
+{% endblock %}

@@ -1,4 +1,4 @@
-{% load static auth_tags %}
+{% load static auth_tags tailwind_tags %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -17,7 +17,7 @@
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 
 	{% block extra_head %}{% endblock %}
-	<link rel="stylesheet" href="{% static 'css/styles.css' %}">
+	{% tailwind_css %}
 </head>
 
 <body class="bg-grey-lightest font-sans leading-normal tracking-normal">

@@ -1,0 +1,167 @@
+{% extends 'base/base.html' %}
+{% block title %}Anmeldung{% endblock title %}
+{% block breadcrumb %}Anmeldung{% endblock breadcrumb %}
+
+
+{% block content %}
+
+
+<!-- component -->
+<div class="grid min-h-screen place-items-center">
+  <div class="w-11/12 p-12 bg-white sm:w-8/12 md:w-1/2 lg:w-5/12">
+    <h1 class="text-xl font-semibold">Anmeldung <span class="font-normal">zur Veranstaltung</span> {{ event.name }}</h1>
+    <p class='text-left'>
+      {% with event.event_days.all|first as first %}
+      {{ first.start_date|date:"l, d. F Y"}}
+      {% endwith %}
+      {% if event.event_days.all|length > 1 %}
+      - {{ event.get_last_day.start_date|date:"l, d. F Y" }}
+      {% endif %}
+
+    </p>
+    <p class='text-left'>Dozent*in{% if event.speaker.all|length > 1 %}nen{% endif %}:&nbsp;
+      {% for speaker in event.speaker.all %}
+      {{speaker.full_name}}{% if not forloop.last %}, {% endif %}
+      {% endfor %}
+    </p>
+
+    <form class="mt-6 divide-y divide-red" method="post">
+      {% csrf_token %}
+      <div class="grid grid-cols-1 py-5">
+        <div class="flex justify-between gap-3">
+          <span class="w-1/2">
+
+            <label for="firstname" class="block text-xs font-semibold text-gray-600 uppercase">Vorname</label>
+            {{ form.firstname }}
+          </span>
+          <span class="w-1/2">
+            <label for="lastname" class="block text-xs font-semibold text-gray-600 uppercase">Nachname</label>
+            {{ form.lastname }}
+          </span>
+        </div>
+        <label for="address_line" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Anschrift
+          Zusatz</label>
+        {{ form.address_line }}
+        <label for="street" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Straße und
+          Hausnummer</label>
+        {{ form.street }}
+        <div class="flex justify-between gap-3 mt-2">
+          <span class="w-1/3">
+
+            <label for="postcode" class="block text-xs font-semibold text-gray-600 uppercase">PLZ</label>
+            {{ form.postcode }}
+          </span>
+          <span class="w-2/3">
+            <label for="city" class="block text-xs font-semibold text-gray-600 uppercase">Stadt</label>
+            {{ form.city }}
+          </span>
+        </div>
+        <label for="country" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Land</label>
+        {{ form.country }}
+        <label for="email" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">E-Mail</label>
+        {{ form.email }}
+        <label for="phone" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Telefon</label>
+        {{ form.phone }}
+
+
+
+      </div>
+      <div class="grid grid-cols-1 py-5">
+        <label for="vfll" class="inline-flex items-center">
+          {{ form.vfll }}
+          <span class="ml-3 text-xs font-semibold text-gray-600 uppercase">Ich bin VFLL-Mitglied</span>
+        </label>
+        <label for="memberships" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Ich bin Mitglied bei
+          ...</label>
+        {{ form.memberships }}
+        <label for="attention" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Ich bin auf die
+          Veranstaltung aufmerksam geworden durch</label>
+        <div class="flex justify-between gap-3 mt-2">
+          <span class="w-1/2">
+            {{ form.attention }}
+          </span>
+          <span class="w-1/2">
+            {{ form.attention_other }}
+          </span>
+        </div>
+        <span class="pt-2 text-xs font-semibold text-gray-600 uppercase">Bildungsprämie</span>
+        <label for="education_bonus" class="inline-flex items-center">
+          {{ form.education_bonus }}
+          <span class="ml-3 text-xs text-gray-600">Ich nehme die Bildungsprämie in Anspruch und lege den
+            Prämiengutschein bei.</span>
+        </label>
+
+
+
+
+
+      </div>
+      {% if event.free_text_field_intro %}
+      <div class="grid grid-cols-1 py-5">
+        <div class="pt-2 text-xs font-semibold text-gray-600 uppercase">
+          {{ event.free_text_field_intro|safe }}
+
+        </div>
+        {{ form.free_text_field }}
+      </div>
+      {% endif %}
+
+
+
+      <div class="grid grid-cols-1 py-5">
+        <p class="leading-tight">
+          <span class="text-xs font-semibold text-gray-600 uppercase">Anmeldeverfahren:</span>
+          <span class="text-xs">
+            Anmeldung – Rechnungsstellung nach Anmeldeschluss – Zahlung nach
+            Rechnungserhalt. Die Anmeldungen werden in der Reihenfolge ihres Eingangs berücksichtigt.
+          </span>
+        </p>
+        <p class="pt-2 leading-tight">
+          <span class="text-xs font-semibold text-gray-600 uppercase">Stornierung: </span>
+          <span class="text-xs">Bei einer Stornierung der Teilnahme nach dem Anmeldeschluss wird die Teilnahmegebühr nur
+            erstattet, wenn
+            a) eine Person von der Warteliste nachrücken kann oder b) die Person, die storniert, eine Ersatzperson
+            stellt. Dies gilt auch im Krankheitsfall. Bei einer Stornierung der Teilnahme vor dem Anmeldeschluss
+            entstehen keine Kosten.
+          </span>
+
+      </div>
+
+      <div class="grid grid-cols-1 py-5">
+        <span class="pt-2 text-xs font-semibold text-gray-600 uppercase">Einverständniserklärung</span>
+        <label for="check" class="inline-flex items-center">
+          {{ form.check }}
+          <span class="ml-3 text-xs text-gray-600">
+            {% if event.category|stringformat:"s" == 'Onlineseminare' %}
+            Ich bin damit einverstanden, während des Webinars mit vollem Namen
+            für alle erkennbar und ansprechbar zu sein. Bei Bedarf werde ich auch per Kamera sichtbar sein.
+            Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, Telefon, E-Mail-Adresse) an den/die Referent*in weitergegeben werden.
+            {% else %}
+            Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und
+            Nachname, Telefon, E-Mail-Adresse) auf der Teilnehmerliste stehen und an die Teilnehmer*innen sowie den/die
+            Dozent*in weitergegeben werden.
+            {% endif %}
+          </span>
+        </label>
+
+      </div>
+      <div class="grid grid-cols-1 py-5 text-xs">
+        <span class='font-bold'>Datenschutzhinweis:</span> Wir verwenden Ihre Angaben ausschließlich zur Durchführung der Veranstaltungen des Verbands der freien Lektorinnen und Lektoren e. V. Ihre Daten werden nicht an unbefugte Dritte weitergegeben. Verantwortlich im Sinne der DSGVO ist der Vorstand des Verbands der Freien Lektorinnen und Lektoren e. V., Geschäftsstelle, Büro Seehausen + Sandberg, Merseburger Straße 5, 10823 Berlin.
+
+      </div>
+      <div class="grid grid-cols-1 py-5">
+        <button type="submit" class="w-full py-3 mt-6 text-xl font-bold rounded-full tracking-widest text-vfllred uppercase bg-gray-200 focus:outline-none hover:shadow-lg">
+          Verbindlich anmelden
+        </button>
+
+
+        <button class="flex justify-between inline-block mt-4 text-xs text-gray-500 cursor-pointer hover:text-black" onclick="javascript:history.back();">Abbrechen</button>
+
+      </div>
+
+    </form>
+  </div>
+</div>
+
+
+{% endblock content %}
