@@ -367,18 +367,15 @@
                         <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Weitere Infos</h2>
                         <p class="leading-relaxed">
                             {% for sponsor in event.sorted_sponsors %}
-                            {{ sponsor.first_name }} {{ sponsor.last_name }}
-                            {% if sponsor.email %}
-                            ,
-                            {{ sponsor.email }}
-                            {% endif %}
-                            {% if sponsor.phone %}
-                            ,
+                            {% spaceless %}
+                            {{ sponsor.first_name }}&nbsp;{{ sponsor.last_name }}{% if sponsor.email %},&nbsp;
+                            {{ sponsor.email }}{% endif %}{% if sponsor.phone %},&nbsp;
                             {{ sponsor.phone }}
                             {% endif %}
                             {% if not forloop.last %}
                             <br />
                             {% endif %}
+                            {% endspaceless %}
                             {% endfor %}
                         </p>
 
