@@ -453,7 +453,6 @@ class EventSponsorAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        ("Position", {"fields": ("position",)}),
         ("Über", {"fields": ("image",)}),
         (
             "Intern",
