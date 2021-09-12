@@ -198,7 +198,9 @@ class Event(BaseModel):
         EventSpeaker, verbose_name="Dozent*innen", through="EventSpeakerThrough"
     )
     sponsors = models.ManyToManyField(
-        EventSponsor, verbose_name="Pate,Patin", through="EventSponsorThrough"
+        EventSponsor,
+        verbose_name="Pate,Patin",
+        through="EventSponsorThrough",
     )
     regio_group = models.CharField(
         "Regionalgruppe",
@@ -454,6 +456,10 @@ class Event(BaseModel):
         except IndexError:
             pass
 
+    @property
+    def sorted_sponsors(self):
+        return self.sponsors.order_by("eventsponsorthrough__position")
+
     def save(self, *args, **kwargs):
         max_length = self._meta.get_field("slug").max_length
         last_id = 0
@@ -495,10 +501,14 @@ class EventSponsorThrough(BaseModel):
     event = models.ForeignKey(
         Event, verbose_name="Veranstaltung", on_delete=models.CASCADE
     )
+    position = models.PositiveSmallIntegerField(default=1)
 
     class Meta:
         verbose_name = "Pat*in"
         verbose_name_plural = "Pat*innen"
+        ordering = [
+            "position",
+        ]
 
 
 class EventDay(BaseModel):

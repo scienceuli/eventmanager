@@ -59,6 +59,7 @@ from .models import (
     EventImage,
     EventMember,
     EventHighlight,
+    EventSponsor,
 )
 
 from .tables import EventMembersTable
