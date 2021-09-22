@@ -674,6 +674,7 @@ class EventApi(APIView):
         events = (
             Event.objects.exclude(event_days=None)
             .filter(first_day__gt=start, first_day__lt=end)
+            .filter(pub_status="PUB")
             .order_by("first_day")
         )
         serializer = EventSerializer(events, many=True, context={"request": request})
