@@ -294,7 +294,7 @@ def search_event(request):
         data = request.POST["search"]
 
         event_queryset_unsorted = (
-            Event.objects.all().exclude(event_days=None).filter(name__icontains=data)
+            Event.objects.all().exclude(event_days=None).filter(pub_status='PUB').filter(name__icontains=data)
         )  # unsorted
 
         event_queryset = sorted(
