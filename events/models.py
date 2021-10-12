@@ -191,7 +191,7 @@ class Event(BaseModel):
         max_length=255,
     )
     prerequisites = RichTextUploadingField(
-        verbose_name="Voraussetzungen", max_length=255, config_name="short"
+        verbose_name="Voraussetzungen", config_name="short"
     )
     objectives = RichTextUploadingField(verbose_name="Lernziele", config_name="short")
     speaker = models.ManyToManyField(
