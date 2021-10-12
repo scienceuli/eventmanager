@@ -201,11 +201,11 @@ CELERY_BEAT_SCHEDULE = {
     # Executes every minute
     "get_courses_from_moodle_every_minute": {
         "task": "events.tasks.get_courses_from_moodle",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(minute="*/10"),
     },
     "get_and_save_courses_from_moodle_every_minute": {
         "task": "events.tasks.get_and_save_courses_from_moodle",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(minute="*/10"),
     },
 }
 
