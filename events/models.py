@@ -160,7 +160,7 @@ class Event(BaseModel):
     )
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
-    slug = models.SlugField(max_length=255, null=False, unique=True, editable=False)
+    slug = models.SlugField(max_length=255, null=False, unique=True, editable=True)
 
     pub_status = models.CharField(
         max_length=8,

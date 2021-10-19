@@ -549,7 +549,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     search_fields = ("name",)
     readonly_fields = (
         "uuid",
-        "slug",
+        # "slug",
         "moodle_id",
         "moodle_course_created",
         "date_created",
