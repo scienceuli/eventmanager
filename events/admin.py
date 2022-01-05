@@ -29,12 +29,15 @@ from .actions import export_as_xls, import_from_csv
 from .validators import csv_content_validator
 
 from .models import (
+    Home,
     EventCategory,
     EventFormat,
     Event,
     EventDay,
     EventHighlight,
     EventImage,
+    EventDocument,
+    EventOrganizer,
     EventSpeaker,
     EventSpeakerThrough,
     EventSponsor,
@@ -63,11 +66,30 @@ from django.conf.locale.de import formats as de_formats
 de_formats.DATETIME_FORMAT = "d.m.y H:i"
 
 
+class HomeAdmin(admin.ModelAdmin):
+    model = Home
+
+    def has_add_permission(self, request):
+        # if there's already an entry, do not allow adding
+        count = Home.objects.all().count()
+        if count == 0:
+            return True
+
+        return False
+
+
+admin.site.register(Home, HomeAdmin)
+
+
 class EventCategoryAdmin(admin.ModelAdmin):
     model = EventCategory
 
     def has_delete_permission(self, request, obj=None):
         return False
+
+
+class EventOrganizerAdmin(admin.ModelAdmin):
+    model = EventOrganizer
 
 
 class InlineWithoutDelete(BaseInlineFormSet):
@@ -82,6 +104,13 @@ class InlineWithoutDelete(BaseInlineFormSet):
 
 class EventImageInline(admin.StackedInline):
     model = EventImage
+
+
+class EventDocumentInline(admin.StackedInline):
+    model = EventDocument
+    extra = 0
+    verbose_name = "Dokument"
+    verbose_name_plural = "Dokumente"
 
 
 class EventAgendaInline(admin.StackedInline):
@@ -549,7 +578,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     search_fields = ("name",)
     readonly_fields = (
         "uuid",
-        # "slug",
+        "slug",
         "moodle_id",
         "moodle_course_created",
         "date_created",
@@ -578,12 +607,13 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
         (
-            "Ort, Kosten, Dauer, Regio",
+            "Ort, Kosten, Dauer, Regio, Veranstalter",
             {
                 "fields": (
                     "location",
                     "duration",
                     "regio_group",
+                    "organizer",
                     "fees",
                     "catering",
                     "lodging",
@@ -633,6 +663,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         EventSponsorThroughInline,
         EventAgendaInline,
         EventImageInline,
+        EventDocumentInline,
         EventMemberInline,
     )
     actions = ("copy_event",)
@@ -913,6 +944,13 @@ class EventLocationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(EventLocation, EventLocationAdmin)
+
+
+class EventOrganizerAdmin(admin.ModelAdmin):
+    list_display = ("name", "contact", "url")
+
+
+admin.site.register(EventOrganizer, EventOrganizerAdmin)
 
 
 class EmailTemplateAdmin(admin.ModelAdmin):
