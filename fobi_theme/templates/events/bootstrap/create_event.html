@@ -1,0 +1,96 @@
+{% load widget_tweaks %}
+
+<form method="post" action="" novalidate>
+    {% csrf_token %}
+
+    <div class="modal-header">
+        <h3 class="modal-title">Veranstaltung anlegen</h3>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div class="modal-body">
+
+        <div class="{% if form.non_field_errors %}invalid{% endif %} mb-2">
+            {% for error in form.non_field_errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+            {% render_field field class="form-control" %}
+            <div class="{% if field.errors %}invalid{% endif %}">
+                {% for error in field.errors %}
+                <p class="help-block">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        <table class="table">
+            {{ days.management_form }}
+
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Beginn</th>
+                    <th>Ende</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in days.forms %}
+                <tr class="{% cycle row1 row2 %} formset_day_row">
+                    {% for field in form.visible_fields %}
+                    <td>
+                        {# Include the hidden fields in the form #}
+                        {% if forloop.first %}
+                        {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
+                        {% endfor %}
+                        {% endif %}
+                        {{ field.errors.as_ul }}
+                        {{ field }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table class="table">
+            {{ documents.management_form }}
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Beschreibung</th>
+                    <th>Datei</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in documents.forms %}
+                <tr class="{% cycle row1 row2 %} formset_doc_row">
+                    {% for field in form.visible_fields %}
+                    <td>
+                        {# Include the hidden fields in the form #}
+                        {% if forloop.first %}
+                        {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
+                        {% endfor %}
+                        {% endif %}
+                        {{ field.errors.as_ul }}
+                        {{ field }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Erzeugen</button>
+    </div>
+
+</form>

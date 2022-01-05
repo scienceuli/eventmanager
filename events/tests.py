@@ -1,27 +1,29 @@
-import datetime as dt
+import datetime
 
 from django.db import IntegrityError
-from django.test import RequestFactory, TestCase
+from django.test import RequestFactory, TestCase, Client
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 from django.conf import settings
 from django.contrib import messages
 from django.core import mail
-from django.test import Client
+from django.http import HttpRequest
 
 
 from events.models import (
     Event,
+    EventDay,
     EventFormat,
     EventLocation,
+    EventOrganizer,
     EventCategory,
     EventSpeaker,
     EventSponsor,
     EventMember,
 )
 
-from events.forms import SymposiumForm
+from events.forms import SymposiumForm, EventModelForm
 
 from events.views import event_add_member, EventMembersListView
 from events.email_template import EmailTemplate
@@ -462,3 +464,85 @@ class EventViewsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(table.rows), 1)
         self.assertEqual(table.rows[0].get_cell("lastname"), "MVTest")
+
+
+##################################################
+# test of views and forms for internal vfll-events
+##################################################
+
+
+class TestEventModelForm(TestCase):
+    def setUp(self):
+        EventCategory.objects.create(
+            name="name",
+            title="title",
+            description="description",
+            singular="singular",
+            position=1,
+        )
+        # create event format
+        EventFormat.objects.create(name="Testformat")
+        # create location
+        EventLocation.objects.create(title="Testlocation")
+        # create organizer
+        EventOrganizer.objects.create(
+            name="Test Organizer", url="https://www.testorganizer.de"
+        )
+
+    def test_empty_form(self):
+        form = EventModelForm()
+        # testing one field
+        self.assertIn("name", form.fields)
+        # assertInHtml raises Error, use assertIn instead
+        self.assertIn('<input type="text" name="name"', str(form))
+
+    def test_full_form_with_two_days(self):
+        response = self.client.get(reverse("event-create-nm"))
+        self.assertEqual(response.status_code, 200)
+        # print(response.context["days"].management_form)
+        data = {
+            "name": "event 2 just for testing",
+            "category": EventCategory.objects.get(id=1),
+            "eventformat": EventFormat.objects.get(id=1),
+            "pub_status": "UNPUB",
+            "fees": "no costs",
+            "location": EventLocation.objects.get(id=1),
+            "organizer": EventOrganizer.objects.get(id=1),
+            "event_days-TOTAL_FORMS": "2",
+            "event_days--INITIAL_FORMS": "0",
+            "event_days--MIN_NUM_FORMS": "0",
+            "event_days--MAX_NUM_FORMS": "1000",
+            "event_days-0-start_date": datetime.date(2022, 2, 5),
+            "event_days-0-start_time": datetime.time(8, 0),
+            "event_days-0-end_time": datetime.time(12, 0),
+            "event_days-0-start_date": datetime.date(2022, 2, 6),
+            "event_days-1-start_time": datetime.time(8, 0),
+            "event_days-1-end_time": datetime.time(12, 0),
+        }
+        response = self.client.post(reverse("event-create-nm"), data=data)
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Event.objects.count(), 1)
+        self.assertEqual(EventDay.objects.count(), 2)
+
+    def test_can_create_event(self):
+        request = HttpRequest()
+        request.POST = {
+            "name": "event just for testing",
+            "category": EventCategory.objects.get(id=1),
+            "eventformat": EventFormat.objects.get(id=1),
+            "pub_status": "UNPUB",
+            "fees": "no costs",
+            "location": EventLocation.objects.get(id=1),
+            "organizer": EventOrganizer.objects.get(id=1),
+            "event_days-TOTAL_FORMS": "1",
+            "event_days--INITIAL_FORMS": "0",
+            "event_days--MIN_NUM_FORMS": "0",
+            "event_days--MAX_NUM_FORMS": "1000",
+            "event_days-0-start_date": datetime.date(2022, 2, 5),
+            "event_days-0-start_time": datetime.time(8, 0),
+            "event_days-0-end_time": datetime.time(12, 0),
+        }
+        form = EventModelForm(request.POST)
+        form.save()
+        self.assertEqual(Event.objects.count(), 1)
+        self.assertEqual(EventDay.objects.count(), 1)

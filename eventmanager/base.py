@@ -58,6 +58,9 @@ INSTALLED_APPS = [
     "inline_actions",
     "fieldsets_with_inlines",
     "wkhtmltopdf",
+    "bootstrap_modal_forms",
+    "widget_tweaks",
+    "tinymce",
     # tailwind theme app
     "fobi_theme",
     # lokale apps

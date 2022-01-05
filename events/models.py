@@ -19,6 +19,25 @@ from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
 from events.utils import find_duplicates_in_list
 
 
+class Home(BaseModel):
+    """
+    Model for start page title and text
+    Only one record is allowed
+    Restriction ist made in ModelAdmin
+    """
+
+    name = models.CharField("Name", max_length=40)
+    title = models.CharField("Titel", max_length=255, null=True, blank=True)
+    text = models.TextField("Haupttext", blank=True)
+
+    class Meta:
+        verbose_name = "Home"
+        verbose_name_plural = "Home"
+
+    def __str__(self):
+        return self.name
+
+
 class EventCategory(BaseModel):
     name = models.CharField(max_length=255, unique=True)
     title = models.CharField(max_length=255, null=True, blank=True)
@@ -95,6 +114,17 @@ class EventLocation(AddressModel):
                 address += self.state
 
         return address
+
+
+class EventOrganizer(BaseModel):
+    name = models.CharField(max_length=255)
+    contact = models.CharField(
+        verbose_name="Kontakt", max_length=255, blank=True, null=True
+    )
+    url = models.URLField(verbose_name="Veranstalter Website", blank=True)
+
+    def __str__(self):
+        return self.name
 
 
 class EventSpeaker(BaseModel):
@@ -182,18 +212,25 @@ class Event(BaseModel):
         unique=True,
         help_text="eindeutiger Kurzname",
     )
-    description = RichTextUploadingField(verbose_name="Teaser", config_name="short")
+    description = RichTextUploadingField(
+        verbose_name="Teaser", blank=True, config_name="short"
+    )
     duration = models.CharField(
         verbose_name="Dauer", max_length=255, null=True, blank=True
     )
     target_group = models.CharField(
         verbose_name="Zielgruppe",
+        null=True,
+        blank=True,
         max_length=255,
     )
     prerequisites = RichTextUploadingField(
-        verbose_name="Voraussetzungen", config_name="short"
+        verbose_name="Voraussetzungen", null=True, blank=True, config_name="short"
     )
-    objectives = RichTextUploadingField(verbose_name="Lernziele", config_name="short")
+    objectives = RichTextUploadingField(
+        verbose_name="Lernziele", null=True, blank=True, config_name="short"
+    )
+
     speaker = models.ManyToManyField(
         EventSpeaker, verbose_name="Dozent*innen", through="EventSpeakerThrough"
     )
@@ -202,6 +239,15 @@ class Event(BaseModel):
         verbose_name="Pate,Patin",
         through="EventSponsorThrough",
     )
+
+    organizer = models.ForeignKey(
+        EventOrganizer,
+        verbose_name="Veranstalter",
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="organizer_events",
+    )
+
     regio_group = models.CharField(
         "Regionalgruppe",
         max_length=3,
@@ -210,6 +256,9 @@ class Event(BaseModel):
     )
     methods = models.CharField(
         verbose_name="Methoden", max_length=255, null=True, blank=True
+    )
+    contribution = models.CharField(
+        verbose_name="VFLL-Beteiligung", max_length=255, null=True, blank=True
     )
 
     SCHEDULED_STATUS_CHOICES = (
@@ -263,6 +312,10 @@ class Event(BaseModel):
     )
     notes = RichTextField(
         verbose_name="Hinweise", null=True, blank=True, config_name="short"
+    )
+
+    notes_internal = RichTextField(
+        verbose_name="interne Hinweise", null=True, blank=True, config_name="short"
     )
 
     free_text_field_intro = RichTextField(
@@ -478,7 +531,7 @@ class Event(BaseModel):
 
         self.first_day = self.get_first_day_start_date()
 
-        super(Event, self).save(*args, **kwargs)
+        return super().save(*args, **kwargs)
 
 
 class EventSpeakerThrough(BaseModel):
@@ -509,6 +562,18 @@ class EventSponsorThrough(BaseModel):
         ordering = [
             "position",
         ]
+
+
+class EventDocument(BaseModel):
+    event = models.ForeignKey(
+        Event, related_name="event_documents", on_delete=models.CASCADE
+    )
+    title = models.CharField("Titel", max_length=255)
+    description = models.TextField("Beschreibung", null=True, blank=True)
+    upload = models.FileField(upload_to="documents/")
+
+    def __str__(self):
+        return self.title
 
 
 class EventDay(BaseModel):

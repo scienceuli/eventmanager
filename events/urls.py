@@ -1,14 +1,19 @@
-from django.urls import path
+from django.urls import path, include
 
 from .views import (
+    EventListInternalView,
+    EventListFilterInternalView,
     EventListView,
     EventMemberDetailView,
     EventUpdateCapacityView,
     FilteredEventListView,
     EventCreateView,
+    EventLocationCreateView,
+    EventOrganizerCreateView,
     EventCategoryListView,
     EventCategoryCreateView,
     EventUpdateView,
+    EventReadView,
     EventDetailView,
     EventDeleteView,
     EventMemberUpdateView,
@@ -36,25 +41,52 @@ def trigger_error(request):
 
 urlpatterns = [
     path("sentry-debug/", trigger_error),  # sentry test
+    path("tinymce/", include("tinymce.urls")),
     path("", home, name="home"),
     path("dashboard/", dashboard, name="dashboard"),
     path("event_list/", EventListView.as_view(), name="event-list"),
     path("event_filter/", FilteredEventListView.as_view(), name="event-filter"),
-    path("event-create/", EventCreateView.as_view(), name="event-create"),
+    path("event_create/", EventCreateView.as_view(), name="event-create"),
+    path(
+        "event_location_create/",
+        EventLocationCreateView.as_view(),
+        name="event-location-create",
+    ),
+    path(
+        "event_organizer_create/",
+        EventOrganizerCreateView.as_view(),
+        name="event-organizer-create",
+    ),
+    path(
+        "event_create_nm/",
+        EventCreateView.as_view(template_name="events/bootstrap/create_event_nm.html"),
+        name="event-create-nm",
+    ),  # no modal template
+    path(
+        "event_list_internal_filter/",
+        EventListFilterInternalView.as_view(),
+        name="event-list-internal-filter",
+    ),
+    path("event_update/<int:pk>", EventUpdateView.as_view(), name="event-update"),
+    path("event_read/<int:pk>", EventReadView.as_view(), name="event-read"),
+    path("event_delete/<int:pk>", EventDeleteView.as_view(), name="event-delete"),
+    path(
+        "event_list_internal/",
+        EventListInternalView.as_view(),
+        name="event-list-internal",
+    ),
     path("category-list/", EventCategoryListView.as_view(), name="event-category-list"),
     path(
         "create-category/",
         EventCategoryCreateView.as_view(),
         name="create-event-category",
     ),
-    path("event/<int:pk>/edit/", EventUpdateView.as_view(), name="event-edit"),
     path("detail/<slug:slug>", EventDetailView.as_view(), name="event-detail"),
     path(
         "event/<int:pk>/update_capacity/",
         EventUpdateCapacityView.as_view(),
         name="update-capacity",
     ),
-    path("delete/<int:pk>", EventDeleteView.as_view(), name="event-delete"),
     path("event_add_member/<slug:slug>", event_add_member, name="event-add-member"),
     path("search_event/", search_event, name="search-event"),
     path("moodle_list/", moodle, name="moodle-list"),

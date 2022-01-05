@@ -1,0 +1,89 @@
+{% extends 'events/bootstrap/base.html' %}
+
+{% block content %}
+
+{% include "events/bootstrap/_modal.html" %}
+
+<div class="container mt-3">
+  <div class="row">
+    <div class="col">
+      <p>Veranstaltungen anlegen, updaten, löschen</p>
+
+      <div class="row">
+        <div class="col-12 mb-3">
+          <a class="btn btn-primary" href="{% url 'event-create-nm' %}" role="button">Veranstaltung anlegen</a>
+
+
+          <button id="filter-event-category" class="filter-book btn btn-primary" type="button" name="button" data-form-url="{% url 'event-list-internal-filter' %}">
+            <span class="fa fa-filter mr-2"></span>Veranstaltung filtern (Kategorie)
+          </button>
+        </div>
+        <div class="col-12 mb-3">
+          {% if 'category' in request.GET %}
+          <p class="category-filtered-events">Veranst. gefiltert (Kat.)</p>
+          {% endif %}
+          {% include "events/bootstrap/_events_table.html" %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
+
+{% block extrascripts %}
+<script type="text/javascript">
+
+  // Create event synchronous
+  function createEventSyncModalForm() {
+    $("#create-event-sync").modalForm({
+      formURL: "{% url 'event-create' %}",
+      modalID: "#create-modal"
+    });
+  }
+  createEventSyncModalForm();
+
+  // modal forms
+
+  // update event button - formURL is retrieved from the data of the element
+  function updateEventModalForm() {
+    $(".update-event").each(function () {
+      $(this).modalForm({ formURL: $(this).data("form-url") });
+    });
+  }
+  updateEventModalForm();
+
+
+  // Delete event buttons - formURL is retrieved from the data of the element
+  function deleteEventModalForm() {
+    $(".delete-event").each(function () {
+      $(this).modalForm({ formURL: $(this).data("form-url"), isDeleteForm: true });
+    });
+  }
+  deleteEventModalForm();
+
+  // Read event buttons
+  function readEventModalForm() {
+    $(".read-event").each(function () {
+      $(this).modalForm({ formURL: $(this).data("form-url") });
+    });
+  }
+  readEventModalForm();
+
+  function reinstantiateModalForms() {
+    readEventModalForm();
+    updateEventModalForm();
+    deleteEventModalForm();
+  }
+
+  // Filter books button
+  $("#filter-event").each(function () {
+    $(this).modalForm({ formURL: $(this).data("form-url") });
+  });
+
+  // Hide message
+  $(".alert").fadeTo(2000, 500).slideUp(500, function () {
+    $(".alert").slideUp(500);
+  });
+</script>
+{% endblock extrascripts %}

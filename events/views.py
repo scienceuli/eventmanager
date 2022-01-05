@@ -1,6 +1,8 @@
 import csv
 from events.actions import convert_boolean_field
 
+from django.db import transaction
+from django.db.models import Max
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import request, HttpResponse, HttpResponseRedirect
 from django.contrib import messages
@@ -23,6 +25,12 @@ from django.views.generic import (
     UpdateView,
     DetailView,
     DeleteView,
+)
+from bootstrap_modal_forms.generic import (
+    BSModalCreateView,
+    BSModalUpdateView,
+    BSModalReadView,
+    BSModalDeleteView,
 )
 
 from django_tables2 import SingleTableView
@@ -54,8 +62,10 @@ logging.basicConfig(filename="mail_sent.log", encoding="utf-8", level=logging.DE
 #
 
 from .models import (
+    Home,
     EventCategory,
     Event,
+    EventLocation,
     EventImage,
     EventMember,
     EventHighlight,
@@ -65,7 +75,12 @@ from .models import (
 from .tables import EventMembersTable
 
 from .forms import (
+    EventDayFormSet,
+    EventLocationModelForm,
+    EventOrganizerModelForm,
+    EventModelForm,
     EventMemberForm,
+    EventDocumentFormSet,
     SymposiumForm,
     AddMemberForm,
     EventUpdateCapacityForm,
@@ -97,6 +112,7 @@ class GroupTestMixin(UserPassesTestMixin):
 
 
 def home(request):
+    home = Home.objects.all().first()
     event_highlight_query = EventHighlight.objects.filter(id=1).filter(
         event__first_day__gte=date.today()
     )
@@ -105,7 +121,7 @@ def home(request):
     else:
         event_highlight = None
 
-    context = {"event_highlight": event_highlight}
+    context = {"event_highlight": event_highlight, "home": home}
 
     return render(request, "events/home.html", context)
 
@@ -121,6 +137,27 @@ def dashboard(request):
         "events": events,
     }
     return render(request, "events/dashboard.html", context)
+
+
+class EventListInternalView(LoginRequiredMixin, ListView):
+    model = Event
+    context_object_name = "events"
+    template_name = "events/bootstrap/event_list_internal.html"
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if "category" in self.request.GET:
+            qs = qs.filter(category=int(self.request.GET["category"]))
+        return qs
+
+
+class EventListFilterInternalView(LoginRequiredMixin, ListView):
+    pass
+
+
+class EventReadView(LoginRequiredMixin, BSModalReadView):
+    model = Event
+    template_name = "events/bootstrap/read_event.html"
 
 
 class EventListView(ListView):
@@ -244,15 +281,102 @@ class FilteredEventListView(ListView):
 
 
 class EventCreateView(LoginRequiredMixin, CreateView):
+    form_class = EventModelForm
+    template_name = "events/bootstrap/create_event_nm.html"
+    success_message = "Erfolg: Veranstaltung wurde angelegt."
+    success_url = reverse_lazy("event-list-internal")
+
+    def get_initial(self):
+        # get the max position value of categories
+        max_position = EventCategory.objects.aggregate(Max("position")).get(
+            "position__max"
+        )
+        # get the category vfll-intern or create it
+        obj, created = EventCategory.objects.get_or_create(
+            name="vfll_intern",
+            defaults={"title": "Vfll-Beteiligung", "position": max_position + 1},
+        )
+        return {"pub_status": "UNPUB", "category": obj}
+
+    def get_context_data(self, **kwargs):
+        data = super(EventCreateView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            data["documents"] = EventDocumentFormSet(
+                self.request.POST, self.request.FILES
+            )
+            data["days"] = EventDayFormSet(self.request.POST)
+        else:
+            data["documents"] = EventDocumentFormSet()
+            data["days"] = EventDayFormSet()
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        documents = context["documents"]
+        days = context["days"]
+
+        with transaction.atomic():
+            # form.instance.created_by = self.request.user
+            self.object = form.save()
+            print(days)
+            if documents.is_valid():
+                documents.instance = self.object
+                documents.save()
+            if days.is_valid():
+                days.instance = self.object
+                days.save()
+            else:
+                print("ERROR", days.errors)
+                messages.error(request, "ERROR")
+        return super(EventCreateView, self).form_valid(form)
+
+
+class EventUpdateModalView(LoginRequiredMixin, BSModalUpdateView):
     model = Event
-    fields = [
-        "name",
-    ]
-    template_name = "events/create_event.html"
+    template_name = "events/bootstrap/update_event.html"
+    form_class = EventModelForm
+    success_message = "Erfolg: Veranstaltung wurde aktualisiert."
+    success_url = reverse_lazy("event-list-internal")
 
 
 class EventUpdateView(LoginRequiredMixin, UpdateView):
-    pass
+    model = Event
+    template_name = "events/bootstrap/update_event_nm.html"
+    form_class = EventModelForm
+    success_message = "Veranstaltung wurde aktualisiert."
+    success_url = reverse_lazy("event-list-internal")
+
+    def get_context_data(self, **kwargs):
+        data = super(EventUpdateView, self).get_context_data(**kwargs)
+        if self.request.POST:
+            data["documents"] = EventDocumentFormSet(
+                self.request.POST, self.request.FILES, instance=self.object
+            )
+            data["days"] = EventDayFormSet(self.request.POST, instance=self.object)
+        else:
+            data["documents"] = EventDocumentFormSet(instance=self.object)
+            data["days"] = EventDayFormSet(instance=self.object)
+        return data
+
+    def form_valid(self, form):
+        context = self.get_context_data()
+        documents = context["documents"]
+        days = context["days"]
+
+        with transaction.atomic():
+            # form.instance.created_by = self.request.user
+            self.object = form.save()
+            print(days)
+            if documents.is_valid():
+                documents.instance = self.object
+                documents.save()
+            if days.is_valid():
+                days.instance = self.object
+                days.save()
+            else:
+                print("ERROR", days.errors)
+                messages.error(request, "ERROR")
+        return super(EventUpdateView, self).form_valid(form)
 
 
 # class EventDetailView(LoginRequiredMixin, DetailView):
@@ -263,8 +387,11 @@ class EventDetailView(DetailView):
     context_object_name = "event"
 
 
-class EventDeleteView(LoginRequiredMixin, DeleteView):
-    pass
+class EventDeleteView(LoginRequiredMixin, BSModalDeleteView):
+    model = Event
+    template_name = "events/bootstrap/delete_event.html"
+    success_message = "Erfolg: Veranstaltung wurde gelöscht."
+    success_url = reverse_lazy("event-list-internal")
 
 
 class EventCategoryListView(LoginRequiredMixin, ListView):
@@ -289,12 +416,31 @@ class EventCategoryCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+class EventLocationCreateView(LoginRequiredMixin, BSModalCreateView):
+    login_url = "login"
+    form_class = EventLocationModelForm
+    template_name = "events/bootstrap/create_location.html"
+    success_message = "Location erfolgreich angelegt"
+    success_url = reverse_lazy("event-create-nm")
+
+
+class EventOrganizerCreateView(LoginRequiredMixin, BSModalCreateView):
+    login_url = "login"
+    form_class = EventOrganizerModelForm
+    template_name = "events/bootstrap/create_organizer.html"
+    success_message = "Veranstalter erfolgreich angelegt"
+    success_url = reverse_lazy("event-create-nm")
+
+
 def search_event(request):
     if request.method == "POST":
         data = request.POST["search"]
 
         event_queryset_unsorted = (
-            Event.objects.all().exclude(event_days=None).filter(pub_status='PUB').filter(name__icontains=data)
+            Event.objects.all()
+            .exclude(event_days=None)
+            .filter(pub_status="PUB")
+            .filter(name__icontains=data)
         )  # unsorted
 
         event_queryset = sorted(

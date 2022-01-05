@@ -1,6 +1,7 @@
 from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from tinymce.widgets import TinyMCE
 
 
 from crispy_forms.helper import FormHelper
@@ -10,8 +11,236 @@ from crispy_forms.bootstrap import PrependedAppendedText, InlineRadios
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
 
+from django.forms.models import inlineformset_factory
 
-from events.models import Event, EventMember
+from bootstrap_modal_forms.forms import BSModalModelForm, BSModalForm
+
+from events.models import (
+    Event,
+    EventCategory,
+    EventDocument,
+    EventDay,
+    EventMember,
+    EventLocation,
+    EventOrganizer,
+)
+
+from .widgets import RelatedFieldWidgetCanAddWithModal
+
+
+class EventDocumentForm(forms.ModelForm):
+    class Meta:
+        model = EventDocument
+        exclude = ()
+        widgets = {
+            "description": forms.Textarea(attrs={"rows": 2}),
+        }
+
+
+EventDocumentFormSet = inlineformset_factory(
+    Event,
+    EventDocument,
+    form=EventDocumentForm,
+    fields=["title", "description", "upload"],
+    extra=1,
+    can_delete=True,
+)
+
+
+class EventDayForm(forms.ModelForm):
+    """Form for Event Day Input.
+    type='date' yields html5 date picker in form and passes date in YYYY-mm-dd form.
+    for correct rendering of  initial date the same format must be specified in widget
+    """
+
+    start_date = forms.DateField(
+        widget=forms.DateInput(format=("%Y-%m-%d"), attrs={"type": "date"})
+    )
+    # start_date = forms.DateField(
+    #     required=True,
+    #     label="Datum",
+    #     input_formats=["%d.%m.%Y"],
+    #     error_messages={"invalid": "Datum im Format DD.MM.YYYY angeben."},
+    #     widget=forms.DateInput(
+    #         format="%d.%m.%Y",
+    #         attrs={
+    #             "placeholder": "DD.MM.YYYY",
+    #             "type": "date",
+    #         },
+    #     ),
+    # )
+    start_time = forms.TimeField(widget=forms.TimeInput(attrs={"type": "time"}))
+    # start_time = forms.TimeField(
+    #     required=True,
+    #     label="Beginn",
+    #     input_formats=["%H:%M"],
+    #     error_messages={"invalid": "Zeit im Format HH:MM angeben."},
+    #     widget=forms.TimeInput(
+    #         format="%H:%M",
+    #         attrs={
+    #             "placeholder": "HH:MM",
+    #             "type": "time",
+    #         },
+    #     ),
+    # )
+    end_time = forms.TimeField(widget=forms.TimeInput(attrs={"type": "time"}))
+
+    # end_time = forms.TimeField(
+    #     required=True,
+    #     label="Ende",
+    #     input_formats=["%H:%M"],
+    #     error_messages={"invalid": "Zeit im Format HH:MM angeben."},
+    #     widget=forms.TimeInput(
+    #         format="%H:%M",
+    #         attrs={
+    #             "placeholder": "HH:MM",
+    #             "type": "time",
+    #         },
+    #     ),
+    # )
+
+    class Meta:
+        model = EventDay
+        exclude = ()
+
+
+EventDayFormSet = inlineformset_factory(
+    Event,
+    EventDay,
+    form=EventDayForm,
+    fields=["start_date", "start_time", "end_time"],
+    extra=1,
+    can_delete=True,
+)
+
+STATE_CHOICES = (
+    ("kA", "*"),
+    ("BW", "Baden-Württemberg"),
+    ("BY", "Bayern"),
+    ("BE", "Berlin"),
+    ("BB", "Brandenburg"),
+    ("HB", "Bremen"),
+    ("HH", "Hamburg"),
+    ("HE", "Hessen"),
+    ("MV", "Mecklenburg-Vorpommern"),
+    ("NI", "Niedersachsen"),
+    ("NW", "Nordrhein-Westfalen"),
+    ("RP", "Rheinland-Pfalz"),
+    ("SL", "Saarland"),
+    ("SN", "Sachsen"),
+    ("ST", "Sachsen-Anhalt"),
+    ("SH", "Schleswig-Holstein"),
+    ("TH", "Thüringen"),
+)
+
+
+class EventOrganizerModelForm(BSModalModelForm):
+    class Meta:
+        model = EventOrganizer
+        fields = [
+            "name",
+            "contact",
+            "url",
+        ]
+
+
+class EventLocationModelForm(BSModalModelForm):
+    state = forms.ChoiceField(required=False, label="Bundesland", choices=STATE_CHOICES)
+
+    class Meta:
+        model = EventLocation
+        fields = [
+            "title",
+            "address_line",
+            "street",
+            "postcode",
+            "city",
+            "state",
+            "country",
+            "url",
+        ]
+
+
+class EventModelForm(forms.ModelForm):
+    # start_date = forms.DateTimeField(
+    #     required=True,
+    #     label="Beginn",
+    #     input_formats=["%d.%m.%Y %H:%M"],
+    #     error_messages={"invalid": "Datum/Zeit im Format DD.MM.YYYY HH:MM angeben."},
+    #     widget=forms.DateTimeInput(
+    #         format="%d.%m.%Y %H:%M",
+    #         attrs={
+    #             "placeholder": "DD.MM.YYYY HH:MM",
+    #             "type": "datetime-local",
+    #         },
+    #     ),
+    # )
+    # end_date = forms.DateTimeField(
+    #     required=False,
+    #     label="Ende",
+    #     input_formats=["%d.%m.%Y %H:%M"],
+    #     error_messages={"invalid": "Datum/Zeit im Format DD.MM.YYYY HH:MM angeben."},
+    #     widget=forms.DateTimeInput(
+    #         format="%d.%m.%Y %H:%M",
+    #         attrs={
+    #             "placeholder": "DD.MM.YYYY HH:MM",
+    #             "type": "datetime-local",
+    #         },
+    #     ),
+    # )
+
+    fees = forms.CharField(label="Gebühren", widget=TinyMCE(mce_attrs={"height": 200}))
+
+    notes = forms.CharField(
+        required=False, label="weitere Infos", widget=TinyMCE(mce_attrs={"height": 200})
+    )
+
+    notes_internal = forms.CharField(
+        required=False,
+        label="interne Hinweise",
+        widget=TinyMCE(mce_attrs={"height": 200}),
+    )
+
+    location = forms.ModelChoiceField(
+        label="Veranstaltungsort",
+        required=False,
+        queryset=EventLocation.objects.all(),
+        widget=RelatedFieldWidgetCanAddWithModal(
+            modal_id="create-event-location-sync", label="Veranstaltungsort"
+        ),
+    )
+
+    category = forms.ModelChoiceField(
+        label="Kategorie",
+        required=True,
+        queryset=EventCategory.objects.all(),
+    )
+
+    organizer = forms.ModelChoiceField(
+        label="Veranstalter",
+        required=False,
+        queryset=EventOrganizer.objects.all(),
+        widget=RelatedFieldWidgetCanAddWithModal(
+            modal_id="create-event-organizer-sync", label="Veranstalter"
+        ),
+    )
+
+    class Meta:
+        model = Event
+        fields = [
+            "name",
+            "category",
+            "eventformat",
+            "pub_status",
+            "target_group",
+            "fees",
+            "location",
+            "organizer",
+            "contribution",
+            "notes",
+            "notes_internal",
+        ]
+
 
 from .choices import (
     MEMBERSHIP_CHOICES,

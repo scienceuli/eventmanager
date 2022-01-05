@@ -1,0 +1,33 @@
+<table id="books-table" class="table">
+  <thead>
+    <tr>
+      <th class="text-center" scope="col">#</th>
+      <th class="text-center" scope="col">Name</th>
+      <th class="text-center" scope="col">Datum</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for event in events %}
+    <tr>
+      <th class="text-center" scope="row">{{ forloop.counter }}</th>
+      <td class="text-center">{{ event.name }}</td>
+      <td class="text-center">{{ event.get_first_day.start_date|date:"d.m.Y" }}{% if event.event_days.all|length > 1 %} - {{ event.get_last_day.start_date|date:"d.m.Y" }}{% endif %}</td>
+      <td class="text-center">
+        <!-- Read event buttons -->
+        <button type="button" class="read-event btn btn-sm btn-primary" data-form-url="{% url 'event-read' event.pk %}">
+          <span class="fa fa-eye"></span>
+        </button>
+        <!-- Update event buttons -->
+        <a class="update-event btn btn-sm btn-primary" href="{% url 'event-update' event.pk %}">
+          <span class="fa fa-pencil"></span>
+        </a>
+        <!-- Delete event buttons -->
+        <button type="button" class="delete-event btn btn-sm btn-danger" data-form-url="{% url 'event-delete' event.pk %}">
+          <span class="fa fa-trash"></span>
+        </button>
+      </td>
+    </tr>
+    {% endfor %}
+
+  </tbody>
+</table>

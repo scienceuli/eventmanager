@@ -1,0 +1,34 @@
+{% load widget_tweaks %}
+
+<div class="modal-header">
+    <h3 class="modal-title">Veranstaltung - Details</h3>
+    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+
+<div class="modal-body">
+
+    <div class="">
+        Name:
+        {{ event.name }}
+    </div>
+    <div class="">
+        Beginn:
+        {{ event.start_date }}
+    </div>
+    <div class="">
+        Ende:
+        {{ event.end_date }}
+    </div>
+    <div class="">
+        Kategorie:
+        {{ event.category }}
+    </div>
+
+
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal">Schließen</button>
+</div>

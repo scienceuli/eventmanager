@@ -1,0 +1,150 @@
+{% extends 'events/bootstrap/base.html' %}
+{% load widget_tweaks crispy_forms_tags %}
+
+{% block content %}
+
+{% include "events/bootstrap/_modal.html" %}
+
+<div class="container">
+    <h2>Neue Veranstaltung anlegen</h2>
+
+    <form method="post" action="" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="{% if form.non_field_errors %}invalid{% endif %} mb-2">
+            {% for error in form.non_field_errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>{% if field.field.required %} * {% endif %}
+            {% render_field field class="form-control" %}
+            <div class="{% if field.errors %} ungültig{% endif %}">
+                {% for error in field.errors %}
+                <p class="help-block">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <h3>Veranstaltungstage</h3>
+        <table class="table">
+            {{ days.management_form }}
+
+            <thead>
+                <tr>
+                    <th>Datum</th>
+                    <th>Beginn</th>
+                    <th>Ende</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in days.forms %}
+                <tr class="{% cycle row1 row2 %} formset_row-{{ days.prefix }}">
+                    {% for field in form.visible_fields %}
+                    <td>
+                        {# Include the hidden fields in the form #}
+                        {% if forloop.first %}
+                        {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
+                        {% endfor %}
+                        {% endif %}
+                        {{ field.errors.as_ul }}
+                        {{ field }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <h3>Dokumente</h3>
+        <table class="table">
+            {{ documents.management_form }}
+
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Beschreibung</th>
+                    <th>Datei</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in documents.forms %}
+                <tr class="{% cycle row1 row2 %} formset_row-{{ documents.prefix }}">
+                    {% for field in form.visible_fields %}
+                    <td>
+                        {# Include the hidden fields in the form #}
+                        {% if forloop.first %}
+                        {% for hidden in form.hidden_fields %}
+                        {{ hidden }}
+                        {% endfor %}
+                        {% endif %}
+                        {{ field.errors.as_ul }}
+                        {{ field }}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+
+
+        <button type="submit" class="btn btn-primary">Erzeugen</button>
+
+
+    </form>
+
+</div>
+{% endblock %}
+
+{% block extrascripts %}
+<script type="text/javascript">
+
+    // Create event location synchronous
+    function createEventLocationSyncModalForm() {
+        $("#create-event-location-sync").modalForm({
+            formURL: "{% url 'event-location-create' %}",
+            modalID: "#create-modal",
+            errorClass: '.is-invalid'
+        });
+    }
+    createEventLocationSyncModalForm();
+
+    // Create event organizer synchronous
+    function createEventOrganizerSyncModalForm() {
+        $("#create-event-organizer-sync").modalForm({
+            formURL: "{% url 'event-organizer-create' %}",
+            modalID: "#create-modal",
+            errorClass: '.is-invalid'
+        });
+    }
+    createEventOrganizerSyncModalForm();
+
+
+    // Hide message
+    $(".alert").fadeTo(2000, 500).slideUp(500, function () {
+        $(".alert").slideUp(500);
+    });
+</script>
+
+<script type="text/javascript">
+    $(function () {
+
+        $('.formset_row-{{ days.prefix }}').formset({
+            addText: 'weiterer Tag',
+            deleteText: 'remove',
+            prefix: '{{ days.prefix }}'
+        })
+        $('.formset_row-{{ documents.prefix }}').formset({
+            addText: 'weiteres Dokument',
+            deleteText: 'remove',
+            prefix: '{{ documents.prefix }}'
+        })
+    })
+</script>
+
+{% endblock extrascripts %}
