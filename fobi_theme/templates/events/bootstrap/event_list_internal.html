@@ -15,11 +15,21 @@
 
 
           <button id="filter-event" class="filter-event btn btn-primary" type="button" name="button" data-form-url="{% url 'event-list-internal-filter' %}">
-            <span class="fa fa-filter mr-2"></span>Veranstaltung filtern (Kategorie)
+            <span class="fa fa-filter mr-2"></span>Veranstaltung filtern
           </button>
-          {% if 'category' in request.GET %}
+          {% if 'category' in request.GET or 'search' in request.GET %}
           <a class="btn btn-primary" href="{% url 'event-list-internal' %}" role="button">Alle</a>
           {% endif %}
+
+
+
+          <form method="GET" class="form-inline">
+            <input class="form-control me-2" type="search" name="search" placeholder="Suche" aria-label="Search">
+            <button class="btn btn-outline-success" type="submit">Suche</button>
+          </form>
+
+
+
 
         </div>
         <div class="col-12 mb-3">
