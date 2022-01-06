@@ -134,6 +134,13 @@ STATE_CHOICES = (
 )
 
 
+class EventCategoryFilterForm(BSModalForm):
+    category = forms.ModelChoiceField(queryset=EventCategory.objects.all())
+
+    class Meta:
+        fields = ["category"]
+
+
 class EventOrganizerModelForm(BSModalModelForm):
     class Meta:
         model = EventOrganizer

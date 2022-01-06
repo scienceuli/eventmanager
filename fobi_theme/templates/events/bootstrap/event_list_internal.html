@@ -14,13 +14,17 @@
           <a class="btn btn-primary" href="{% url 'event-create-nm' %}" role="button">Veranstaltung anlegen</a>
 
 
-          <button id="filter-event-category" class="filter-book btn btn-primary" type="button" name="button" data-form-url="{% url 'event-list-internal-filter' %}">
+          <button id="filter-event" class="filter-event btn btn-primary" type="button" name="button" data-form-url="{% url 'event-list-internal-filter' %}">
             <span class="fa fa-filter mr-2"></span>Veranstaltung filtern (Kategorie)
           </button>
+          {% if 'category' in request.GET %}
+          <a class="btn btn-primary" href="{% url 'event-list-internal' %}" role="button">Alle</a>
+          {% endif %}
+
         </div>
         <div class="col-12 mb-3">
           {% if 'category' in request.GET %}
-          <p class="category-filtered-events">Veranst. gefiltert (Kat.)</p>
+          <p class="category-filtered-events">Veranstaltungen gefiltert nach Kat. <em>{{ request.GET.category }}</em></p>
           {% endif %}
           {% include "events/bootstrap/_events_table.html" %}
         </div>
@@ -76,10 +80,13 @@
     deleteEventModalForm();
   }
 
-  // Filter books button
+  // Filter events button
+  //function filterEventModalForm() {
   $("#filter-event").each(function () {
     $(this).modalForm({ formURL: $(this).data("form-url") });
   });
+  //}
+  //filterEventModalForm();
 
   // Hide message
   $(".alert").fadeTo(2000, 500).slideUp(500, function () {

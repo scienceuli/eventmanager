@@ -4,6 +4,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+
 # C extensions
 *.so
 
@@ -64,6 +65,7 @@ development.py
 db.sqlite3
 db.sqlite3-journal
 manage.py
+media
 
 # Flask stuff:
 instance/

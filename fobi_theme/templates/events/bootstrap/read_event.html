@@ -10,20 +10,52 @@
 <div class="modal-body">
 
     <div class="">
-        Name:
-        {{ event.name }}
+        <b>{{ event.name }}</b>
     </div>
     <div class="">
-        Beginn:
-        {{ event.start_date }}
+        <em>{{ event.label }}</em>
     </div>
     <div class="">
-        Ende:
-        {{ event.end_date }}
+        <u>Status:</u> {{ event.get_pub_status_display }}
     </div>
     <div class="">
-        Kategorie:
+        {{ event.get_first_day.start_date|date:"d.m.Y" }}{% if event.event_days.all|length > 1 %} - {{ event.get_last_day.start_date|date:"d.m.Y" }}{% endif %}
+    </div>
+    <div class="">
+        <u>Format:</u>
+        {{ event.eventformat }}
+    </div>
+    <div class="">
+        <u>Kategorie:</u>
         {{ event.category }}
+    </div>
+    <div class="">
+        <w>Zielgruppe:</w>
+        {{ event.target_group }}
+    </div>
+    <div class="">
+        <u>Gebühren:</u>
+        {{ event.fees|safe }}
+    </div>
+    <div class="">
+        <u>Ort:</u>
+        {{ event.location }}
+    </div>
+    <div class="">
+        <u>Veranstalter:</u>
+        {{ event.organizer }}
+    </div>
+    <div class="">
+        <u>VFLL-Beitrag:</u>
+        {{ event.contribution }}
+    </div>
+    <div class="">
+        <u>Hinweise:</u>
+        {{ event.notes }}
+    </div>
+    <div class="">
+        <u>Intern:</u>
+        {{ event.notes_internal }}
     </div>
 
 

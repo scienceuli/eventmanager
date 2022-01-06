@@ -31,6 +31,7 @@ from bootstrap_modal_forms.generic import (
     BSModalUpdateView,
     BSModalReadView,
     BSModalDeleteView,
+    BSModalFormView,
 )
 
 from django_tables2 import SingleTableView
@@ -84,6 +85,7 @@ from .forms import (
     SymposiumForm,
     AddMemberForm,
     EventUpdateCapacityForm,
+    EventCategoryFilterForm,
 )
 
 from .api import call
@@ -147,12 +149,21 @@ class EventListInternalView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         qs = super().get_queryset()
         if "category" in self.request.GET:
-            qs = qs.filter(category=int(self.request.GET["category"]))
+            qs = qs.filter(category__name=self.request.GET["category"])
         return qs
 
 
-class EventListFilterInternalView(LoginRequiredMixin, ListView):
-    pass
+class EventListFilterInternalView(LoginRequiredMixin, BSModalFormView):
+    template_name = "events/bootstrap/filter_category.html"
+    form_class = EventCategoryFilterForm
+
+    def form_valid(self, form):
+        self.filter = "?category=" + form.cleaned_data["category"].name
+        response = super().form_valid(form)
+        return response
+
+    def get_success_url(self):
+        return reverse_lazy("event-list-internal") + self.filter
 
 
 class EventReadView(LoginRequiredMixin, BSModalReadView):
