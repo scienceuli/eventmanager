@@ -6,8 +6,11 @@ from .export_excel import ExportExcelAction
 from openpyxl.styles import Font
 from unidecode import unidecode
 
+from events.models import EventMember
+
+
 def style_output_file(file):
-    black_font = Font(color='000000', bold=True)
+    black_font = Font(color="000000", bold=True)
     for cell in file["1:1"]:
         cell.font = black_font
 
@@ -18,19 +21,39 @@ def style_output_file(file):
 
     return file
 
+
 def convert_data_date(value):
-    return value.strftime('%d/%m/%Y')
+    return value.strftime("%d/%m/%Y")
+
 
 def convert_boolean_field(value):
     if value:
-        return 'Yes'
-    return 'No'
+        return "Yes"
+    return "No"
+
 
 def export_as_xls(self, request, queryset):
     if not request.user.is_staff:
         raise PermissionDenied
     opts = self.model._meta
-    field_names = self.list_display
+    # field_names = self.list_display
+    field_names = [
+        "lastname",
+        "firstname",
+        "email",
+        "event",
+        "address_line",
+        "street",
+        "postcode",
+        "city",
+        "state",
+        "country",
+        "phone",
+        "date_created",
+        "via_form",
+        "mail_to_admin",
+    ]
+
     file_name = unidecode(opts.verbose_name)
     blank_line = []
     wb = Workbook()
@@ -53,13 +76,16 @@ def export_as_xls(self, request, queryset):
         ws.append(row)
 
     ws = style_output_file(ws)
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = f'attachment; filename={file_name}.xlsx'
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename={file_name}.xlsx"
     wb.save(response)
     return response
+
+
 export_as_xls.short_description = "Export > Excel"
 
 
 def import_from_csv(self, request, queryset):
     print(queryset)
-

@@ -802,13 +802,28 @@ def get_moodle_data(request):
 
 @login_required(login_url="login")
 def admin_event_pdf(request, event_id):
+    """Idea to solve static url problem with wkhtmltopdf:
+    https://gist.github.com/renyi/f02b4322590e9288ac679545df4748d3"""
+
+    STATIC_URL = settings.STATIC_URL
+
     event = get_object_or_404(Event, id=event_id)
     context = {"event": event}
+
+    if "http" not in STATIC_URL:
+        # wkhtmltopdf requires full uri to load css
+        from urllib.parse import urlparse
+
+        parsed = urlparse(request.META.get("HTTP_REFERER"))
+        parsed = "{uri.scheme}://{uri.netloc}".format(uri=parsed)
+        context["STATIC_URL"] = "{}{}".format(parsed, settings.STATIC_URL)
+    else:
+        context["STATIC_URL"] = settings.STATIC_URL
     response = PDFTemplateResponse(
         request=request,
         context=context,
         template="admin/event_pdf_template.html",
-        filename="event.pdf",
+        filename=f"event-{event.label}.pdf",
         show_content_in_browser=True,
         cmd_options={
             "encoding": "utf8",

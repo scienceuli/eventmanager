@@ -3,94 +3,140 @@
 <html lang="en">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<meta http-equiv="X-UA-Compatible" content="ie=edge">
-	<title>{% block title %}{% endblock title %}</title>
-	<meta name="description" content="">
-	<meta name="keywords" content="">
-	<meta name="author" content="">
-	<link rel="preconnect" href="https://fonts.gstatic.com">
-	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-	<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}{% endblock title %}</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <meta name="author" content="">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
         table {
-        border-collapse: collapse;
-      }
-       td {
-        vertical-align: top;
-        padding: 15px;
-        width: 30%;
-        font-weight:bolder;
-        border-bottom: 1pt solid black;
-      }
-      td+td {
-        vertical-align: top;
-          font-weight:lighter;
-  width: auto;
-}
-.imageright {
-    float: right;
-}
+            border-collapse: collapse;
+        }
 
+        td {
+            vertical-align: top;
+            padding: 15px;
+            width: 30%;
+            font-weight: bolder;
+            border-bottom: 1pt solid black;
+        }
 
+        td+td {
+            vertical-align: top;
+            font-weight: lighter;
+            width: auto;
+        }
+
+        .imageright {
+            float: right;
+        }
     </style>
 </head>
 
 <body style="padding: 5em; font-family: 'Noto Sans JP', sans-serif; font-weight: lighter;">
-    <img src="{% static 'images/vfll_logo_rot_Bild.jpg' %}" width="100px" class="imageright">
+
+    <!--    <img src="{% static 'images/vfll_logo_rot_Bild.jpg' %}" width="100px" class="imageright">
+-->
+    <img src="{{ STATIC_URL }}/images/vfll_logo_rot_Bild.jpg" width="100px" class="imageright">
+
+
     <h1 style="">Ausschreibung</h1>
-    
 
-<h2 style="padding-top:90px; color: red;">{{ event.name }}</h2>
 
-<table>
-<tr><td></td><td>{{ event.description|safe }}</td></tr>
+    <h2 style="padding-top:90px; color: red;">{{ event.name }}</h2>
+    <table>
+        <tr>
+            <td></td>
+            <td>{{ event.description|safe }}</td>
+        </tr>
 
-<tr><td>Format</td><td>{{ event.eventformat }}</td></tr>
+        <tr>
+            <td>Format</td>
+            <td>{{ event.eventformat }}</td>
+        </tr>
 
-<tr><td>Dauer</td><td>{{ event.duration }}</td></tr>
-<tr><td>Zielgruppe</td><td>{{ event.target_group|safe }}</td></tr>
+        <tr>
+            <td>Dauer</td>
+            <td>{{ event.duration }}</td>
+        </tr>
+        <tr>
+            <td>Zielgruppe</td>
+            <td>{{ event.target_group|safe }}</td>
+        </tr>
 
-<tr><td>Voraussetzungen</td><td><div style="display: table-cell;">{{ event.prerequisites|safe }}</div></td></tr>
+        <tr>
+            <td>Voraussetzungen</td>
+            <td>
+                <div style="display: table-cell;">{{ event.prerequisites|safe }}</div>
+            </td>
+        </tr>
 
-<tr><td>Lernziel</td><td>{{ event.objectives|safe }}</td></tr>
+        <tr>
+            <td>Lernziel</td>
+            <td>{{ event.objectives|safe }}</td>
+        </tr>
 
-<tr><td>Programm</td>
-<td>
-{% for agenda in event.agendas.all %}
-<span>{{agenda.session_name}}</span>
-    {% if agenda.start_time %}
-    <span>({{agenda.start_time|date:"H:i"}}
-    {% if agenda.end_time %}-{{agenda.end_time|date:"H:i"}}{% endif %})</span>
-    {% endif %}
-            {{ agenda.description|safe }}
-            {% endfor %}
-        </td></tr>
-<tr><td>Methoden</td><td>{{ event.methods }}</td></tr>
+        <tr>
+            <td>Programm</td>
+            <td>
+                {% for agenda in event.agendas.all %}
+                <span>{{agenda.session_name}}</span>
+                {% if agenda.start_time %}
+                <span>({{agenda.start_time|date:"H:i"}}
+                    {% if agenda.end_time %}-{{agenda.end_time|date:"H:i"}}{% endif %})</span>
+                {% endif %}
+                {{ agenda.description|safe }}
+                {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <td>Methoden</td>
+            <td>{{ event.methods }}</td>
+        </tr>
 
-<tr><td>Referent*in{% if event.speaker.all|length > 1 %}nen{% endif %}</td>
-<td>{% for speaker in event.speaker.all %}
-    {{ speaker }}{% if not forloop.last %}, {% endif %}
-    {% endfor %}
-</td></tr>
-<tr><td>Termin</td>
-<td>
-    {% for day in event.event_days.all %}
+        <tr>
+            <td>Referent*in{% if event.speaker.all|length > 1 %}nen{% endif %}</td>
+            <td>{% for speaker in event.speaker.all %}
+                {{ speaker }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+        </tr>
+        <tr>
+            <td>Termin</td>
+            <td>
+                {% for day in event.event_days.all %}
                 {{ day.start_date|date:"d. F Y"}} {{day.start_time|date:"H:i"}}-{{day.end_time|date:"H:i"}}
                 {% if not forloop.last %} <br />{% endif %}
                 {% endfor %}
-</td></tr>
+            </td>
+        </tr>
 
-<tr><td>Teilnahmegebühr</td><td>{{ event.fees|safe }}</td></tr>
+        <tr>
+            <td>Teilnahmegebühr</td>
+            <td>{{ event.fees|safe }}</td>
+        </tr>
 
-<tr><td style="color: red; font-weight: bold;">Anmeldeschluss</td><td style="color: red; font-weight: bold;">{{ event.close_date|date:"d. M Y"}}</td></tr>
+        <tr>
+            <td style="color: red; font-weight: bold;">Anmeldeschluss</td>
+            <td style="color: red; font-weight: bold;">{{ event.close_date|date:"d. M Y"}}</td>
+        </tr>
 
-<tr><td>Anmeldung</td><td>{{ event.registration|safe }}</td></tr>
+        <tr>
+            <td>Anmeldung</td>
+            <td>{{ event.registration|safe }}</td>
+        </tr>
 
-<tr><td>Hinweise</td><td>{{ event.notes|safe }}</td></tr>
+        <tr>
+            <td>Hinweise</td>
+            <td>{{ event.notes|safe }}</td>
+        </tr>
 
 
-</dl>
+    </table>
 </body>
 
 </html>
