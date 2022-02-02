@@ -508,6 +508,7 @@ def event_add_member(request, slug):
                 lastname = form.cleaned_data["lastname"]
 
                 address_line = form.cleaned_data["address_line"]
+                company = form.cleaned_data["company"]
                 street = form.cleaned_data["street"]
                 city = form.cleaned_data["city"]
                 state = form.cleaned_data["state"]
@@ -538,6 +539,7 @@ def event_add_member(request, slug):
                     event=event,
                     firstname=firstname,
                     lastname=lastname,
+                    company=company,
                     street=street,
                     address_line=address_line,
                     city=city,
@@ -663,6 +665,7 @@ def event_add_member(request, slug):
                     "firstname": firstname,
                     "lastname": lastname,
                     "address_line": address_line,
+                    "company": company,
                     "street": street,
                     "city": city,
                     "postcode": postcode,

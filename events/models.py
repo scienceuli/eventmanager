@@ -681,6 +681,7 @@ class EventMember(AddressModel):
     lastname = models.CharField("Nachname", max_length=255, blank=True)
     email = models.EmailField("E-Mail", blank=True, max_length=255)
     phone = models.CharField("Tel", max_length=64, blank=True)
+    company = models.CharField("Firma", max_length=255, null=True, blank=True)
     vfll = models.BooleanField("VFLL-Mitglied", default=False)
 
     memberships = models.CharField("Mitgliedschaften", max_length=64, blank=True)

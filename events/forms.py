@@ -292,6 +292,14 @@ class EventMemberForm(forms.Form):
         ),
         required=False,
     )
+    company = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=True,
+    )
     street = forms.CharField(
         widget=forms.TextInput(
             attrs={

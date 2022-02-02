@@ -42,6 +42,7 @@ def export_as_xls(self, request, queryset):
         "firstname",
         "street",
         "address_line",
+        "company",
         "postcode",
         "country",
         "city",
