@@ -40,17 +40,16 @@ def export_as_xls(self, request, queryset):
     field_names = [
         "lastname",
         "firstname",
-        "email",
-        "event",
-        "address_line",
         "street",
+        "address_line",
         "postcode",
-        "city",
-        "state",
         "country",
+        "city",
         "phone",
+        "email",
+        "vfll",
+        "check",
         "date_created",
-        "via_form",
         "mail_to_admin",
     ]
 
@@ -64,7 +63,9 @@ def export_as_xls(self, request, queryset):
         row = []
         for field in field_names:
             is_admin_field = hasattr(self, field)
-            if is_admin_field:
+            if (
+                is_admin_field and not field == "check"
+            ):  # check is also admin_field, but we need model field
                 value = getattr(self, field)(obj)
             else:
                 value = getattr(obj, field)

@@ -691,7 +691,7 @@ class EventMember(AddressModel):
     education_bonus = models.BooleanField("Bildungsprämie", default=False)
     message = models.TextField("Anmerkung", blank=True)
     free_text_field = models.TextField("Freitext", blank=True)
-    check = models.BooleanField(default=False)
+    check = models.BooleanField("Einverständnis", default=False)
 
     label = models.CharField(max_length=64)
     ATTEND_STATUS_CHOICES = (

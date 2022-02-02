@@ -184,7 +184,13 @@ class EventMemberAdmin(admin.ModelAdmin):
             "weitere Angaben",
             {
                 "classes": ("collapse",),
-                "fields": ("vfll", "attention", "attention_other", "education_bonus"),
+                "fields": (
+                    "vfll",
+                    "check",
+                    "attention",
+                    "attention_other",
+                    "education_bonus",
+                ),
             },
         ),
         (
@@ -273,6 +279,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "email",
         "attend_status",
         "vfll",
+        "check",
         "education_bonus",
         "change_link",
         "enroled",

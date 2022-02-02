@@ -22,7 +22,9 @@ class AddressModel(BaseModel):
     class Meta:
         abstract = True
 
-    address_line = models.CharField("Zusatz", max_length=255, blank=True, null=True)
+    address_line = models.CharField(
+        "Adresszusatz", max_length=255, blank=True, null=True
+    )
     street = models.CharField("Straße", max_length=55, blank=True, null=True)
     city = models.CharField("Stadt", max_length=255, blank=True, null=True)
     state = models.CharField("Bundesland", max_length=255, blank=True, null=True)
