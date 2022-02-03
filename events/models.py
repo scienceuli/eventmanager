@@ -49,6 +49,10 @@ class EventCategory(BaseModel):
         help_text="wird im Frontend als Kategorie angezeigt",
     )
     position = models.PositiveSmallIntegerField(default=1)
+    show = models.BooleanField(
+        default=True,
+        help_text="gibt an, ob die Kachel auf der Startseite grundsätzlich gezeigt werden soll. Es werden aber nur die Kacheln angezeigt, zu denen auch eine Veranstaltung besteht.",
+    )
 
     class Meta:
         ordering = ("position",)

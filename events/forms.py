@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
@@ -102,6 +104,12 @@ class EventDayForm(forms.ModelForm):
     class Meta:
         model = EventDay
         exclude = ()
+
+    def clean_start_date(self):
+        start_date = self.cleaned_data.get("start_date")
+        if start_date < timezone.now().date():
+            raise forms.ValidationError("Das Startdatum liegt in der Vergangenheit")
+        return start_date
 
 
 EventDayFormSet = inlineformset_factory(

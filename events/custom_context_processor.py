@@ -7,5 +7,6 @@ def category_renderer(request):
         #'all_categories': EventCategory.objects.all(),
         "all_categories": EventCategory.objects.annotate(events_count=Count("events"))
         .filter(events_count__gt=0)
+        .filter(show=True)
         .order_by("position")
     }

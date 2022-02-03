@@ -306,8 +306,8 @@ class EventCreateView(LoginRequiredMixin, CreateView):
         )
         # get the category vfll-intern or create it
         obj, created = EventCategory.objects.get_or_create(
-            name="vfll_intern",
-            defaults={"title": "Vfll-Beteiligung", "position": max_position + 1},
+            name="messen",
+            defaults={"title": "Messen und Tagungen", "position": max_position + 1},
         )
         return {"pub_status": "UNPUB", "category": obj}
 
@@ -340,7 +340,7 @@ class EventCreateView(LoginRequiredMixin, CreateView):
                 days.save()
             else:
                 print("ERROR", days.errors)
-                messages.error(request, "ERROR")
+                messages.error(self.request, "ERROR")
         return super(EventCreateView, self).form_valid(form)
 
 
