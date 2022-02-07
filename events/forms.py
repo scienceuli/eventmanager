@@ -218,11 +218,11 @@ class EventModelForm(forms.ModelForm):
 
     location = forms.ModelChoiceField(
         label="Veranstaltungsort",
-        required=False,
+        # required=False,
         queryset=EventLocation.objects.all(),
-        widget=RelatedFieldWidgetCanAddWithModal(
-            modal_id="create-event-location-sync", label="Veranstaltungsort"
-        ),
+        # widget=RelatedFieldWidgetCanAddWithModal(
+        #    modal_id="create-event-location-sync", label="Veranstaltungsort"
+        # ),
     )
 
     category = forms.ModelChoiceField(
@@ -233,11 +233,11 @@ class EventModelForm(forms.ModelForm):
 
     organizer = forms.ModelChoiceField(
         label="Veranstalter",
-        required=False,
+        # required=False,
         queryset=EventOrganizer.objects.all(),
-        widget=RelatedFieldWidgetCanAddWithModal(
-            modal_id="create-event-organizer-sync", label="Veranstalter"
-        ),
+        # widget=RelatedFieldWidgetCanAddWithModal(
+        #    modal_id="create-event-organizer-sync", label="Veranstalter"
+        # ),
     )
 
     class Meta:

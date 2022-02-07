@@ -434,7 +434,7 @@ class EventLocationCreateView(LoginRequiredMixin, BSModalCreateView):
     form_class = EventLocationModelForm
     template_name = "events/bootstrap/create_location.html"
     success_message = "Location erfolgreich angelegt"
-    success_url = reverse_lazy("event-create-nm")
+    success_url = reverse_lazy("event-list-internal")
 
 
 class EventOrganizerCreateView(LoginRequiredMixin, BSModalCreateView):
@@ -442,7 +442,7 @@ class EventOrganizerCreateView(LoginRequiredMixin, BSModalCreateView):
     form_class = EventOrganizerModelForm
     template_name = "events/bootstrap/create_organizer.html"
     success_message = "Veranstalter erfolgreich angelegt"
-    success_url = reverse_lazy("event-create-nm")
+    success_url = reverse_lazy("event-list-internal")
 
 
 def search_event(request):
