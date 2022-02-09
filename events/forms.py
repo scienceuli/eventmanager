@@ -247,6 +247,7 @@ class EventModelForm(forms.ModelForm):
             "category",
             "eventformat",
             "pub_status",
+            "eventurl",
             "target_group",
             "fees",
             "location",

@@ -195,6 +195,7 @@ class Event(BaseModel):
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, null=False, unique=True, editable=True)
+    eventurl = models.URLField(null=True, blank=True)
 
     pub_status = models.CharField(
         max_length=8,
@@ -512,6 +513,9 @@ class Event(BaseModel):
 
         except IndexError:
             pass
+
+    def is_several_days(self):
+        return self.event_days.count() > 1
 
     @property
     def sorted_sponsors(self):
