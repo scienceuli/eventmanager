@@ -151,7 +151,7 @@ class EventListInternalView(LoginRequiredMixin, ListView):
         if "category" in self.request.GET:
             qs = qs.filter(category__name=self.request.GET["category"])
         if "search" in self.request.GET:
-            qs = qs.filter(name__contains=self.request.GET["search"])
+            qs = qs.filter(name__icontains=self.request.GET["search"])
         return qs
 
 
