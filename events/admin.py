@@ -274,6 +274,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     verbose_name = "Anmeldung"
     verbose_name_plural = "Anmeldungen"
     fields = (
+        "academic",
         "firstname",
         "lastname",
         "email",

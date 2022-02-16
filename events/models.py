@@ -685,6 +685,7 @@ class EventMember(AddressModel):
         on_delete=models.CASCADE,
     )
     name = models.CharField("Kurzbezeichnung", max_length=255, null=True, blank=True)
+    academic = models.CharField("Titel", max_length=40, null=True, blank=True)
     firstname = models.CharField("Vorname", max_length=255, blank=True)
     lastname = models.CharField("Nachname", max_length=255, blank=True)
     email = models.EmailField("E-Mail", blank=True, max_length=255)

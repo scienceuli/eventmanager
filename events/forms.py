@@ -277,6 +277,14 @@ class EventMemberForm(forms.Form):
             if value in self["memberships"].value()
         ]
 
+    academic = forms.CharField(
+        widget=forms.TextInput(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=False,
+    )
     firstname = forms.CharField(
         widget=forms.TextInput(
             attrs={

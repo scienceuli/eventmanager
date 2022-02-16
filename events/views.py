@@ -504,6 +504,7 @@ def event_add_member(request, slug):
             form = SymposiumForm(request.POST, event_label=event.label)
         if form.is_valid():
             if event.registration_form == "s":
+                academic = form.cleaned_data["academic"]
                 firstname = form.cleaned_data["firstname"]
                 lastname = form.cleaned_data["lastname"]
 
@@ -537,6 +538,7 @@ def event_add_member(request, slug):
                 new_member = EventMember.objects.create(
                     name=name,
                     event=event,
+                    academic=academic,
                     firstname=firstname,
                     lastname=lastname,
                     company=company,
@@ -662,6 +664,7 @@ def event_add_member(request, slug):
                     speaker_string = ", ".join(speaker_list)
 
                 formatting_dict = {
+                    "academic": academic,
                     "firstname": firstname,
                     "lastname": lastname,
                     "address_line": address_line,
