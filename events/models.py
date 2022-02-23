@@ -11,6 +11,7 @@ from django.template.defaultfilters import truncatechars
 from ckeditor_uploader.fields import RichTextUploadingField
 from ckeditor.fields import RichTextField
 
+from embed_video.fields import EmbedVideoField
 
 from .abstract import BaseModel, AddressModel
 
@@ -249,6 +250,7 @@ class Event(BaseModel):
         EventOrganizer,
         verbose_name="Veranstalter",
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name="organizer_events",
     )
@@ -318,6 +320,10 @@ class Event(BaseModel):
     notes = RichTextField(
         verbose_name="Hinweise", null=True, blank=True, config_name="short"
     )
+
+    video = EmbedVideoField(null=True, blank=True)
+    show_video = models.BooleanField(default=False)
+    video_comment = models.TextField(null=True, blank=True)
 
     notes_internal = RichTextField(
         verbose_name="interne Hinweise", null=True, blank=True, config_name="short"

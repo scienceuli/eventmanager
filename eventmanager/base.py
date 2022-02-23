@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "bootstrap_modal_forms",
     "widget_tweaks",
     "tinymce",
+    "embed_video",
     # tailwind theme app
     "fobi_theme",
     # lokale apps

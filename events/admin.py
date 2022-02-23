@@ -154,8 +154,10 @@ class EventMemberRoleInline(admin.TabularInline):
 class EventMemberAdmin(admin.ModelAdmin):
 
     list_display = [
+        "academic",
         "lastname",
         "firstname",
+        "academic",
         "email",
         "event",
         "date_created",
@@ -642,6 +644,16 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "status",
                     "free_text_field_intro",
                     "notes",
+                )
+            },
+        ),
+        (
+            "Video",
+            {
+                "fields": (
+                    "video",
+                    "show_video",
+                    "video_comment",
                 )
             },
         ),
