@@ -47,6 +47,9 @@
         <p>
           <span class="text-left text-base text-vfllred font-bold">{% if event.category.singular %}{{ event.category.singular }}{% else %}{{ event.category }}{% endif %}</span>
           <span class="text-left pl-1 text-base">{% with event.event_days.all|first as first %}{{ first.start_date|date:"l, j. F Y"}}{% endwith %}{% if event.event_days.all|length > 1 %} - {{ event.get_last_day.start_date|date:"l, j. F Y" }}{% endif %}</span>
+          {% if event.video and event.show_video %}
+          <span class="text-left ml-4 text-base"><i class="fa fa-video-camera" aria-hidden="true"></i></span>
+          {% endif %}
         </p>
         <p class="text-left text-xl font-bold">
           <a href="{% url 'event-detail' event.slug %}">
