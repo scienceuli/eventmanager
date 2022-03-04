@@ -41,11 +41,9 @@
                 <span class="text-left text-xl">
 
                     {% with event.event_days.all|first as first %}
-                    {{ first.start_date|date:"l, j. F Y"}}
-                    {% endwith %}
-                    {% if event.event_days.all|length > 1 %}
-                    - {{ event.get_last_day.start_date|date:"l, j. F Y" }}
+                    {{ first.start_date|date:"l, j. F Y"}}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"l, j. F Y" }}
                     {% endif %}
+                    {% endwith %}
 
                 </span>
             </div>
@@ -93,7 +91,7 @@
                         <p class="leading-relaxed">
                             {% for day in event.event_days.all %}
                             <span>{{ day.start_date|date:"D, j. F Y"}}</span>
-                            <span class="ml-4">{{day.start_time|date:"H:i"}}-{{day.end_time|date:"H:i"}}</span>
+                            <span class="ml-4">{{day.start_time|date:"H:i"}}&ndash;{{day.end_time|date:"H:i"}}</span>
                             {% if not forloop.last %} <br />{% endif %}
                             {% endfor %}
                         </p>
