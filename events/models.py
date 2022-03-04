@@ -261,8 +261,11 @@ class Event(BaseModel):
         choices=REGIO_GROUP_CHOICES,
         default="KA",
     )
-    methods = models.CharField(
-        verbose_name="Methoden", max_length=255, null=True, blank=True
+    # methods = models.CharField(
+    #    verbose_name="Methoden", max_length=255, null=True, blank=True
+    # )
+    methods = RichTextField(
+        verbose_name="Methoden", null=True, blank=True, config_name="short"
     )
     contribution = models.CharField(
         verbose_name="VFLL-Beteiligung", max_length=255, null=True, blank=True
