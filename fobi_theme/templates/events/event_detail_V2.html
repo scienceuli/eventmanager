@@ -571,7 +571,7 @@
                 <div class="pt-2"><span class="text-sm font-semibold">{{agenda.session_name}}</span>
                     {% if agenda.start_time %}
                     <span class="text-sm font-light">({{agenda.start_time|date:"H:i"}}
-                        {% if agenda.end_time %}-{{agenda.end_time|date:"H:i"}}{% endif %})</span>
+                        {% if agenda.end_time %}&ndash;{{agenda.end_time|date:"H:i"}}{% endif %})</span>
                     {% endif %}
                 </div>
                 <div class="pt-1">{{ agenda.description|safe }}</div>
