@@ -218,7 +218,7 @@ class EventModelForm(forms.ModelForm):
 
     location = forms.ModelChoiceField(
         label="Veranstaltungsort",
-        # required=False,
+        required=False,
         queryset=EventLocation.objects.all(),
         # widget=RelatedFieldWidgetCanAddWithModal(
         #    modal_id="create-event-location-sync", label="Veranstaltungsort"
