@@ -122,7 +122,7 @@ EventDayFormSet = inlineformset_factory(
 )
 
 STATE_CHOICES = (
-    ("kA", "*"),
+    ("kA", "---"),
     ("BW", "Baden-Württemberg"),
     ("BY", "Bayern"),
     ("BE", "Berlin"),
