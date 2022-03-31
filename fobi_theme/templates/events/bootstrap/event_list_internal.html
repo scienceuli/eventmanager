@@ -12,7 +12,7 @@
         <div class="col-12 mb-3">
           <a class="btn btn-primary" href="{% url 'event-create-nm' %}" role="button">Veranstaltung anlegen</a>
           <button id="create-organizer-sync" class="btn btn-secondary" type="button" name="button">Veranstalter anlegen</button>
-          <a href="{% url 'event-location-list' %}" id="create-location-sync" class="btn btn-secondary" type="button">Locations</a>
+          <a href="{% url 'event-location-list' %}"  class="btn btn-secondary" type="button">Locations</a>
 
 
           <button id="filter-event" class="filter-event btn btn-primary" type="button" name="button" data-form-url="{% url 'event-list-internal-filter' %}">
@@ -69,13 +69,13 @@
 
 
   // Create organizer synchronous
-  function createLocationSyncModalForm() {
-    $("#create-location-sync").modalForm({
-      formURL: "{% url 'event-location-create' %}",
-      modalID: "#create-modal"
-    });
-  }
-  createLocationSyncModalForm();
+  // function createLocationSyncModalForm() {
+  //  $("#create-location-sync").modalForm({
+  //    formURL: "{% url 'event-location-create' %}",
+  //    modalID: "#create-modal"
+  //  });
+  //}
+  //createLocationSyncModalForm();
 
   // modal forms
 
