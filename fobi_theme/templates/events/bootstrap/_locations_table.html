@@ -1,0 +1,34 @@
+<table id="books-table" class="table">
+  <thead>
+    <tr>
+      <th class="text-center" scope="col">#</th>
+      <th class="text-center" scope="col">Name</th>
+     
+      <th class="text-center" scope="col">Aktion</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for location in locations %}
+    <tr>
+      <th class="text-center" scope="row">{{ forloop.counter }}</th>
+      <td class="text-center">{{ location.title|truncatechars:30 }}</td>
+      <td class="text-center">
+        <!-- Read event buttons -->
+        <button type="button" class="read-event-location btn btn-sm btn-info" data-form-url="{% url 'location-read' location.pk %}">
+          <span class="fa fa-eye"></span>
+        </button>
+       
+        <!-- Update event buttons -->
+        <a class="update-event-location btn btn-sm btn-primary" href="{% url 'location-update' location.pk %}">
+          <span class="fa fa-pencil"></span>
+        </a>
+        <!-- Delete event buttons -->
+        <button type="button" class="delete-event-location btn btn-sm btn-danger" data-form-url="{% url 'location-delete' location.pk %}">
+          <span class="fa fa-trash"></span>
+        </button>
+      </td>
+    </tr>
+    {% endfor %}
+
+  </tbody>
+</table>

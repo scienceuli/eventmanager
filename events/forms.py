@@ -176,6 +176,23 @@ class EventLocationModelForm(BSModalModelForm):
         ]
 
 
+class EventLocationNMModelForm(forms.ModelForm):
+    state = forms.ChoiceField(required=False, label="Bundesland", choices=STATE_CHOICES)
+
+    class Meta:
+        model = EventLocation
+        fields = [
+            "title",
+            "address_line",
+            "street",
+            "postcode",
+            "city",
+            "state",
+            "country",
+            "url",
+        ]
+
+
 class EventModelForm(forms.ModelForm):
     # start_date = forms.DateTimeField(
     #     required=True,

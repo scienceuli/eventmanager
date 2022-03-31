@@ -78,6 +78,7 @@ from .tables import EventMembersTable
 from .forms import (
     EventDayFormSet,
     EventLocationModelForm,
+    EventLocationNMModelForm,
     EventOrganizerModelForm,
     EventModelForm,
     EventMemberForm,
@@ -429,12 +430,38 @@ class EventCategoryCreateView(LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
+class EventLocationListView(LoginRequiredMixin, ListView):
+    model = EventLocation
+    template_name = "events/bootstrap/location_list.html"
+    context_object_name = "locations"
+
+
 class EventLocationCreateView(LoginRequiredMixin, BSModalCreateView):
     login_url = "login"
     form_class = EventLocationModelForm
     template_name = "events/bootstrap/create_location.html"
     success_message = "Location erfolgreich angelegt"
-    success_url = reverse_lazy("event-list-internal")
+    success_url = reverse_lazy("event-location-list")
+
+
+class EventLocationReadView(LoginRequiredMixin, BSModalReadView):
+    model = EventLocation
+    template_name = "events/bootstrap/read_event_location.html"
+
+
+class EventLocationUpdateView(LoginRequiredMixin, UpdateView):
+    model = EventLocation
+    template_name = "events/bootstrap/update_event_location_nm.html"
+    form_class = EventLocationNMModelForm
+    success_message = "Veranstaltungsort (Location) wurde aktualisiert."
+    success_url = reverse_lazy("event-location-list")
+
+
+class EventLocationDeleteView(LoginRequiredMixin, BSModalDeleteView):
+    model = EventLocation
+    template_name = "events/bootstrap/delete_event_location.html"
+    success_message = "Erfolg: Veranstaltungsort (Location) wurde gelöscht."
+    success_url = reverse_lazy("event-location-list")
 
 
 class EventOrganizerCreateView(LoginRequiredMixin, BSModalCreateView):

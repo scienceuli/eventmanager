@@ -1,0 +1,41 @@
+{% extends 'events/bootstrap/base.html' %}
+{% load widget_tweaks crispy_forms_tags %}
+
+{% block content %}
+
+<div class="container">
+    <h2>Veranstaltungsort (Location) aktualisieren</h2>
+
+    <form method="post" action="" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <div class="{% if form.non_field_errors %}invalid{% endif %} mb-2">
+            {% for error in form.non_field_errors %}
+            {{ error }}
+            {% endfor %}
+        </div>
+
+        {% for field in form %}
+        <div class="form-group">
+            <label for="{{ field.id_for_label }}">{{ field.label }}</label>{% if field.field.required %} * {% endif %}
+            {% render_field field class="form-control" %}
+            <div class="{% if field.errors %} ungültig{% endif %}">
+                {% for error in field.errors %}
+                <p class="help-block">{{ error }}</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+
+    
+
+
+
+        <button type="submit" class="btn btn-primary">Update</button>
+
+
+    </form>
+
+</div>
+{% endblock %}
+

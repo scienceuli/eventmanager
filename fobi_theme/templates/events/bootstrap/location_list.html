@@ -1,0 +1,83 @@
+{% extends 'events/bootstrap/base.html' %}
+
+{% block content %}
+{% include "events/bootstrap/_modal.html" %}
+
+
+<div class="container mt-3">
+    <div class="row">
+      <div class="col">
+        <p>Veranstaltungsorte</p>
+  
+        <div class="row">
+          <div class="col-12 mb-3">
+            <a href="{% url 'event-list-internal' %}" id="create-organizer-sync" class="btn btn-secondary">Veranstaltungen</a>
+            <button id="create-location-sync" class="btn btn-primary" type="button" name="button">Location anlegen</button>
+  
+  
+  
+          </div>
+          <div class="col-12 mb-3">
+            
+            {% include "events/bootstrap/_locations_table.html" %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block extrascripts %}
+<script type="text/javascript">
+
+  // Create location synchronous
+  function createLocationSyncModalForm() {
+    $("#create-location-sync").modalForm({
+      formURL: "{% url 'event-location-create' %}",
+      modalID: "#create-modal"
+    });
+  }
+  createLocationSyncModalForm();
+
+  // modal forms
+
+  // update event location button - formURL is retrieved from the data of the element
+  function updateEventLocationModalForm() {
+    $(".update-event-location").each(function () {
+      $(this).modalForm({ formURL: $(this).data("form-url") });
+    });
+  }
+  updateEventLocationModalForm();
+
+
+  // Delete event buttons - formURL is retrieved from the data of the element
+  function deleteEventLocationModalForm() {
+    $(".delete-event-location").each(function () {
+      $(this).modalForm({ formURL: $(this).data("form-url"), isDeleteForm: true });
+    });
+  }
+  deleteEventLocationModalForm();
+
+  // Read event buttons
+  function readEventLocationModalForm() {
+    $(".read-event-location").each(function () {
+      $(this).modalForm({ formURL: $(this).data("form-url") });
+    });
+  }
+  readEventLocationModalForm();
+
+  function reinstantiateModalForms() {
+    readEventLocationModalForm();
+    updateEventLocationModalForm();
+    deleteEventLocationModalForm();
+  }
+
+  
+
+  // Hide message
+  $(".alert").fadeTo(2000, 500).slideUp(500, function () {
+    $(".alert").slideUp(500);
+  });
+</script>
+{% endblock extrascripts %}

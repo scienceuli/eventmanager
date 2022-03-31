@@ -9,6 +9,10 @@ from .views import (
     FilteredEventListView,
     EventCreateView,
     EventLocationCreateView,
+    EventLocationListView,
+    EventLocationUpdateView,
+    EventLocationReadView,
+    EventLocationDeleteView,
     EventOrganizerCreateView,
     EventCategoryListView,
     EventCategoryCreateView,
@@ -48,9 +52,27 @@ urlpatterns = [
     path("event_filter/", FilteredEventListView.as_view(), name="event-filter"),
     path("event_create/", EventCreateView.as_view(), name="event-create"),
     path(
+        "event_location/lost",
+        EventLocationListView.as_view(),
+        name="event-location-list",
+    ),
+    path(
         "event_location_create/",
         EventLocationCreateView.as_view(),
         name="event-location-create",
+    ),
+    path(
+        "location_update/<int:pk>",
+        EventLocationUpdateView.as_view(),
+        name="location-update",
+    ),
+    path(
+        "location_read/<int:pk>", EventLocationReadView.as_view(), name="location-read"
+    ),
+    path(
+        "location_delete/<int:pk>",
+        EventLocationDeleteView.as_view(),
+        name="location-delete",
     ),
     path(
         "event_organizer_create/",
