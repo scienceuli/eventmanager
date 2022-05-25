@@ -762,6 +762,11 @@ class EventMember(AddressModel):
     def get_absolute_url(self):
         return reverse("member-detail", kwargs={"pk": self.pk})
 
+    def get_registration_date(self):
+        return self.date_created.strftime("%d.%m.%Y %H:%M")
+
+    get_registration_date.short_description = "Anmeldedatum"
+
     def save(self, *args, **kwargs):
         add = not self.pk
         super(EventMember, self).save(*args, **kwargs)

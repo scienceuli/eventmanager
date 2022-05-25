@@ -154,7 +154,6 @@ class EventMemberRoleInline(admin.TabularInline):
 class EventMemberAdmin(admin.ModelAdmin):
 
     list_display = [
-        "academic",
         "lastname",
         "firstname",
         "academic",
@@ -284,12 +283,19 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "vfll",
         "check",
         "education_bonus",
+        "get_registration_date",
         "change_link",
         "enroled",
         "moodle_id",
     )
     # inline_actions = ['enrol_to_moodle_course']
-    readonly_fields = ("change_link", "enroled", "attend_status", "moodle_id")
+    readonly_fields = (
+        "change_link",
+        "get_registration_date",
+        "enroled",
+        "attend_status",
+        "moodle_id",
+    )
 
     # def has_add_permission(self, request, obj=None):
     #    if obj and obj.is_past():
