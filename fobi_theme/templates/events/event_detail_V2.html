@@ -456,9 +456,11 @@
                         <h2 class="font-medium title-font text-vfllred mb-1 text-xl">Anmeldung</h2>
                         <div class="flex mx-auto">
                             <div class="leading-relaxed mr-4">
+                                {% comment %}
                                 {% if event.close_date %}
                                 <p class="font-semibold">Anmeldeschluss: {{event.close_date|date:"j. F Y"}}</p>
                                 {% endif %}
+                                {% endcomment %}
                                 {% if event.is_full %}
                                 <span class="text-vfllred italic">Leider ausgebucht!</span>
                                 {% else %}
