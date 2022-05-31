@@ -456,11 +456,11 @@
                         <h2 class="font-medium title-font text-vfllred mb-1 text-xl">Anmeldung</h2>
                         <div class="flex mx-auto">
                             <div class="leading-relaxed">
-                                {% comment %}
+
                                 {% if event.close_date %}
-                                <p class="font-semibold">Anmeldeschluss: {{event.close_date|date:"j. F Y"}}</p>
+                                <p class="font-semibold mr-2">Anmeldeschluss: {{event.close_date|date:"j. F Y"}}</p>
                                 {% endif %}
-                                {% endcomment %}
+
                                 {% if event.is_full %}
                                 <span class="text-vfllred italic mr-2">Leider ausgebucht!</span>
                                 {% else %}
@@ -479,10 +479,12 @@
                             </div>
                             {% if event.category.name != 'Fortbildungen unserer Kooperationspartner*innen' and event.registration_possible %}
 
-                            <div class="leading-relaxed mr-4">
-                                <a class=' bg-gray-200 font-bold  text-vfllred px-2 ' href="{% url 'event-add-member' event.slug %}">
-                                    {% if not event.is_full %}Online anmelden{% else %}Auf die Warteliste{% endif %}
-                                </a>
+                            <div class="item">
+                                <div class="">
+                                    <a class=' bg-gray-200 font-bold  text-vfllred px-2 ' href="{% url 'event-add-member' event.slug %}">
+                                        {% if not event.is_full %}Online anmelden{% else %}Auf die Warteliste{% endif %}
+                                    </a>
+                                </div>
                             </div>
 
 
