@@ -51,11 +51,38 @@ YES_NO_CHOICES = (
     ("n", "nein"),
 )
 
+BOOLEAN_CHOICES = (
+    (True, "ja"),
+    (False, "nein"),
+)
+
 MEMBER_TYPE_CHOICES = (
     ("o", "ordentliches Mitglied"),
     ("k", "Kandidat/Kandidatin"),
     ("f", "Fördermitglied"),
     ("e", "Ehrenmitglied"),
+)
+
+WS2022_CHOICES = (
+    ("I", "I Wertschätzender Sprachgebrauch mit gendersensibler Sprache"),
+    ("II", "II Konfliktgestaltung in belletristischen Texten"),
+    ("III", "III Schatzsuche: Geschäftsmodelle rund ums Selfpublishing"),
+    ("IV", "IV TeX-basierter Textsatz – Vorteile und Anwendung für wen und wofür?"),
+    ("V", "V Honorare – realistisch, angemessen … und durchsetzbar?"),
+    ("VI", "VI Sprechen & Stimme – vom Umgang mit der Standardsprache"),
+    ("-", "Ich nehme an keinem Workshop teil."),
+)
+
+TOUR_CHOICES = (
+    ("I", "Führung I: Franckesche Stiftungen (Kosten: 6 €**)"),
+    ("II", "Führung II: Stadtführung Halle (Kosten: 6 €**)"),
+    ("-", "Ich nehme an keiner Führung teil."),
+)
+
+FOOD_PREFERENCE_CHOICES = (
+    ("vt", "vegetarisch essen"),
+    ("vn", "vegan essen"),
+    ("-", "keine Präferenz"),
 )
 
 COUNTRIES = (

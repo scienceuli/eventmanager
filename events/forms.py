@@ -1,14 +1,27 @@
+# from ctypes import HRESULT
 from django.utils import timezone
 
 from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
+from django_tables2 import CheckBoxColumn
+from regex import B
 from tinymce.widgets import TinyMCE
 
 
 from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Fieldset, HTML, Div, Submit, ButtonHolder
-from crispy_forms.bootstrap import PrependedAppendedText, InlineRadios
+from crispy_forms.layout import (
+    Layout,
+    Fieldset,
+    HTML,
+    Div,
+    Submit,
+    ButtonHolder,
+    Row,
+    Column,
+    Field,
+)
+from crispy_forms.bootstrap import PrependedAppendedText, InlineRadios, InlineCheckboxes
 
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
@@ -28,6 +41,10 @@ from events.models import (
 )
 
 from .widgets import RelatedFieldWidgetCanAddWithModal
+
+
+class CustomCheckbox(Field):
+    template = "events/custom_checkbox.html"
 
 
 class EventDocumentForm(forms.ModelForm):
@@ -280,6 +297,10 @@ from .choices import (
     ATTENTION_CHOICES,
     MEMBER_TYPE_CHOICES,
     TAKES_PART_CHOICES,
+    WS2022_CHOICES,
+    TOUR_CHOICES,
+    FOOD_PREFERENCE_CHOICES,
+    BOOLEAN_CHOICES,
     YES_NO_CHOICES,
 )
 
@@ -678,3 +699,292 @@ class EventUpdateCapacityForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = ["capacity"]
+
+
+class Symposium2022Form(forms.Form):
+    def member_type_label(self):
+        return [
+            label
+            for value, label in self.fields["member_type"].choices
+            if value in self["member_type"].value()
+        ]
+
+    firstname = forms.CharField(
+        label="Vorname", widget=forms.TextInput(attrs={"placeholder": "Vorname"})
+    )
+    lastname = forms.CharField(
+        label="Nachname", widget=forms.TextInput(attrs={"placeholder": "Nachname"})
+    )
+    address_line = forms.CharField(
+        label="Adresszusatz",
+        widget=forms.TextInput(attrs={"placeholder": "Adresszusatz"}),
+        required=False,
+    )
+    street = forms.CharField(
+        label="Straße, Hausnummer",
+        widget=forms.TextInput(attrs={"placeholder": "Straße, Hausnummer"}),
+    )
+    postcode = forms.CharField(
+        label="PLZ", widget=forms.TextInput(attrs={"placeholder": "PLZ"})
+    )
+    city = forms.CharField(
+        label="Ort", widget=forms.TextInput(attrs={"placeholder": "Ort"})
+    )
+    email = forms.CharField(
+        label="E-Mail",
+        widget=forms.TextInput(attrs={"placeholder": "E-Mail"}),
+    )
+    phone = forms.CharField(
+        label="Telefon",
+        widget=forms.TextInput(attrs={"placeholder": "Telefon"}),
+        required=False,
+    )
+    ws2022 = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label="Workshop",
+        choices=WS2022_CHOICES,
+        required=False,
+    )
+
+    ws_alter = forms.CharField(
+        label="Für den Fall, dass meine Wahl ausgebucht ist, wähle ich alternativ Workshop Nr.:",
+        widget=forms.TextInput(attrs={"placeholder": "I, ..., VI", "class": "w-1/3"}),
+        required=False,
+    )
+
+    takes_part_in_mv = forms.BooleanField(
+        label="Ich nehme an der MV teil.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    having_lunch = forms.BooleanField(
+        label="Ich möchte am anschließenden Mittagessen teilnehmen.",
+        # widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    tour = forms.ChoiceField(
+        # attrs={"class": "text-xs  text-gray-600"},
+        widget=forms.RadioSelect,
+        label="Ich nehme am Fr., 16.09.2022, ab 15:30 Uhr teil an folgender Führung:",
+        choices=TOUR_CHOICES,
+        required=False,
+    )
+
+    networking = forms.BooleanField(
+        label="Ich nehme am Netzwerkabend im Keno’s am Fr., 16.09.2022, ab 18 Uhr teil (Buffet-Kosten: 20 €**, Getränke: Selbstzahlung vor Ort).",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    yoga = forms.BooleanField(
+        label="Ich habe Interesse, am Sa., 17.09.2022, am Yoga teilzunehmen.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    celebration = forms.BooleanField(
+        label="Ich nehme am Sa., 17.09.2022, ab 19 Uhr im „Krug zum grünen Kranze“ an der Feier „22 Jahre VFLL“ mit Abendessen und Tanz teil (Buffet-Kosten: 25 €**, Getränke: Selbstzahlung vor Ort).",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    food_preferences = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label="Ich möchte",
+        choices=FOOD_PREFERENCE_CHOICES,
+        required=False,
+    )
+
+    remarks = forms.CharField(
+        label="",
+        widget=forms.Textarea(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=False,
+    )
+
+    memberships = forms.MultipleChoiceField(
+        label="Ich bin Mitglied folgender Organisation(en):",
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "text-xs  text-gray-600"}),
+        choices=MEMBERSHIP_CHOICES,
+        required=False,
+    )
+
+    nomember = forms.BooleanField(
+        label="Ich bin nicht Mitglied einer dieser Organisationen.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.event_label = kwargs.pop("event_label", "")
+        super(Symposium2022Form, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        # self.helper.form_class = "form-horizontal"
+        self.helper.form_error_title = "Fehler im Formular"
+        self.error_text_inline = False
+        self.helper.layout = Layout(
+            Fieldset(
+                "1. Anmeldedaten",
+                Row(
+                    Column("firstname", css_class="form-group col-md-6 mb-0"),
+                    Column("lastname", css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
+                # "firstname",
+                # "lastname",
+                "address_line",
+                "street",
+                Row(
+                    Column("postcode", css_class="form-group col-md-2 mb-0"),
+                    Column("city", css_class="form-group col-md-10 mb-0"),
+                    css_class="form-row",
+                ),
+                HTML(
+                    """
+                    <p class='mb-2'>Für die steuerliche Abzugsfähigkeit bitte Geschäftsadresse angeben!</p>
+                    """
+                ),
+                "email",
+                "phone",
+                css_class="border-b-2 border-gray-900 pb-2 mb-4",
+            ),
+            Fieldset(
+                "2. Teilnahme an einem Workshop am Sa., 17.09.2022",
+                "ws2022",
+                "ws_alter",
+            ),
+            Fieldset(
+                "3. Mitgliederversammlung (MV) am So., 18.09.2022",
+                CustomCheckbox(
+                    "takes_part_in_mv",
+                ),
+                CustomCheckbox("having_lunch"),
+                HTML(
+                    """
+                    <p class='mb-2'>(Beides ist für VFLL-Mitglieder kostenfrei.)</p>
+                    """
+                ),
+            ),
+            Fieldset(
+                "4. Rahmenprogramm",
+                "tour",
+                CustomCheckbox("networking"),
+                CustomCheckbox("yoga"),
+                CustomCheckbox("celebration"),
+            ),
+            Fieldset(
+                "5. Essenswünsche",
+                # InlineCheckboxes(
+                #    "food_preferences",
+                #    required=False,
+                # ),
+                "food_preferences",
+            ),
+            Fieldset(
+                "6. Teilnahmekosten",
+                HTML(
+                    """
+                    <p>Der Tagungsbeitrag beträgt
+                    <ul style='list-style-position: outside; padding-left: 20px;'>
+                    <li>130 € für Mitglieder des VFLL oder eines der u. g. Partnerverbände</li>
+                    <li>170 € für sonstige Fachbesucher*innen</li>
+                    </ul>
+                    </p>
+                    <p class='mt-2 mb-2'>
+                    Darin enthalten sind die Kosten für die Fachtagung (hinzu kommen ggf. 
+                    gewählte Punkte des Rahmenprogramms, Übernachtungen u. Ä.).
+                    </p>
+                    """
+                ),
+            ),
+            Fieldset(
+                "Mitgliedschaft",
+                "memberships",
+                CustomCheckbox("nomember"),
+            ),
+            Fieldset(
+                "7. Zahlung, Stornierungsmodalitäten",
+                HTML(
+                    """
+                    <p>Den Gesamtbetrag aus Tagungsbeitrag und ggf. den Kostenbeiträgen 
+                    für weitere von mir gewählte Angebote (**) habe ich überwiesen an:</br>
+                    VFLL e. V., IBAN: DE24 4306 0967 6032 5237 00,<br/>
+                    BIC: GENODEM1GLS – Stichwort: FFL 2022
+                    </p>
+                    <p>
+                    <b>Für den Fall einer Absage bitte beachten:</b>
+                    <ul style='list-style-position: outside; padding-left: 20px;'>
+                    <li>Bei Absagen bis Fr., 29.07.2022 wird eine Bearbeitungsgebühr in Höhe 
+                    von 20 Euro erhoben.</li>
+                    <li>Bei Absagen bis Fr., 19.08.2022 werden 50 % der gezahlten Beträge für die 
+                    Tagung und das Rahmenprogramm rückerstattet.</li>
+                    <li>Bei Absagen ab Sa., 20.08.2022 ist eine Erstattung der gezahlten Beträge 
+                    leider nicht mehr möglich.</li>
+                    </ul>
+                    </p>
+                    <p class='mt-2 mb-2'>
+                    Bitte bucht eure Hotelübernachtungen selbst und beachtet im Fall einer 
+                    Absage die dortigen Stornierungsbedingungen.
+                    </p>
+                    """
+                ),
+            ),
+            Fieldset(
+                "Anmerkungen und Wünsche:",
+                "remarks",
+            ),
+            ButtonHolder(
+                Submit(
+                    "submit",
+                    "Ich melde mich hiermit verbindlich an.",
+                    css_class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full",
+                )
+            ),
+        )
+        # self.helper.add_input(Submit("submit", "Anmelden"))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        ws2022 = cleaned_data.get("ws2022")
+        takes_part_in_mv = cleaned_data.get("takes_part_in_mv")
+        having_lunch = cleaned_data.get("having_lunch")
+        tour = cleaned_data.get("tour")
+        networking = cleaned_data.get("networking")
+        yoga = cleaned_data.get("yoga")
+        celebration = cleaned_data.get("celebration")
+        food_preferences = cleaned_data.get("food_preferences")
+        remarks = cleaned_data.get("remarks")
+        memberships = cleaned_data.get("memberships")
+
+    def clean_ws_alter(self):
+        ws_alter = self.cleaned_data.get("ws_alter")
+        if ws_alter.strip() not in ["I", "II", "III", "IV", "V", "VI", ""]:
+            self.add_error("ws_alter", "Bitte I bis VI eintragen oder leer lassen")
+        return ws_alter
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if (
+            EventMember.objects.filter(
+                email=email, event__label=self.event_label
+            ).count()
+            > 0
+        ):
+            raise forms.ValidationError(
+                "Es gibt bereits eine Anmeldung mit dieser E-Mail-Adresse."
+            )
+        return email
+
+    def clean_nomember(self):
+        nomember = self.cleaned_data.get("nomember")
+        if nomember and len(self.cleaned_data.get("memberships")) > 0:
+            self.add_error(
+                "nomember",
+                "Sie haben mindestens eine Mitgliedschaft ausgewählt. Was ist korrekt?",
+            )
+        return nomember

@@ -304,6 +304,7 @@ class Event(BaseModel):
     REGISTRATION_FORM_CHOICES = (
         ("s", "Standard"),
         ("m", "MV/ZW"),
+        ("f", "Fachtagung 2022/MV"),
     )
 
     registration_form = models.CharField(
@@ -750,6 +751,8 @@ class EventMember(AddressModel):
         "Check Stimmübertragung",
         default=False,
     )
+
+    data = models.JSONField(null=True, blank=True)
 
     class Meta:
         verbose_name = "Teilnehmer*in"

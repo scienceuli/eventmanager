@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from datetime import datetime
-from .models import Event, EventSpeaker
+from .models import Event, EventMember, EventSpeaker
 
 
 class SpeakerSerializer(serializers.ModelSerializer):

@@ -36,6 +36,7 @@ from .views import (
     export_members_csv,
     export_mv_members_csv,
     members_dashboard_view,
+    export_ft_members_csv,
 )
 
 # sentry test
@@ -136,4 +137,5 @@ urlpatterns = [
     path("members/export/csv/", export_members_csv, name="export-members-csv"),
     path("members_mv/export/csv/", export_mv_members_csv, name="export-members-mv-csv"),
     path("members_dashboard/", members_dashboard_view, name="members-dashboard"),
+    path("members_ft/export/csv/", export_ft_members_csv, name="export-members-ft-csv"),
 ]

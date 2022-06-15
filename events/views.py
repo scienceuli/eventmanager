@@ -1,16 +1,19 @@
 import csv
+import json
 from events.actions import convert_boolean_field
 
 from django.db import transaction
 from django.db.models import Max
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import request, HttpResponse, HttpResponseRedirect
+from django.http import request, HttpResponse
 from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse_lazy, reverse
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
+from django.contrib.admin.views.decorators import staff_member_required
+
 
 from django.core.mail import send_mail, BadHeaderError
 
@@ -83,6 +86,7 @@ from .forms import (
     EventModelForm,
     EventMemberForm,
     EventDocumentFormSet,
+    Symposium2022Form,
     SymposiumForm,
     AddMemberForm,
     EventUpdateCapacityForm,
@@ -503,20 +507,46 @@ def search_event(request):
     return render(request, "events/event_list_tw.html")
 
 
+def get_mail_to_admin_template_name(registration_form):
+    if registration_form == "s":
+        mail_to_admin_template_name = "anmeldung"
+    elif registration_form == "m":
+        mail_to_admin_template_name = "mv_zw_anmeldung"
+    elif registration_form == "f":
+        mail_to_admin_template_name = "ft_anmeldung"
+    return mail_to_admin_template_name
+
+
+def get_mail_to_member_template_name(registration_form):
+    if registration_form == "s":
+        mail_to_member_template_name = "bestaetigung"
+    elif registration_form == "m":
+        mail_to_member_template_name = "mv_zw_bestaetigung"
+    elif registration_form == "f":
+        mail_to_member_template_name = "ft_bestaetigung"
+    return mail_to_member_template_name
+
+
+def get_form_template(registration_form):
+    if registration_form == "s":
+        form_template = "events/add_event_member_tw.html"
+    elif registration_form == "m":
+        form_template = "events/add_event_member_mv.html"
+    elif registration_form == "f":
+        form_template = "events/add_event_member_ft.html"
+    return form_template
+
+
 # @login_required(login_url="login")
 def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
-    if event.registration_form == "s":
-        mail_to_admin_template_name = "anmeldung"
-        mail_to_member_template_name = "bestaetigung"
-    elif event.registration_form == "m":
-        mail_to_admin_template_name = "mv_zw_anmeldung"
-        mail_to_member_template_name = "mv_zw_bestaetigung"
-
-    if event.registration_form == "s":
-        form_template = "events/add_event_member_tw.html"
-    elif event.registration_form == "m":
-        form_template = "events/add_event_member_mv.html"
+    mail_to_admin_template_name = get_mail_to_admin_template_name(
+        event.registration_form
+    )
+    mail_to_member_template_name = get_mail_to_member_template_name(
+        event.registration_form
+    )
+    form_template = get_form_template(event.registration_form)
 
     if request.method == "GET":
         if event.registration_form == "s":
@@ -524,11 +554,15 @@ def event_add_member(request, slug):
         elif event.registration_form == "m":
             print(f"event label: {event.label}")
             form = SymposiumForm(event_label=event.label)
+        elif event.registration_form == "f":
+            form = Symposium2022Form(event_label=event.label)
     else:
         if event.registration_form == "s":
             form = EventMemberForm(request.POST)
         elif event.registration_form == "m":
             form = SymposiumForm(request.POST, event_label=event.label)
+        elif event.registration_form == "f":
+            form = Symposium2022Form(request.POST, event_label=event.label)
         if form.is_valid():
             if event.registration_form == "s":
                 academic = form.cleaned_data["academic"]
@@ -586,6 +620,7 @@ def event_add_member(request, slug):
                     check=check,
                     attend_status=attend_status,
                 )
+
             elif event.registration_form == "m":
                 firstname = form.cleaned_data["firstname"]
                 lastname = form.cleaned_data["lastname"]
@@ -649,6 +684,75 @@ def event_add_member(request, slug):
                     except Event.DoesNotExist:
                         logger.error("Event does not exist")
 
+            elif event.registration_form == "f":
+                firstname = form.cleaned_data["firstname"]
+                lastname = form.cleaned_data["lastname"]
+                email = form.cleaned_data["email"]
+                address_line = form.cleaned_data["address_line"]
+                street = form.cleaned_data["street"]
+                city = form.cleaned_data["city"]
+                postcode = form.cleaned_data["postcode"]
+                ws2022 = form.cleaned_data["ws2022"]
+                ws_alter = form.cleaned_data["ws_alter"]
+                takes_part_in_mv = form.cleaned_data["takes_part_in_mv"]
+                having_lunch = form.cleaned_data["having_lunch"]
+                tour = form.cleaned_data["tour"]
+                networking = form.cleaned_data["networking"]
+                yoga = form.cleaned_data["yoga"]
+                celebration = form.cleaned_data["celebration"]
+                food_preferences = form.cleaned_data["food_preferences"]
+                remarks = form.cleaned_data["remarks"]
+                memberships = form.cleaned_data["memberships"]
+                nomember = form.cleaned_data["nomember"]
+
+                if event.is_full():
+                    attend_status = "waiting"
+                else:
+                    attend_status = "registered"
+
+                bools = ("nein", "ja")
+
+                data_dict = {
+                    "firstname": firstname,
+                    "lastname": lastname,
+                    "email": email,
+                    "address_line": address_line,
+                    "street": street,
+                    "city": city,
+                    "postcode": postcode,
+                    "date": timezone.now().strftime("%d.%m.%Y"),
+                    "ws2022": ws2022,
+                    "ws_alter": ws_alter,
+                    "takes_part_in_mv": bools[takes_part_in_mv],
+                    "having_lunch": bools[having_lunch],
+                    "tour": tour,
+                    "networking": bools[networking],
+                    "yoga": bools[yoga],
+                    "celebration": bools[celebration],
+                    "food_preferences": food_preferences,
+                    "memberships": memberships,
+                    "nomember": bools[nomember],
+                    "remarks": remarks,
+                }
+
+                data = json.dumps(data_dict, indent=4)
+
+                name = f"{event.label} | {timezone.now()}"
+
+                new_member = EventMember.objects.create(
+                    name=name,
+                    event=event,
+                    firstname=firstname,
+                    lastname=lastname,
+                    email=email,
+                    address_line=address_line,
+                    street=street,
+                    postcode=postcode,
+                    city=city,
+                    attend_status=attend_status,
+                    data=data,
+                )
+
             """
             zusätzlich wird ein eindeutiges Label für diese Anmeldung kreiert, um das Label
             für Mailversand zu haben.
@@ -662,6 +766,8 @@ def event_add_member(request, slug):
                 subject = f"Anmeldung am Kurs {event.name}"
             elif event.registration_form == "m":
                 subject = f"Anmeldung zur MV / Zukunftswerkstatt"
+            elif event.registration_form == "f":
+                subject = f"Anmeldung zur Fachtagung Freies Lektorat 2022"
 
             # mails to vfll
             addresses_list = []
@@ -762,19 +868,41 @@ def event_add_member(request, slug):
                     "attend_status": attend_status,
                 }
 
+            elif event.registration_form == "f":
+                formatting_dict = {
+                    "firstname": firstname,
+                    "lastname": lastname,
+                    "event": "Fachtagung Freies Lektorat 2022",
+                    "start": event.get_first_day_start_date(),
+                    "email": email,
+                    "ws2022": ws2022,
+                    "ws_alter": ws_alter,
+                    "takes_part_in_mv": takes_part_in_mv,
+                    "having_lunch": having_lunch,
+                    "tour": tour,
+                    "networking": networking,
+                    "yoga": yoga,
+                    "celebration": celebration,
+                    "food_preferences": food_preferences,
+                    "remarks": remarks,
+                    "memberships": memberships,
+                    "nomember": nomember,
+                }
+
             messages_dict = {
                 "s": (
                     "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
                     "Vielen Dank für Ihre Anmeldung. Sie wurden auf die Warteliste gesetzt und werden benachrichtigt, wenn ein Platz frei wird.",
                 )[attend_status == "waiting"],
                 "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool (falls du an der MV teilnimmst) werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt. Falls die Zukunftswerkstatt ausgebucht ist, setzen wir dich gerne auf die Warteliste.",
+                "f": "Vielen Dank für deine Anmeldung. Weitere Informationen werden nach dem Anmeldeschluss versandt.",
             }
             messages.success(request, messages_dict[event.registration_form])
 
             # save new member
             new_member = EventMember.objects.latest("date_created")
             new_member.save()
-            if event.registration_form == "s":
+            if event.registration_form == "s" or event.registration_form == "f":
                 try:
                     send_email(
                         addresses,
@@ -791,7 +919,7 @@ def event_add_member(request, slug):
             # mail to member
 
             # TODO auch für FoBis freischalten, wenn Fobis einverstanden
-            if event.registration_form == "m":
+            if event.registration_form == "m" or event.registration_form == "f":
                 print(f"member email: {email}")
                 logger.debug(f"Anmeldung email: {email}")
                 member_addresses_list = []
@@ -1165,3 +1293,56 @@ def members_dashboard_view(request):
         "zw_event_id": Event.objects.get(label="zukunft2021").id,
     }
     return render(request, "events/members_dashboard.html", context)
+
+
+@staff_member_required
+def ft_report(request):
+    qs = EventMember.objects.filter(event__label="ffl_mv_2022")
+    template_name = "admin/events/ft_report.html"
+    return render(request, template_name, {"number_members": len(qs)})
+
+
+@login_required
+def export_ft_members_csv(request):
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = 'attachment; filename="members_ft.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(
+        [
+            "Vorname",
+            "Nachname",
+            "E-Mail",
+            "Adresszusatz",
+            "Straße",
+            "PLZ",
+            "Ort",
+            "Anmeldedatum",
+            "Workshop",
+            "WS-Alternative",
+            "MV",
+            "Mittagessen",
+            "Führung",
+            "Netzwerkabend",
+            "Yoga",
+            "Feier",
+            "Essenswunsch",
+            "Mitgliedschaft",
+            "kein Mitglied",
+            "Bemerkung",
+        ]
+    )
+
+    members_ft = EventMember.objects.filter(event__label="ffl_mv_2022")
+
+    data_list = members_ft.values_list(
+        "data",
+    )
+
+    for member in members_ft:
+        json_object = json.loads(member.data)
+        values = list(json_object.values())
+        writer.writerow(values)
+
+    return response
