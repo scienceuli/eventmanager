@@ -826,7 +826,7 @@ class Symposium2022Form(forms.Form):
         self.helper = FormHelper()
         # self.helper.form_class = "form-horizontal"
         self.helper.form_error_title = "Fehler im Formular"
-        self.error_text_inline = False
+        self.error_text_inline = True
         self.helper.layout = Layout(
             Fieldset(
                 "1. Anmeldedaten",
@@ -984,7 +984,14 @@ class Symposium2022Form(forms.Form):
         nomember = self.cleaned_data.get("nomember")
         if nomember and len(self.cleaned_data.get("memberships")) > 0:
             self.add_error(
-                "nomember",
-                "Sie haben mindestens eine Mitgliedschaft ausgewählt. Was ist korrekt?",
+                "memberships",
+                "Wenn Mitgliedschaft vorhanden, bitte 'Ich bin nicht Mitglied...' nicht anklicken.",
             )
+
+        if not nomember and len(self.cleaned_data.get("memberships")) == 0:
+            self.add_error(
+                "memberships",
+                "Wenn keine Mitgliedschaft, bitte 'Ich bin nicht Mitglied...' anklicken.",
+            )
+
         return nomember

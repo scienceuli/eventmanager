@@ -97,6 +97,8 @@ from .api import call
 
 from .serializers import EventSerializer
 
+from .choices import MEMBERSHIP_CHOICES, FOOD_PREFERENCE_CHOICES
+
 from .utils import send_email, boolean_translate
 
 import itertools
@@ -111,6 +113,15 @@ locale.setlocale(locale.LC_TIME, "de_DE")
 
 def is_member_of_mv_orga(user):
     return user.groups.filter(name="mv_orga").exists()
+
+
+def choices_to_string(choices_list, choices):
+    label_list = [label for value, label in choices if value in choices_list]
+    return ", ".join(label_list)
+
+
+def choices_to_display(choice, choices):
+    return choices[choice]
 
 
 class GroupTestMixin(UserPassesTestMixin):
@@ -692,6 +703,7 @@ def event_add_member(request, slug):
                 street = form.cleaned_data["street"]
                 city = form.cleaned_data["city"]
                 postcode = form.cleaned_data["postcode"]
+                phone = form.cleaned_data["phone"]
                 ws2022 = form.cleaned_data["ws2022"]
                 ws_alter = form.cleaned_data["ws_alter"]
                 takes_part_in_mv = form.cleaned_data["takes_part_in_mv"]
@@ -718,8 +730,9 @@ def event_add_member(request, slug):
                     "email": email,
                     "address_line": address_line,
                     "street": street,
-                    "city": city,
                     "postcode": postcode,
+                    "city": city,
+                    "phone": phone,
                     "date": timezone.now().strftime("%d.%m.%Y"),
                     "ws2022": ws2022,
                     "ws_alter": ws_alter,
@@ -869,24 +882,38 @@ def event_add_member(request, slug):
                 }
 
             elif event.registration_form == "f":
+
+                food_pref_list = []
+
+                food_pref_list.append(food_preferences)
+
+                print("food: ", food_preferences, food_pref_list)
+
                 formatting_dict = {
                     "firstname": firstname,
                     "lastname": lastname,
                     "event": "Fachtagung Freies Lektorat 2022",
                     "start": event.get_first_day_start_date(),
+                    "address_line": address_line,
+                    "street": street,
+                    "postcode": postcode,
+                    "city": city,
                     "email": email,
-                    "ws2022": ws2022,
-                    "ws_alter": ws_alter,
-                    "takes_part_in_mv": takes_part_in_mv,
-                    "having_lunch": having_lunch,
+                    "phone": phone,
+                    "ws2022": ws2022 if ws2022 else "-",
+                    "ws_alter": ws_alter if ws_alter else "-",
+                    "takes_part_in_mv": boolean_translate(takes_part_in_mv),
+                    "having_lunch": boolean_translate(having_lunch),
                     "tour": tour,
-                    "networking": networking,
-                    "yoga": yoga,
-                    "celebration": celebration,
-                    "food_preferences": food_preferences,
+                    "networking": boolean_translate(networking),
+                    "yoga": boolean_translate(yoga),
+                    "celebration": boolean_translate(celebration),
+                    "food_preferences": choices_to_string(
+                        food_pref_list, FOOD_PREFERENCE_CHOICES
+                    ),
                     "remarks": remarks,
-                    "memberships": memberships,
-                    "nomember": nomember,
+                    "memberships": choices_to_string(memberships, MEMBERSHIP_CHOICES),
+                    "nomember": boolean_translate(nomember),
                 }
 
             messages_dict = {
@@ -1318,6 +1345,7 @@ def export_ft_members_csv(request):
             "Straße",
             "PLZ",
             "Ort",
+            "Tel.",
             "Anmeldedatum",
             "Workshop",
             "WS-Alternative",
