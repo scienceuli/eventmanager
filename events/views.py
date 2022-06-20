@@ -893,7 +893,7 @@ def event_add_member(request, slug):
                     "firstname": firstname,
                     "lastname": lastname,
                     "event": "Fachtagung Freies Lektorat 2022",
-                    "start": event.get_first_day_start_date(),
+                    "start": event.get_first_day_start_date().strftime("%d.%m.%Y"),
                     "address_line": address_line,
                     "street": street,
                     "postcode": postcode,

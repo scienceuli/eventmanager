@@ -118,6 +118,12 @@ class EventLocation(AddressModel):
             else:
                 address += self.state
 
+        if self.url:
+            if address:
+                address += "\n" + self.url
+            else:
+                address += self.url
+
         return address
 
 

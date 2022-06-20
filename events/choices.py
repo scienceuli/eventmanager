@@ -26,6 +26,7 @@ REGIO_GROUP_CHOICES = (
 )
 
 MEMBERSHIP_CHOICES = (
+    ("vfll", "VFLL"),
     ("vdu", "VdÜ"),
     ("bf", "BücherFrauen"),
     ("il", "Illustratoren Organisation"),

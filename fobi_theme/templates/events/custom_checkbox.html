@@ -3,6 +3,6 @@
 <div class="form-group">
   <div class="custom-control custom-checkbox">
     {% crispy_field field 'class' 'custom-control-input' %}
-    <label class="custom-control-label text-gray-700 text-sm font-bold" for="{{ field.id_for_label }}">{{ field.label }}</label>
+    <label class="custom-control-label text-gray-700 text-sm font-bold" for="{{ field.id_for_label }}">{{ field.label|safe }}</label>
   </div>
 </div>

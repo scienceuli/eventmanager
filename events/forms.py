@@ -5,6 +5,9 @@ from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.translation import ugettext_lazy as _
 from django_tables2 import CheckBoxColumn
+from django.core.validators import validate_email
+from django.utils.html import escape
+
 from regex import B
 from tinymce.widgets import TinyMCE
 
@@ -730,7 +733,7 @@ class Symposium2022Form(forms.Form):
     city = forms.CharField(
         label="Ort", widget=forms.TextInput(attrs={"placeholder": "Ort"})
     )
-    email = forms.CharField(
+    email = forms.EmailField(
         label="E-Mail",
         widget=forms.TextInput(attrs={"placeholder": "E-Mail"}),
     )
@@ -773,7 +776,7 @@ class Symposium2022Form(forms.Form):
     )
 
     networking = forms.BooleanField(
-        label="Ich nehme am Netzwerkabend im Keno’s am Fr., 16.09.2022, ab 18 Uhr teil (Buffet-Kosten: 20 €**, Getränke: Selbstzahlung vor Ort).",
+        label="Ich nehme am Netzwerkabend im Keno’s am Fr., 16.09.2022, ab 18 Uhr teil<br>(Buffet-Kosten: 20 €**, Getränke: Selbstzahlung vor Ort).",
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
         required=False,
     )
@@ -785,8 +788,10 @@ class Symposium2022Form(forms.Form):
     )
 
     celebration = forms.BooleanField(
-        label="Ich nehme am Sa., 17.09.2022, ab 19 Uhr im „Krug zum grünen Kranze“ an der Feier „22 Jahre VFLL“ mit Abendessen und Tanz teil (Buffet-Kosten: 25 €**, Getränke: Selbstzahlung vor Ort).",
-        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        label="Ich nehme am Sa., 17.09.2022, ab 19 Uhr im „Krug zum grünen Kranze“ an der Feier<br>„22 Jahre VFLL“ mit Abendessen und Tanz teil<br>(Buffet-Kosten: 25 €**, Getränke: Selbstzahlung vor Ort).",
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-radio", "style": "white-space: pre-wrap;"}
+        ),
         required=False,
     )
 
@@ -851,6 +856,11 @@ class Symposium2022Form(forms.Form):
                 ),
                 "email",
                 "phone",
+                HTML(
+                    """
+                    <p class='mb-2'>Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, Telefon, E-Mail-Adresse) auf der Teilnahmeliste stehen und an die anderen Teilnehmenden weitergegeben werden.</p>
+                    """
+                ),
                 css_class="border-b-2 border-gray-900 pb-2 mb-4",
             ),
             Fieldset(
@@ -892,7 +902,7 @@ class Symposium2022Form(forms.Form):
                     <p>Der Tagungsbeitrag beträgt
                     <ul style='list-style-position: outside; padding-left: 20px;'>
                     <li>130 € für Mitglieder des VFLL oder eines der u. g. Partnerverbände</li>
-                    <li>170 € für sonstige Fachbesucher*innen</li>
+                    <li>180 € für sonstige Fachbesucher*innen</li>
                     </ul>
                     </p>
                     <p class='mt-2 mb-2'>
@@ -916,11 +926,14 @@ class Symposium2022Form(forms.Form):
                     VFLL e. V., IBAN: DE24 4306 0967 6032 5237 00,<br/>
                     BIC: GENODEM1GLS – Stichwort: FFL 2022
                     </p>
-                    <p>
+                    <p class="mb-2">
+                    <hr>
+                    </p>
+                    <p class="mt-2" style="border:top;">
                     <b>Für den Fall einer Absage bitte beachten:</b>
                     <ul style='list-style-position: outside; padding-left: 20px;'>
                     <li>Bei Absagen bis Fr., 29.07.2022 wird eine Bearbeitungsgebühr in Höhe 
-                    von 20 Euro erhoben.</li>
+                    von 20&nbsp;Euro erhoben.</li>
                     <li>Bei Absagen bis Fr., 19.08.2022 werden 50 % der gezahlten Beträge für die 
                     Tagung und das Rahmenprogramm rückerstattet.</li>
                     <li>Bei Absagen ab Sa., 20.08.2022 ist eine Erstattung der gezahlten Beträge 
