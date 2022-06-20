@@ -170,6 +170,9 @@
                         <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Ort</h2>
                         <p class="text-left ">{{ event.location.title }}</p>
                         <p class="text-left ">{{ event.location.get_complete_address|linebreaksbr }}</p>
+                        {% if event.location.url %}
+                        <p><a href="{{ event.location.url }}">Webseite</a></p>
+                        {% endif %}
                     </div>
                 </div>
             </div>
