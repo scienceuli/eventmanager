@@ -1,5 +1,6 @@
 import csv
 import json
+import pandas as pd
 from events.actions import convert_boolean_field
 
 from django.db import transaction
@@ -743,7 +744,8 @@ def event_add_member(request, slug):
                     "yoga": bools[yoga],
                     "celebration": bools[celebration],
                     "food_preferences": food_preferences,
-                    "memberships": memberships,
+                    "memberships": choices_to_string(memberships, MEMBERSHIP_CHOICES),
+                    # "memberships": memberships,
                     "nomember": bools[nomember],
                     "remarks": remarks,
                 }
@@ -1333,7 +1335,8 @@ def ft_report(request):
 def export_ft_members_csv(request):
 
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="members_ft.csv"'
+    date = datetime.today().strftime("%Y-%m-%d")
+    response["Content-Disposition"] = f"attachment; filename='members_ft_{date}.csv'"
 
     writer = csv.writer(response)
     writer.writerow(
@@ -1372,5 +1375,34 @@ def export_ft_members_csv(request):
         json_object = json.loads(member.data)
         values = list(json_object.values())
         writer.writerow(values)
+
+    return response
+
+
+@login_required
+def export_ft_members_xls(request):
+    # content type
+    # response = HttpResponse(content_type="application/ms-excel")
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+
+    # create filename
+    date = datetime.today().strftime("%Y-%m-%d")
+    output_name = f"members_ft_{date}.xlsx"
+    response["Content-Disposition"] = f"attachment; filename={output_name}"
+
+    # get the members
+    ftm = EventMember.objects.filter(event__label="ffl_mv_2022").values_list(
+        "data", flat=True
+    )
+
+    # the data json objects are returned as strings, so convert to list of dicts
+    # with json.loads
+    ftm_list = [json.loads(j) for j in list(ftm)]
+
+    # creating pandas Data Frame
+    df = pd.DataFrame(ftm_list)
+    df.to_excel(response)
 
     return response

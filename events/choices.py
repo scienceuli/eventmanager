@@ -70,7 +70,7 @@ WS2022_CHOICES = (
     ("III", "III Schatzsuche: Geschäftsmodelle rund ums Selfpublishing"),
     ("IV", "IV TeX-basierter Textsatz – Vorteile und Anwendung für wen und wofür?"),
     ("V", "V Honorare – realistisch, angemessen … und durchsetzbar?"),
-    ("VI", "VI Sprechen & Stimme – vom Umgang mit der Standardsprache"),
+    ("VI", "VI Sprechen & Stimme – vom Umgang mit der Standardaussprache"),
     ("-", "Ich nehme an keinem Workshop teil."),
 )
 

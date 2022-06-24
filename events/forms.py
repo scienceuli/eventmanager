@@ -738,8 +738,8 @@ class Symposium2022Form(forms.Form):
         widget=forms.TextInput(attrs={"placeholder": "E-Mail"}),
     )
     phone = forms.CharField(
-        label="Telefon",
-        widget=forms.TextInput(attrs={"placeholder": "Telefon"}),
+        label="Telefonnummer",
+        widget=forms.TextInput(attrs={"placeholder": "Telefonnummer"}),
         required=False,
     )
     ws2022 = forms.ChoiceField(
@@ -932,11 +932,11 @@ class Symposium2022Form(forms.Form):
                     <p class="mt-2" style="border:top;">
                     <b>Für den Fall einer Absage bitte beachten:</b>
                     <ul style='list-style-position: outside; padding-left: 20px;'>
-                    <li>Bei Absagen bis Fr., 29.07.2022 wird eine Bearbeitungsgebühr in Höhe 
+                    <li>Bei Absagen bis Fr., 29.07.2022, wird eine Bearbeitungsgebühr in Höhe 
                     von 20&nbsp;Euro erhoben.</li>
-                    <li>Bei Absagen bis Fr., 19.08.2022 werden 50 % der gezahlten Beträge für die 
+                    <li>Bei Absagen bis Fr., 19.08.2022, werden 50 % der gezahlten Beträge für die 
                     Tagung und das Rahmenprogramm rückerstattet.</li>
-                    <li>Bei Absagen ab Sa., 20.08.2022 ist eine Erstattung der gezahlten Beträge 
+                    <li>Bei Absagen ab Sa., 20.08.2022, ist eine Erstattung der gezahlten Beträge 
                     leider nicht mehr möglich.</li>
                     </ul>
                     </p>
