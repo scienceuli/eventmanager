@@ -664,6 +664,10 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
         (
+            "Programm als Pdf",
+            {"fields": ("pdf_file",)},
+        ),
+        (
             "Moodle",
             {
                 "fields": (

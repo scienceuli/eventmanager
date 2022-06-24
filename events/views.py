@@ -1,3 +1,4 @@
+import os
 import csv
 import json
 import pandas as pd
@@ -6,7 +7,7 @@ from events.actions import convert_boolean_field
 from django.db import transaction
 from django.db.models import Max
 from django.shortcuts import render, get_object_or_404, redirect
-from django.http import request, HttpResponse
+from django.http import request, HttpResponse, Http404
 from django.contrib import messages
 from django.utils import timezone
 from django.urls import reverse_lazy, reverse
@@ -1290,6 +1291,18 @@ def export_mv_members_csv(request):
         writer.writerow(member)
 
     return response
+
+
+def download_pdf(request):
+    download_path = os.path.join(settings.MEDIA_ROOT, path)
+    if os.path.exists(download_path):
+        with open(download_path, "rb") as fh:
+            response = HttpResponse(fh.read(), content_type="application/pdf_file")
+            response["Content-Disposition"] = "inline; filename=" + os.path.basename(
+                download_path
+            )
+            return response
+    raise Http404
 
 
 @login_required

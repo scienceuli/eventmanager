@@ -325,6 +325,7 @@ class Event(BaseModel):
         verbose_name="Hinweise", null=True, blank=True, config_name="short"
     )
 
+    pdf_file = models.FileField(blank=True, upload_to="media")
     video = EmbedVideoField(null=True, blank=True)
     show_video = models.BooleanField(default=False)
     video_comment = models.TextField(null=True, blank=True)

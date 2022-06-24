@@ -1,4 +1,6 @@
-from django.urls import path, include
+from django.urls import path, include, re_path
+from django.views.static import serve
+from django.conf import settings
 
 from .views import (
     EventListInternalView,
@@ -142,4 +144,5 @@ urlpatterns = [
     path(
         "members_ft/export/excel/", export_ft_members_xls, name="export-members-ft-xls"
     ),
+    re_path(r"^download/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
 ]
