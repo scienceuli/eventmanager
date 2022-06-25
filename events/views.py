@@ -1293,7 +1293,7 @@ def export_mv_members_csv(request):
     return response
 
 
-def download_pdf(request):
+def download_pdf(request, path):
     download_path = os.path.join(settings.MEDIA_ROOT, path)
     if os.path.exists(download_path):
         with open(download_path, "rb") as fh:
