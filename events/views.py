@@ -1337,6 +1337,17 @@ def members_dashboard_view(request):
     return render(request, "events/members_dashboard.html", context)
 
 
+@login_required
+@user_passes_test(is_member_of_mv_orga)
+def ft_members_dashboard_view(request):
+    context = {
+        "count_members_of_mv": EventMember.objects.filter(
+            event__label="ffl_mv_2022"
+        ).count(),
+    }
+    return render(request, "events/ft_members_dashboard.html", context)
+
+
 @staff_member_required
 def ft_report(request):
     qs = EventMember.objects.filter(event__label="ffl_mv_2022")

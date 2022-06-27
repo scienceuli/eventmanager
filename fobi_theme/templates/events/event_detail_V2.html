@@ -575,8 +575,10 @@
             {% if event.pdf_file %}
             <div class="pt-4 flex-col md:w-2/3 mx-auto">
                 <div class="pt-2"><span class="font-bold text-gray-900 text-xl">Programm</span></div>
-
+                {% comment %}
                 <div class="pt-1"><a href="{{ event.pdf_file.url }}" download="{{ event.pdf_file.url }}"><span class="text-vfllred">Hier</span></a> gibt es das ausführliche Programm zum Download.</div>
+                {% endcomment %}
+                <div class="pt-1"><a href="{% url 'pdf-download' event.slug %}"><span class="text-vfllred">Hier</span></a> gibt es das ausführliche Programm zum Download.</div>
 
             </div>
             {% endif %}

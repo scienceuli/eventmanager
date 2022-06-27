@@ -2,6 +2,10 @@ from django.urls import path, include, re_path
 from django.views.static import serve
 from django.conf import settings
 
+from django_downloadview import ObjectDownloadView
+
+from events.models import Event
+
 from .views import (
     EventListInternalView,
     EventListFilterInternalView,
@@ -46,6 +50,8 @@ from .views import (
 def trigger_error(request):
     division_by_zero = 1 / 0
 
+
+download = ObjectDownloadView.as_view(model=Event, file_field="pdf_file")
 
 urlpatterns = [
     path("sentry-debug/", trigger_error),  # sentry test
@@ -144,5 +150,6 @@ urlpatterns = [
     path(
         "members_ft/export/excel/", export_ft_members_xls, name="export-members-ft-xls"
     ),
-    re_path(r"^download/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+    # re_path(r"^download/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
+    re_path(r"^download/(?P<slug>[A-Za-z0-9_-]+)/$", download, name="pdf-download"),
 ]
