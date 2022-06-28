@@ -937,6 +937,7 @@ def event_add_member(request, slug):
                     send_email(
                         addresses,
                         subject,
+                        settings.DEFAULT_FROM_EMAIL,
                         mail_to_admin_template_name,
                         formatting_dict=formatting_dict,
                     )
@@ -959,6 +960,7 @@ def event_add_member(request, slug):
                     send_email(
                         member_addresses,
                         subject,
+                        settings.FT_FROM_EMAIL,
                         mail_to_member_template_name,
                         formatting_dict=formatting_dict,
                     )

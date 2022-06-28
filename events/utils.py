@@ -49,7 +49,9 @@ def get_email_template(template_name):
         raise EmailTemplateError("No such template: {}".format(template_name))
 
 
-def send_email(addresses, subject, template_name, formatting_dict=None, **kwargs):
+def send_email(
+    addresses, subject, from_email, template_name, formatting_dict=None, **kwargs
+):
     formatting_dict = formatting_dict or {}
     template = get_email_template(template_name)
     text_template = getattr(template, "text_template", "")
@@ -74,7 +76,9 @@ def send_email(addresses, subject, template_name, formatting_dict=None, **kwargs
     cc = addresses.get("cc", [])
     bcc = addresses.get("bcc", settings.EMAIL_NOTIFY_BCC)
 
-    msg = EmailMultiAlternatives(subject, text_content, to=to, cc=cc, bcc=bcc)
+    msg = EmailMultiAlternatives(
+        subject, text_content, from_email=from_email, to=to, cc=cc, bcc=bcc
+    )
     if html_content:
         msg.attach_alternative(html_content, "text/html")
 
