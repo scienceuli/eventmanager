@@ -10,6 +10,7 @@ from django.utils.html import escape
 
 from regex import B
 from tinymce.widgets import TinyMCE
+from entangled.forms import EntangledModelForm
 
 
 from crispy_forms.helper import FormHelper
@@ -1008,3 +1009,17 @@ class Symposium2022Form(forms.Form):
             )
 
         return nomember
+
+
+############## form for edit json data of member (FT 2022) ######
+
+
+class FTEventMemberForm(EntangledModelForm):
+    firstname = forms.CharField()
+    lastname = forms.CharField()
+
+    class Meta:
+        model = EventMember
+        entangled_fields = {
+            "data": ["firstname", "lastname"]
+        }  # fields provided by this form

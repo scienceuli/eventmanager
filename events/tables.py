@@ -67,3 +67,38 @@ class EventMembersTable(tables.Table):
             "date_created",
             "attend_status",
         )
+
+
+class FTEventMembersTable(tables.Table):
+
+    counter = tables.Column(empty_values=(), orderable=False)
+
+    def render_counter(self):
+        self.row_counter = getattr(self, "row_counter", itertools.count())
+        return next(self.row_counter) + self.page.start_index()
+        # self.page.sart_index() is default Table function and return number of start index per page
+
+    view = MemberViewLinkColumn(
+        "ft-member-detail",
+        args=[A("pk")],
+        orderable=False,
+        text="View",
+        empty_values=(),
+    )
+
+    update = MemberUpdateLinkColumn(
+        "ft-member-update",
+        args=[A("pk")],
+        orderable=False,
+        text="Update",
+        empty_values=(),
+    )
+
+    class Meta:
+        model = EventMember
+        template_name = "django_tables2/bootstrap.html"
+        fields = (
+            "firstname",
+            "lastname",
+            "email",
+        )

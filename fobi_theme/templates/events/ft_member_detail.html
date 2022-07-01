@@ -1,0 +1,28 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto pt-8">
+
+    <h1>{{ object.firstname }} {{ object.lastname }}</h1>
+    <p class="mb-4">{{ object.email }}</p>
+    <div>
+        <table class="table-auto border-separate">
+            <tbody>
+                {% for key, value in object.data.items %}
+                <tr>
+                    <td class="pr-4"><b>{{ key }}:</b></td>
+                    <td>{{ value }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p><i>Angelegt:</i> {{ object.date_created|date }}</p>
+    <p>
+        <hr />
+    </p>
+
+</div>
+
+{% endblock %}

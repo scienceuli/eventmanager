@@ -30,6 +30,7 @@ from django.views.generic import (
     UpdateView,
     DetailView,
     DeleteView,
+    FormView,
 )
 from bootstrap_modal_forms.generic import (
     BSModalCreateView,
@@ -78,7 +79,7 @@ from .models import (
     EventSponsor,
 )
 
-from .tables import EventMembersTable
+from .tables import EventMembersTable, FTEventMembersTable
 
 from .forms import (
     EventDayFormSet,
@@ -93,6 +94,7 @@ from .forms import (
     AddMemberForm,
     EventUpdateCapacityForm,
     EventCategoryFilterForm,
+    FTEventMemberForm,
 )
 
 from .api import call
@@ -239,7 +241,7 @@ class EventListView(ListView):
             ):
                 events_dict[year][month] = list(inner_group)
 
-        print(events_dict)
+        # print(events_dict)
 
         # context['events_grouped_list'] = events_grouped_list
         context["events_dict"] = events_dict
@@ -565,7 +567,7 @@ def event_add_member(request, slug):
         if event.registration_form == "s":
             form = EventMemberForm(initial={"country": "DE"})
         elif event.registration_form == "m":
-            print(f"event label: {event.label}")
+            # print(f"event label: {event.label}")
             form = SymposiumForm(event_label=event.label)
         elif event.registration_form == "f":
             form = Symposium2022Form(event_label=event.label)
@@ -751,8 +753,6 @@ def event_add_member(request, slug):
                     "remarks": remarks,
                 }
 
-                data = json.dumps(data_dict, indent=4)
-
                 name = f"{event.label} | {timezone.now()}"
 
                 new_member = EventMember.objects.create(
@@ -766,7 +766,7 @@ def event_add_member(request, slug):
                     postcode=postcode,
                     city=city,
                     attend_status=attend_status,
-                    data=data,
+                    data=data_dict,
                 )
 
             """
@@ -890,7 +890,7 @@ def event_add_member(request, slug):
 
                 food_pref_list.append(food_preferences)
 
-                print("food: ", food_preferences, food_pref_list)
+                # print("food: ", food_preferences, food_pref_list)
 
                 formatting_dict = {
                     "firstname": firstname,
@@ -951,7 +951,7 @@ def event_add_member(request, slug):
 
             # TODO auch für FoBis freischalten, wenn Fobis einverstanden
             if event.registration_form == "m" or event.registration_form == "f":
-                print(f"member email: {email}")
+                # print(f"member email: {email}")
                 logger.debug(f"Anmeldung email: {email}")
                 member_addresses_list = []
                 member_addresses_list.append(email)
@@ -964,7 +964,7 @@ def event_add_member(request, slug):
                         mail_to_member_template_name,
                         formatting_dict=formatting_dict,
                     )
-                    print("mail to event member sent")
+                    # print("mail to event member sent")
                     logger.info(f"{datetime.now()}: Mail an {email} verschickt")
                     new_member.mail_to_member = True
                     new_member.save()
@@ -1062,8 +1062,8 @@ class EventMembersListView(GroupTestMixin, SingleTableView):
         query_vote_transfer_no = self.request.GET.get("member_vote_transfer_no")
 
         flag = self.request.GET.get("flag")
-        print(f"flag: {flag}")
-        print(f"vt: {query_vote_transfer_yes}")
+        # print(f"flag: {flag}")
+        # print(f"vt: {query_vote_transfer_yes}")
 
         if query_fn:
             event_members = event_members.filter(firstname__icontains=query_fn)
@@ -1088,7 +1088,36 @@ class EventMembersListView(GroupTestMixin, SingleTableView):
         context = super().get_context_data(**kwargs)
         # Add a context
         context["event_label"] = self.kwargs["event"]
-        print(context)
+        # print(context)
+        return context
+
+
+class FTEventMembersListView(GroupTestMixin, SingleTableView):
+    model = EventMember
+    table_class = FTEventMembersTable
+    template_name = "events/ft_members_list.html"
+
+    def get_queryset(self):
+        event_members = EventMember.objects.filter(event__label=self.kwargs["event"])
+        query_ln = self.request.GET.get("member_lastname")
+        query_fn = self.request.GET.get("member_firstname")
+        query_email = self.request.GET.get("member_email")
+
+        if query_fn:
+            event_members = event_members.filter(firstname__icontains=query_fn)
+        if query_ln:
+            event_members = event_members.filter(lastname__icontains=query_ln)
+        if query_email:
+            event_members = event_members.filter(email__icontains=query_email)
+
+        return event_members
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        # Add a context
+        context["event_label"] = self.kwargs["event"]
+        # print(context)
         return context
 
 
@@ -1097,10 +1126,37 @@ class EventMemberDetailView(GroupTestMixin, DetailView):
     template_name = "events/member_detail.html"
 
 
+class FTEventMemberDetailView(GroupTestMixin, DetailView):
+    model = EventMember
+    template_name = "events/ft_member_detail.html"
+
+    def get_context_data(self, *args, **kwargs):
+        context = super(FTEventMemberDetailView, self).get_context_data(*args, **kwargs)
+        obj = self.get_object()
+        # convert jsonfield = string in db to real json
+        data = obj.data
+        context["data"] = data
+        return context
+
+
 class EventMemberUpdateView(GroupTestMixin, UpdateView):
     model = EventMember
     fields = ["firstname", "lastname", "email", "attend_status"]
     template_name = "events/member_update.html"
+
+    def get_success_url(self):
+        pk = self.kwargs["pk"]
+
+        label = EventMember.objects.get(pk=pk).event.label
+        return reverse("members", kwargs={"event": label})
+
+
+class FTEventMemberUpdateView(GroupTestMixin, UpdateView):
+    model = EventMember
+
+    form_class = FTEventMemberForm
+
+    template_name = "events/ft_member_update.html"
 
     def get_success_url(self):
         pk = self.kwargs["pk"]
@@ -1354,7 +1410,7 @@ def ft_members_dashboard_view(request):
 def ft_report(request):
     qs = EventMember.objects.filter(event__label="ffl_mv_2022")
     template_name = "admin/events/ft_report.html"
-    return render(request, template_name, {"number_members": len(qs)})
+    return render(request, template_name, {"members": qs, "number_members": len(qs)})
 
 
 @login_required
@@ -1398,7 +1454,7 @@ def export_ft_members_csv(request):
     )
 
     for member in members_ft:
-        json_object = json.loads(member.data)
+        json_object = member.data
         values = list(json_object.values())
         writer.writerow(values)
 
@@ -1425,7 +1481,8 @@ def export_ft_members_xls(request):
 
     # the data json objects are returned as strings, so convert to list of dicts
     # with json.loads
-    ftm_list = [json.loads(j) for j in list(ftm)]
+    # ftm_list = [json.loads(j) for j in list(ftm)] # no more needed
+    ftm_list = list(ftm)
 
     # creating pandas Data Frame
     df = pd.DataFrame(ftm_list)
