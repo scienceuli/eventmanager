@@ -9,12 +9,87 @@
     <div>
         <table class="table-auto border-separate">
             <tbody>
-                {% for key, value in object.data.items %}
+
                 <tr>
-                    <td class="pr-4"><b>{{ key }}:</b></td>
-                    <td>{{ value }}</td>
+                    <td class="pr-4"><b>Nachname:</b></td>
+                    <td>{{ object.data.lastname }}</td>
                 </tr>
-                {% endfor %}
+                <tr>
+                    <td class="pr-4"><b>Vorname:</b></td>
+                    <td>{{ object.data.firstname }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>E-Mail:</b></td>
+                    <td>{{ object.data.email }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Adresszusatz:</b></td>
+                    <td>{{ object.data.address_line }}</td>
+                </tr>
+
+                <tr>
+                    <td class="pr-4"><b>Straße:</b></td>
+                    <td>{{ object.data.street }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Tel.:</b></td>
+                    <td>{{ object.data.phone }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Workshop:</b></td>
+                    <td>{{ object.data.ws2022 }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Workshop Altern.:</b></td>
+                    <td>{{ object.data.ws_alter }}</td>
+                </tr>
+
+                <tr>
+                    <td class="pr-4"><b>Teilnahme MV:</b></td>
+                    <td>{{ object.data.takes_part_in_mv }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Mittagessen:</b></td>
+                    <td>{{ object.data.having_lunch }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Führung:</b></td>
+                    <td>{{ object.data.tour }}</td>
+                </tr>
+
+
+                <tr>
+                    <td class="pr-4"><b>Teilnahme Networking:</b></td>
+                    <td>{{ object.data.networking }}</td>
+                </tr>
+
+                <tr>
+                    <td class="pr-4"><b>Teilnahme Yoga:</b></td>
+                    <td>{{ object.data.yoga }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Teilnahme Feier:</b></td>
+                    <td>{{ object.data.celebration }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Essenswunsch:</b></td>
+                    <td>{{ object.data.food_preferences }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Mitgliedschaften:</b></td>
+                    <td>{{ object.data.memberships }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Kein Mitglied:</b></td>
+                    <td>{{ object.data.nomember }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Bemerkung:</b></td>
+                    <td>{{ object.data.remarks }}</td>
+                </tr>
+
+
+
             </tbody>
         </table>
     </div>
