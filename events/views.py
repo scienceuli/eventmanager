@@ -46,6 +46,7 @@ from datetime import datetime
 from datetime import date
 
 from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
@@ -1029,21 +1030,24 @@ def admin_event_pdf(request, event_id):
 
 
 class EventApi(APIView):
+    permission_classes = [AllowAny]
+
     def get(self, request, format=None):
         if request.GET.get("start"):
             start = request.GET.get("start")
         else:
-            start = "2021-01-01"
+            start = "2022-01-01"
         if request.GET.get("end"):
             end = request.GET.get("end")
         else:
-            end = "2021-12-01"
+            end = "2022-12-01"
         events = (
             Event.objects.exclude(event_days=None)
             .filter(first_day__gt=start, first_day__lt=end)
             .filter(pub_status="PUB")
             .order_by("first_day")
         )
+        print("Events:", events)
         serializer = EventSerializer(events, many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
