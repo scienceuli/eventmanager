@@ -569,7 +569,7 @@ def event_add_member(request, slug):
         # ws_capacities = {"I": 0, "II": 0, "III": 0, "IV": 0, "V": 0, "VI": 0}
         from .parameters import ws_limits
 
-        print("ws_limits:", ws_limits)
+        # print("ws_limits:", ws_limits)
         ws_utilisations = ws_limits.copy()
         for member in event.members.all():
             if member.data:
@@ -577,7 +577,7 @@ def event_add_member(request, slug):
                     ws_utilisations[member.data["ws2022"]] = (
                         ws_utilisations[member.data["ws2022"]] - 1
                     )
-        print("ws_utilisations: ", ws_utilisations)
+        # print("ws_utilisations: ", ws_utilisations)
 
     if request.method == "GET":
         if event.registration_form == "s":
@@ -1440,6 +1440,7 @@ def ft_members_dashboard_view(request):
             event__label="ffl_mv_2022"
         ).count(),
         "ws_dict": ws_dict,
+        "now": datetime.now(),
     }
     return render(request, "events/ft_members_dashboard.html", context)
 
