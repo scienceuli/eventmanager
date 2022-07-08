@@ -569,13 +569,15 @@ def event_add_member(request, slug):
         # ws_capacities = {"I": 0, "II": 0, "III": 0, "IV": 0, "V": 0, "VI": 0}
         from .parameters import ws_limits
 
-        ws_utilisations = ws_limits
+        print("ws_limits:", ws_limits)
+        ws_utilisations = ws_limits.copy()
         for member in event.members.all():
             if member.data:
                 if member.data["ws2022"] in ws_utilisations.keys():
                     ws_utilisations[member.data["ws2022"]] = (
                         ws_utilisations[member.data["ws2022"]] - 1
                     )
+        print("ws_utilisations: ", ws_utilisations)
 
     if request.method == "GET":
         if event.registration_form == "s":
