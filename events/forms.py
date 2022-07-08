@@ -44,7 +44,7 @@ from events.models import (
     EventOrganizer,
 )
 
-from .widgets import RelatedFieldWidgetCanAddWithModal
+from .widgets import RelatedFieldWidgetCanAddWithModal, MyRadioSelect
 
 
 class CustomCheckbox(Field):
@@ -743,12 +743,12 @@ class Symposium2022Form(forms.Form):
         widget=forms.TextInput(attrs={"placeholder": "Telefonnummer"}),
         required=False,
     )
-    ws2022 = forms.ChoiceField(
-        widget=forms.RadioSelect,
-        label="Workshop",
-        choices=WS2022_CHOICES,
-        required=False,
-    )
+    # ws2022 = forms.ChoiceField(
+    #    widget=MyRadioSelect(),
+    #    label="Workshop",
+    #    choices=WS2022_CHOICES,
+    #    required=False,
+    # )
 
     ws_alter = forms.CharField(
         label="Für den Fall, dass meine Wahl ausgebucht ist, wähle ich alternativ Workshop Nr.:",
@@ -828,7 +828,29 @@ class Symposium2022Form(forms.Form):
 
     def __init__(self, *args, **kwargs):
         self.event_label = kwargs.pop("event_label", "")
+        self.ws_utilisations = kwargs.pop("ws_utilisations", "{}")
         super(Symposium2022Form, self).__init__(*args, **kwargs)
+        print("ws in form:", self.ws_utilisations)
+        if self.ws_utilisations:
+            ws_choices = ()
+            ws_full = []
+            for choice in WS2022_CHOICES:
+                if choice[0] == "-":
+                    ws_choices = ws_choices + (choice,)
+                elif self.ws_utilisations[choice[0]] > 0:
+                    ws_choices = ws_choices + (choice,)
+                elif self.ws_utilisations[choice[0]] <= 0:
+                    ws_full.append(choice[0])
+            self.fields["ws2022"] = forms.ChoiceField(
+                widget=MyRadioSelect(ws_utilisations=self.ws_utilisations),
+                label="Workshop",
+                # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
+                help_text="Workshop(s) "
+                + ", ".join(ws_full)
+                + " ist/sind bereits ausgebucht.",
+                choices=ws_choices,
+                required=False,
+            )
         self.helper = FormHelper()
         # self.helper.form_class = "form-horizontal"
         self.helper.form_error_title = "Fehler im Formular"
@@ -964,7 +986,6 @@ class Symposium2022Form(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
-        ws2022 = cleaned_data.get("ws2022")
         takes_part_in_mv = cleaned_data.get("takes_part_in_mv")
         having_lunch = cleaned_data.get("having_lunch")
         tour = cleaned_data.get("tour")
@@ -975,10 +996,21 @@ class Symposium2022Form(forms.Form):
         remarks = cleaned_data.get("remarks")
         memberships = cleaned_data.get("memberships")
 
+    def clean_ws2022(self):
+        ws2022 = self.cleaned_data.get("ws2022")
+        if (
+            ws2022 in ["I", "II", "III", "IV", "V", "VI"]
+            and self.ws_utilisations[ws2022] <= 0
+        ):
+            self.add_error("ws2022", "Dieser Workshop ist bereits ausgebucht")
+        return ws2022
+
     def clean_ws_alter(self):
         ws_alter = self.cleaned_data.get("ws_alter")
         if ws_alter.strip() not in ["I", "II", "III", "IV", "V", "VI", ""]:
             self.add_error("ws_alter", "Bitte I bis VI eintragen oder leer lassen")
+        if self.ws_utilisations[ws_alter.strip()] <= 0:
+            self.add_error("ws_alter", "Dieser Workshop ist bereits ausgebucht.")
         return ws_alter
 
     def clean_email(self):

@@ -564,6 +564,19 @@ def event_add_member(request, slug):
     )
     form_template = get_form_template(event.registration_form)
 
+    # get the workshop capacity utilisations for fachtagung
+    if event.label == "ffl_mv_2022":
+        # ws_capacities = {"I": 0, "II": 0, "III": 0, "IV": 0, "V": 0, "VI": 0}
+        from .parameters import ws_limits
+
+        ws_utilisations = ws_limits
+        for member in event.members.all():
+            if member.data:
+                if member.data["ws2022"] in ws_utilisations.keys():
+                    ws_utilisations[member.data["ws2022"]] = (
+                        ws_utilisations[member.data["ws2022"]] - 1
+                    )
+
     if request.method == "GET":
         if event.registration_form == "s":
             form = EventMemberForm(initial={"country": "DE"})
@@ -571,14 +584,19 @@ def event_add_member(request, slug):
             # print(f"event label: {event.label}")
             form = SymposiumForm(event_label=event.label)
         elif event.registration_form == "f":
-            form = Symposium2022Form(event_label=event.label)
+            print("ws to form:", ws_utilisations)
+            form = Symposium2022Form(
+                event_label=event.label, ws_utilisations=ws_utilisations
+            )
     else:
         if event.registration_form == "s":
             form = EventMemberForm(request.POST)
         elif event.registration_form == "m":
             form = SymposiumForm(request.POST, event_label=event.label)
         elif event.registration_form == "f":
-            form = Symposium2022Form(request.POST, event_label=event.label)
+            form = Symposium2022Form(
+                request.POST, event_label=event.label, ws_utilisations=ws_utilisations
+            )
         if form.is_valid():
             if event.registration_form == "s":
                 academic = form.cleaned_data["academic"]
