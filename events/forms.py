@@ -847,6 +847,8 @@ class Symposium2022Form(forms.Form):
                     + ", ".join(ws_full)
                     + " ist/sind bereits ausgebucht."
                 )
+            else:
+                help_text = ""
             self.fields["ws2022"] = forms.ChoiceField(
                 widget=MyRadioSelect(ws_utilisations=self.ws_utilisations),
                 label="Workshop",
