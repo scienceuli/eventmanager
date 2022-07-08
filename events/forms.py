@@ -841,13 +841,17 @@ class Symposium2022Form(forms.Form):
                     ws_choices = ws_choices + (choice,)
                 elif self.ws_utilisations[choice[0]] <= 0:
                     ws_full.append(choice[0])
+            if len(ws_full) > 0:
+                help_text = (
+                    "Workshop(s) "
+                    + ", ".join(ws_full)
+                    + " ist/sind bereits ausgebucht."
+                )
             self.fields["ws2022"] = forms.ChoiceField(
                 widget=MyRadioSelect(ws_utilisations=self.ws_utilisations),
                 label="Workshop",
                 # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
-                help_text="Workshop(s) "
-                + ", ".join(ws_full)
-                + " ist/sind bereits ausgebucht.",
+                help_text=help_text,
                 choices=ws_choices,
                 required=False,
             )
