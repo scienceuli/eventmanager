@@ -1420,10 +1420,24 @@ def members_dashboard_view(request):
 @login_required
 @user_passes_test(is_member_of_mv_orga)
 def ft_members_dashboard_view(request):
+    from .parameters import ws_limits
+
+    ws_dict = {}
+    ws_utilisation = {"I": 0, "II": 0, "III": 0, "IV": 0, "V": 0, "VI": 0}
+
+    for member in EventMember.objects.filter(event__label="ffl_mv_2022"):
+        if member.data:
+            if member.data["ws2022"] in ws_limits.keys():
+                ws_utilisation[member.data["ws2022"]] = (
+                    ws_utilisation[member.data["ws2022"]] + 1
+                )
+    for key in ws_utilisation.keys():
+        ws_dict[key] = str(ws_utilisation[key]) + " (" + str(ws_limits[key]) + ")"
     context = {
         "count_members_of_mv": EventMember.objects.filter(
             event__label="ffl_mv_2022"
         ).count(),
+        "ws_dict": ws_dict,
     }
     return render(request, "events/ft_members_dashboard.html", context)
 
