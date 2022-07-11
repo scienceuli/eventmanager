@@ -57,7 +57,7 @@ from rest_framework.response import Response
 
 from events.filter import EventFilter
 
-from .utils import yes_no_to_boolean
+from .utils import yes_no_to_boolean, make_bar_plot_from_dict
 
 # import the logging library
 import logging
@@ -1435,12 +1435,26 @@ def ft_members_dashboard_view(request):
                 )
     for key in ws_utilisation.keys():
         ws_dict[key] = str(ws_utilisation[key]) + " (" + str(ws_limits[key]) + ")"
+
+    # dict with free places: dict comprehension
+    ws_free_places = {
+        key: ws_limits[key] - ws_utilisation.get(key, 0) for key in ws_limits
+    }
+    ws_combined = {
+        key: [ws_utilisation[key], ws_free_places[key]] for key in ws_utilisation
+    }
+
+    del ws_combined["VI"]
+
+    # create bar plot of utilisation
+    plot_div = make_bar_plot_from_dict(ws_combined, "Teilnehmer")
     context = {
         "count_members_of_mv": EventMember.objects.filter(
             event__label="ffl_mv_2022"
         ).count(),
         "ws_dict": ws_dict,
         "now": datetime.now(),
+        "plot_div": plot_div,
     }
     return render(request, "events/ft_members_dashboard.html", context)
 

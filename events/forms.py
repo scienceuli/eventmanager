@@ -1015,7 +1015,10 @@ class Symposium2022Form(forms.Form):
         ws_alter = self.cleaned_data.get("ws_alter")
         if ws_alter.strip() not in ["I", "II", "III", "IV", "V", "VI", ""]:
             self.add_error("ws_alter", "Bitte I bis VI eintragen oder leer lassen")
-        if self.ws_utilisations[ws_alter.strip()] <= 0:
+        if (
+            ws_alter.strip() in ["I", "II", "III", "IV", "V", "VI"]
+            and self.ws_utilisations[ws_alter.strip()] <= 0
+        ):
             self.add_error("ws_alter", "Dieser Workshop ist bereits ausgebucht.")
         return ws_alter
 

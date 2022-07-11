@@ -3,6 +3,10 @@ import logging
 
 from smtplib import SMTPException
 
+import pandas as pd
+import plotly.express as px
+from plotly.offline import plot
+
 from django.core.mail import EmailMultiAlternatives
 
 from django.conf import settings
@@ -117,3 +121,15 @@ def find_duplicates_in_list(L):
         else:
             seen_add(item)
     return list(seen2)
+
+
+def make_bar_plot_from_dict(data, y_string):
+    # using pandas dataframe
+    df = pd.DataFrame.from_dict(data, orient="index").reset_index()
+    df.columns = ["ws", "Teiln", "frei"]
+    print(df)
+
+    fig = px.bar(df, x="ws", y=["Teiln", "frei"])
+    fig.update_yaxes(title_text="Teiln.")
+    plt_div = plot(fig, output_type="div")
+    return plt_div
