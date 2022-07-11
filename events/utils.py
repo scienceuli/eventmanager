@@ -129,7 +129,9 @@ def make_bar_plot_from_dict(data, y_string):
     df.columns = ["ws", "Teiln", "frei"]
     print(df)
 
-    fig = px.bar(df, x="ws", y=["Teiln", "frei"])
+    fig = px.bar(
+        df, x="ws", y=["Teiln", "frei"], color_discrete_sequence=["red", "green"]
+    )
     fig.update_yaxes(title_text="Teiln.")
     plt_div = plot(fig, output_type="div")
     return plt_div
