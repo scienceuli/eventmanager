@@ -41,7 +41,9 @@ from .models import (
     EventSpeaker,
     EventSpeakerThrough,
     EventSponsor,
+    EventExternalSponsor,
     EventSponsorThrough,
+    EventExternalSponsorThrough,
     EventLocation,
     EventAgenda,
     EventMember,
@@ -406,6 +408,11 @@ class EventSponsorThroughInline(admin.TabularInline):
     extra = 0
 
 
+class EventExternalSponsorThroughInline(admin.TabularInline):
+    model = EventExternalSponsorThrough
+    extra = 0
+
+
 class EventSpeakerAdmin(admin.ModelAdmin):
     list_display = ("last_name", "first_name", "email")
     ordering = (
@@ -510,6 +517,50 @@ class EventSponsorAdmin(admin.ModelAdmin):
 
 
 admin.site.register(EventSponsor, EventSponsorAdmin)
+
+
+class EventExternalSponsorAdmin(admin.ModelAdmin):
+    list_display = ("name", "email", "url")
+    ordering = ("name",)
+    search_fields = (
+        "=name",
+        "=text",
+    )  # case insensitive searching
+    readonly_fields = ("date_created", "date_modified")
+    inlines = (EventExternalSponsorThroughInline,)
+    fieldsets = (
+        (
+            "Name, Beschreibung",
+            {
+                "fields": (
+                    (
+                        "name",
+                        "text",
+                    ),
+                )
+            },
+        ),
+        (
+            "Kontakt",
+            {
+                "fields": (
+                    "email",
+                    "url",
+                )
+            },
+        ),
+        ("Bild", {"fields": ("image",)}),
+        (
+            "Intern",
+            {
+                "fields": ("date_created", "date_modified"),
+                "classes": ("collapse",),
+            },
+        ),
+    )
+
+
+admin.site.register(EventExternalSponsor, EventExternalSponsorAdmin)
 
 # generating link to event pdf
 def admin_event_pdf(obj):
@@ -691,6 +742,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         EventDayInline,
         EventSpeakerThroughInline,
         EventSponsorThroughInline,
+        EventExternalSponsorThroughInline,
         EventAgendaInline,
         EventImageInline,
         EventDocumentInline,

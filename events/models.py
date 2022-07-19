@@ -186,6 +186,27 @@ class EventSponsor(BaseModel):
         ).strip()
 
 
+class EventExternalSponsor(BaseModel):
+    name = models.CharField("Vorname", blank=True, max_length=128)
+    email = models.EmailField("E-Mail", blank=True, max_length=255)
+    text = models.TextField(blank=True)
+    phone = models.CharField("Tel", max_length=64, blank=True)
+    url = models.URLField("Website", blank=True)
+    image = models.ImageField(upload_to="externalsponsors/", blank=True)
+
+    class Meta:
+        ordering = ("name",)
+        verbose_name = "Sponsor"
+        verbose_name_plural = "Sponsoren"
+
+    def __str__(self):
+        return "{name} ({url})".format(name=self.name, url=self.url).strip()
+
+    @property
+    def full_name(self):
+        return "{name} ({url})".format(name=self.name, url=self.url).strip()
+
+
 class Event(BaseModel):
     """Events"""
 
@@ -246,6 +267,11 @@ class Event(BaseModel):
         EventSponsor,
         verbose_name="Pate,Patin",
         through="EventSponsorThrough",
+    )
+    externalsponsors = models.ManyToManyField(
+        EventExternalSponsor,
+        verbose_name="Sponsor",
+        through="EventExternalSponsorThrough",
     )
 
     organizer = models.ForeignKey(
@@ -580,6 +606,23 @@ class EventSponsorThrough(BaseModel):
     class Meta:
         verbose_name = "Pat*in"
         verbose_name_plural = "Pat*innen"
+        ordering = [
+            "position",
+        ]
+
+
+class EventExternalSponsorThrough(BaseModel):
+    eventexternalsponsor = models.ForeignKey(
+        EventExternalSponsor, verbose_name="Sponsor", on_delete=models.CASCADE
+    )
+    event = models.ForeignKey(
+        Event, verbose_name="Veranstaltung", on_delete=models.CASCADE
+    )
+    position = models.PositiveSmallIntegerField(default=1)
+
+    class Meta:
+        verbose_name = "Sponsor"
+        verbose_name_plural = "Sponsoren"
         ordering = [
             "position",
         ]

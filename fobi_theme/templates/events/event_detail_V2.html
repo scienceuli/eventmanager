@@ -571,6 +571,41 @@
             {% endif %}
             <!-- Ende Hinweise -->
 
+            <!-- Sponsoren -->
+            {% if event.externalsponsors.all %}
+            <div class="pt-4 flex-col md:w-2/3 mx-auto">
+                <div class="pt-2"><span class="font-bold text-gray-900 text-xl">Sponsoren</span></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    {% for externalsponsor in event.externalsponsors.all %}
+
+                    <a href='{{ externalsponsor.url }}'><img alt='' class='w-64  block mx-auto' src='{{ externalsponsor.image.url }}'></a>
+
+                    {% comment %}
+                    <div class="max-w-md px-4">
+                        <div class='relative m-0 shadow-lg flex bg-white'>
+                            <div class='flex-no-shrink'>
+                                <img alt='' class='w-48 h-48 block mx-auto' src='{{ externalsponsor.image.url }}'>
+                            </div>
+                            <div class='flex-1 card-block relative'>
+                                <div class="p-6">
+                                    <h4 class='font-medium text-2xl mb-3'>{{ externalsponsor.name }}</h4>
+                                    <p class='leading-normal'>{{ externalsponsor.text }}</p>
+                                    {% if externalsponsor.url %}
+                                    <p class="text-sm text-grey block mt-6"><a href='{{ externalsponsor.url }}'>Webseite</a></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endcomment %}
+
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% endif %}
+            <!-- Ende Sponsoren -->
+
             <!-- download pdf -->
             {% if event.pdf_file %}
             <div class="pt-4 flex-col md:w-2/3 mx-auto">

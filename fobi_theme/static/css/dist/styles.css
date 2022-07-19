@@ -961,6 +961,10 @@ a:hover {
   margin: 0.5rem;
 }
 
+.-m-4 {
+  margin: -1rem;
+}
+
 .mx-auto {
   margin-left: auto;
   margin-right: auto;
@@ -1158,6 +1162,14 @@ a:hover {
   height: 1.25rem;
 }
 
+.h-64 {
+  height: 16rem;
+}
+
+.h-48 {
+  height: 12rem;
+}
+
 .min-h-screen {
   min-height: 100vh;
 }
@@ -1226,6 +1238,14 @@ a:hover {
   width: 2.5rem;
 }
 
+.w-64 {
+  width: 16rem;
+}
+
+.w-48 {
+  width: 12rem;
+}
+
 .max-w-2xl {
   max-width: 42rem;
 }
@@ -1242,8 +1262,16 @@ a:hover {
   max-width: 80rem;
 }
 
+.max-w-md {
+  max-width: 28rem;
+}
+
 .flex-auto {
   flex: 1 1 auto;
+}
+
+.flex-1 {
+  flex: 1 1 0%;
 }
 
 .flex-shrink-0 {
@@ -1298,6 +1326,10 @@ a:hover {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .flex-col {
   flex-direction: column;
 }
@@ -1346,16 +1378,14 @@ a:hover {
   gap: 2rem;
 }
 
+.gap-4 {
+  gap: 1rem;
+}
+
 .space-y-2 > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
   margin-top: calc(0.5rem * calc(1 - var(--tw-space-y-reverse)));
   margin-bottom: calc(0.5rem * var(--tw-space-y-reverse));
-}
-
-.space-y-1 > :not([hidden]) ~ :not([hidden]) {
-  --tw-space-y-reverse: 0;
-  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
 }
 
 .space-y-4 > :not([hidden]) ~ :not([hidden]) {
@@ -1368,6 +1398,12 @@ a:hover {
   --tw-space-x-reverse: 0;
   margin-right: calc(1rem * var(--tw-space-x-reverse));
   margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-y-1 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(0.25rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.25rem * var(--tw-space-y-reverse));
 }
 
 .divide-y > :not([hidden]) ~ :not([hidden]) {
@@ -1590,10 +1626,6 @@ a:hover {
   padding: 1.5rem;
 }
 
-.p-4 {
-  padding: 1rem;
-}
-
 .p-3 {
   padding: 0.75rem;
 }
@@ -1604,10 +1636,6 @@ a:hover {
 
 .p-2 {
   padding: 0.5rem;
-}
-
-.p-8 {
-  padding: 2rem;
 }
 
 .px-3 {
@@ -1730,6 +1758,10 @@ a:hover {
   padding-left: 0.25rem;
 }
 
+.pr-4 {
+  padding-right: 1rem;
+}
+
 .pb-2 {
   padding-bottom: 0.5rem;
 }
@@ -1742,16 +1774,8 @@ a:hover {
   padding-top: 1.25rem;
 }
 
-.pr-4 {
-  padding-right: 1rem;
-}
-
 .pb-3 {
   padding-bottom: 0.75rem;
-}
-
-.pr-12 {
-  padding-right: 3rem;
 }
 
 .text-left {
@@ -1938,6 +1962,10 @@ a:hover {
   color: rgba(209, 213, 219, var(--tw-text-opacity));
 }
 
+.no-underline {
+  text-decoration: none;
+}
+
 .opacity-5 {
   opacity: 0.05;
 }
@@ -2042,11 +2070,6 @@ a:hover {
   transform: var(--tw-transform);
 }
 
-.hover\:bg-gray-50:hover {
-  --tw-bg-opacity: 1;
-  background-color: rgba(249, 250, 251, var(--tw-bg-opacity));
-}
-
 .hover\:bg-blue-500:hover {
   --tw-bg-opacity: 1;
   background-color: rgba(14, 165, 233, var(--tw-bg-opacity));
@@ -2117,10 +2140,6 @@ a:hover {
 }
 
 @media (min-width: 480px) {
-  .sm\:col-span-2 {
-    grid-column: span 2 / span 2;
-  }
-
   .sm\:my-8 {
     margin-top: 2rem;
     margin-bottom: 2rem;
@@ -2249,10 +2268,6 @@ a:hover {
     display: flex;
   }
 
-  .md\:grid {
-    display: grid;
-  }
-
   .md\:hidden {
     display: none;
   }
@@ -2279,12 +2294,6 @@ a:hover {
 
   .md\:grid-cols-8 {
     grid-template-columns: repeat(8, minmax(0, 1fr));
-  }
-
-  .md\:space-y-0 > :not([hidden]) ~ :not([hidden]) {
-    --tw-space-y-reverse: 0;
-    margin-top: calc(0px * calc(1 - var(--tw-space-y-reverse)));
-    margin-bottom: calc(0px * var(--tw-space-y-reverse));
   }
 
   .md\:border-none {
