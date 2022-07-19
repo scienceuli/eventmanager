@@ -572,7 +572,7 @@ def event_add_member(request, slug):
         # print("ws_limits:", ws_limits)
         ws_utilisations = ws_limits.copy()
         for member in event.members.all():
-            if member.data:
+            if member.data.get("ws2022"):
                 if member.data["ws2022"] in ws_utilisations.keys():
                     ws_utilisations[member.data["ws2022"]] = (
                         ws_utilisations[member.data["ws2022"]] - 1
@@ -1428,7 +1428,7 @@ def ft_members_dashboard_view(request):
     ws_utilisation = {"I": 0, "II": 0, "III": 0, "IV": 0, "V": 0, "VI": 0}
 
     for member in EventMember.objects.filter(event__label="ffl_mv_2022"):
-        if member.data:
+        if member.data.get("ws2022"):
             if member.data["ws2022"] in ws_limits.keys():
                 ws_utilisation[member.data["ws2022"]] = (
                     ws_utilisation[member.data["ws2022"]] + 1
