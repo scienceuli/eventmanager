@@ -816,6 +816,11 @@ class EventMember(AddressModel):
 
     get_registration_date.short_description = "Anmeldedatum"
 
+    def get_memberships_string(self):
+        return (", ").join(self.memberships)
+
+    get_memberships_string.short_description = "Mitgliedschaften"
+
     def save(self, *args, **kwargs):
         add = not self.pk
         super(EventMember, self).save(*args, **kwargs)

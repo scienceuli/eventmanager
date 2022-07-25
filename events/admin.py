@@ -284,7 +284,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "email",
         "attend_status",
         "vfll",
-        "memberships",
+        "get_memberships_string",
         "check",
         "education_bonus",
         "get_registration_date",
