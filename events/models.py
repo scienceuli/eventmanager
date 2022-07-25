@@ -1,4 +1,5 @@
 import json
+import ast
 
 from django.db import models
 from django.db.models import F
@@ -817,7 +818,9 @@ class EventMember(AddressModel):
     get_registration_date.short_description = "Anmeldedatum"
 
     def get_memberships_string(self):
-        return (", ").join(self.memberships)
+        # list is stored as string, so convert it to string
+        mlist = ast.literal_eval(self.memberships)
+        return (", ").join(mlist)
 
     get_memberships_string.short_description = "Mitgliedschaften"
 
