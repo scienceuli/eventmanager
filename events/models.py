@@ -821,7 +821,8 @@ class EventMember(AddressModel):
         # list is stored as string, so convert it to string
         # mlist = json.loads(self.memberships)
         # mlist = ast.literal_eval(self.memberships)
-        mstring = self.memberships.strip("][").split(", ")
+        mstring = self.memberships.strip("][")
+        mstring = mstring.replace("'", "")
         # mlist = [m.strip() for m in mlist]
         # return (", ").join(mlist)
         return mstring

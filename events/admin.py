@@ -284,7 +284,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "email",
         "attend_status",
         "vfll",
-        "memberships",
+        "get_memberships_string",
         "check",
         "education_bonus",
         "get_registration_date",
@@ -296,6 +296,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     readonly_fields = (
         "change_link",
         "get_registration_date",
+        "get_memberships_string",
         "enroled",
         "attend_status",
         "moodle_id",
