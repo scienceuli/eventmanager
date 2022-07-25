@@ -189,6 +189,7 @@ class EventMemberAdmin(admin.ModelAdmin):
                 "classes": ("collapse",),
                 "fields": (
                     "vfll",
+                    "memberships",
                     "check",
                     "attention",
                     "attention_other",
@@ -283,6 +284,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "email",
         "attend_status",
         "vfll",
+        "memberships",
         "check",
         "education_bonus",
         "get_registration_date",
