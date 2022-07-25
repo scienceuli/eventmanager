@@ -819,7 +819,7 @@ class EventMember(AddressModel):
 
     def get_memberships_string(self):
         # list is stored as string, so convert it to string
-        mlist = ast.literal_eval(self.memberships)
+        mlist = json.loads(self.memberships)
         return (", ").join(mlist)
 
     get_memberships_string.short_description = "Mitgliedschaften"
