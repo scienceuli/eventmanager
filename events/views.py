@@ -732,6 +732,7 @@ def event_add_member(request, slug):
                 ws2022 = form.cleaned_data["ws2022"]
                 ws_alter = form.cleaned_data["ws_alter"]
                 takes_part_in_mv = form.cleaned_data["takes_part_in_mv"]
+                # takes_part_in_ft = form.cleaned_data["takes_part_in_ft"]
                 having_lunch = form.cleaned_data["having_lunch"]
                 tour = form.cleaned_data["tour"]
                 networking = form.cleaned_data["networking"]
@@ -762,6 +763,7 @@ def event_add_member(request, slug):
                     "ws2022": ws2022,
                     "ws_alter": ws_alter,
                     "takes_part_in_mv": bools[takes_part_in_mv],
+                    # "takes_part_in_ft": bools[takes_part_in_ft],
                     "having_lunch": bools[having_lunch],
                     "tour": tour,
                     "networking": bools[networking],
@@ -927,6 +929,7 @@ def event_add_member(request, slug):
                     "ws2022": ws2022 if ws2022 else "-",
                     "ws_alter": ws_alter if ws_alter else "-",
                     "takes_part_in_mv": boolean_translate(takes_part_in_mv),
+                    "takes_part_in_ft": boolean_translate(takes_part_in_ft),
                     "having_lunch": boolean_translate(having_lunch),
                     "tour": tour,
                     "networking": boolean_translate(networking),
@@ -1126,6 +1129,7 @@ class FTEventMembersListView(GroupTestMixin, SingleTableView):
         query_ln = self.request.GET.get("member_lastname")
         query_fn = self.request.GET.get("member_firstname")
         query_email = self.request.GET.get("member_email")
+        query_remark = self.request.GET.get("member_remark")
 
         if query_fn:
             event_members = event_members.filter(firstname__icontains=query_fn)
@@ -1133,6 +1137,13 @@ class FTEventMembersListView(GroupTestMixin, SingleTableView):
             event_members = event_members.filter(lastname__icontains=query_ln)
         if query_email:
             event_members = event_members.filter(email__icontains=query_email)
+        if query_remark:
+            if query_remark.strip() == "*":
+                event_members = event_members.exclude(data__remark="")
+            else:
+                event_members = event_members.filter(
+                    data__remark__icontains=query_remark
+                )
 
         return event_members
 
@@ -1186,7 +1197,14 @@ class FTEventMemberUpdateView(GroupTestMixin, UpdateView):
         pk = self.kwargs["pk"]
 
         label = EventMember.objects.get(pk=pk).event.label
-        return reverse("members", kwargs={"event": label})
+        return reverse("ft-members", kwargs={"event": label})
+
+    def form_valid(self, form):
+        data = form.cleaned_data["data"]
+        self.object.firstname = data["firstname"]
+        self.object.lastname = data["lastname"]
+        self.object.email = data["email"]
+        return super(FTEventMemberUpdateView, self).form_valid(form)
 
 
 class EventMemberCreateView(GroupTestMixin, CreateView):

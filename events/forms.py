@@ -7,6 +7,7 @@ from django.utils.translation import ugettext_lazy as _
 from django_tables2 import CheckBoxColumn
 from django.core.validators import validate_email
 from django.utils.html import escape
+from jinja2 import ChainableUndefined
 
 from regex import B
 from tinymce.widgets import TinyMCE
@@ -756,6 +757,12 @@ class Symposium2022Form(forms.Form):
         required=False,
     )
 
+    # takes_part_in_ft = forms.BooleanField(
+    #    label="Ich nehme an der Fachtagung teil.",
+    #    widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+    #    required=False,
+    # )
+
     takes_part_in_mv = forms.BooleanField(
         label="Ich nehme an der MV teil.",
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
@@ -894,6 +901,7 @@ class Symposium2022Form(forms.Form):
             ),
             Fieldset(
                 "2. Teilnahme an einem Workshop am Sa., 17.09.2022",
+                # CustomCheckbox("takes_part_in_ft"),
                 "ws2022",
                 "ws_alter",
             ),
@@ -928,7 +936,7 @@ class Symposium2022Form(forms.Form):
                 "6. Teilnahmekosten",
                 HTML(
                     """
-                    <p>Der Tagungsbeitrag beträgt
+                    <p>Der Tagungsbeitrag für die Fachtagung beträgt
                     <ul style='list-style-position: outside; padding-left: 20px;'>
                     <li>130 € für Mitglieder des VFLL oder eines der u. g. Partnerverbände</li>
                     <li>180 € für sonstige Fachbesucher*innen</li>
@@ -1022,6 +1030,16 @@ class Symposium2022Form(forms.Form):
             self.add_error("ws_alter", "Dieser Workshop ist bereits ausgebucht.")
         return ws_alter
 
+    # def clean_takes_part_in_ft(self):
+    #     takes_part_in_ft = self.cleaned_data.get("takes_part_in_ft")
+    #     ws2022 = self.cleaned_data.get("ws2022")
+    #     if not takes_part_in_ft and ws2022 != "":
+    #         self.add_error(
+    #             "takes_part_in_ft",
+    #             "Bitte dieses Feld anklicken, wenn Sie an der Fachtagung teilnehmen.",
+    #         )
+    #     return takes_part_in_ft
+
     def clean_email(self):
         email = self.cleaned_data["email"]
         if (
@@ -1056,11 +1074,38 @@ class Symposium2022Form(forms.Form):
 
 
 class FTEventMemberForm(EntangledModelForm):
-    firstname = forms.CharField()
-    lastname = forms.CharField()
+
+    YES_NO_CHOICES = (("ja", "ja"), ("nein", "nein"))
+    firstname = forms.CharField(label="Vorname")
+    lastname = forms.CharField(label="Nachname")
+    email = forms.EmailField(label="Email")
+    ws2022 = forms.CharField(label="WS", required=False)
+    ws_alter = forms.CharField(label="WS Altern.", required=False)
+    takes_part_in_mv = forms.ChoiceField(label="Teilnahme MV", choices=YES_NO_CHOICES)
+    having_lunch = forms.ChoiceField(label="Mittagessen", choices=YES_NO_CHOICES)
+    tour = forms.CharField(label="Führung", required=False)
+    networking = forms.ChoiceField(label="Teilnahme Networking", choices=YES_NO_CHOICES)
+    yoga = forms.ChoiceField(label="Teilnahme Yoga", choices=YES_NO_CHOICES)
+    celebration = forms.ChoiceField(label="Teilnahme Feier", choices=YES_NO_CHOICES)
+    food_preferences = forms.CharField(label="Essenswünsche", required=False)
+    remark = forms.CharField(label="Bemerkungen", required=False)
 
     class Meta:
         model = EventMember
         entangled_fields = {
-            "data": ["firstname", "lastname"]
+            "data": [
+                "firstname",
+                "lastname",
+                "email",
+                "ws2022",
+                "ws_alter",
+                "takes_part_in_mv",
+                "having_lunch",
+                "tour",
+                "networking",
+                "yoga",
+                "celebration",
+                "food_preferences",
+                "remark",
+            ]
         }  # fields provided by this form
