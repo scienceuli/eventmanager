@@ -942,7 +942,7 @@ def event_add_member(request, slug):
                     "ws2022": ws2022 if ws2022 else "-",
                     "ws_alter": ws_alter if ws_alter else "-",
                     "takes_part_in_mv": boolean_translate(takes_part_in_mv),
-                    "takes_part_in_ft": boolean_translate(takes_part_in_ft),
+                    # "takes_part_in_ft": boolean_translate(takes_part_in_ft),
                     "having_lunch": boolean_translate(having_lunch),
                     "tour": tour,
                     "networking": boolean_translate(networking),
