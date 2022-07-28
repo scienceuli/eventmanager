@@ -775,13 +775,13 @@ class Symposium2022Form(forms.Form):
         required=False,
     )
 
-    tour = forms.ChoiceField(
-        # attrs={"class": "text-xs  text-gray-600"},
-        widget=forms.RadioSelect,
-        label="Ich nehme am Fr., 16.09.2022, ab 15:30 Uhr teil an folgender Führung:",
-        choices=TOUR_CHOICES,
-        required=False,
-    )
+    # tour = forms.ChoiceField(
+    #    # attrs={"class": "text-xs  text-gray-600"},
+    #    widget=forms.RadioSelect,
+    #    label="Ich nehme am Fr., 16.09.2022, ab 15:30 Uhr teil an folgender Führung:",
+    #    choices=TOUR_CHOICES,
+    #    required=False,
+    # )
 
     networking = forms.BooleanField(
         label="Ich nehme am Netzwerkabend im Keno’s am Fr., 16.09.2022, ab 18 Uhr teil<br>(Buffet-Kosten: 20 €**, Getränke: Selbstzahlung vor Ort).",
@@ -836,8 +836,9 @@ class Symposium2022Form(forms.Form):
     def __init__(self, *args, **kwargs):
         self.event_label = kwargs.pop("event_label", "")
         self.ws_utilisations = kwargs.pop("ws_utilisations", "{}")
+        self.tour_utilisations = kwargs.pop("tour_utilisations", "{}")
         super(Symposium2022Form, self).__init__(*args, **kwargs)
-        print("ws in form:", self.ws_utilisations)
+        # print("ws in form:", self.ws_utilisations)
         if self.ws_utilisations:
             ws_choices = ()
             ws_full = []
@@ -862,6 +863,32 @@ class Symposium2022Form(forms.Form):
                 # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
                 help_text=help_text,
                 choices=ws_choices,
+                required=False,
+            )
+        if self.tour_utilisations:
+            tour_choices = ()
+            tour_full = []
+            for choice in TOUR_CHOICES:
+                if choice[0] == "-":
+                    tour_choices = tour_choices + (choice,)
+                elif self.tour_utilisations[choice[0]] > 0:
+                    tour_choices = tour_choices + (choice,)
+                elif self.tour_utilisations[choice[0]] <= 0:
+                    tour_full.append(choice[0])
+            if len(tour_full) > 0:
+                help_text_tour = (
+                    "Führung(en) "
+                    + ", ".join(tour_full)
+                    + " ist/sind bereits ausgebucht."
+                )
+            else:
+                help_text_tour = ""
+            self.fields["tour"] = forms.ChoiceField(
+                widget=MyRadioSelect(tour_utilisations=self.tour_utilisations),
+                label="Ich nehme am Fr., 16.09.2022, ab 15:30 Uhr teil an folgender Führung:",
+                # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
+                help_text=help_text_tour,
+                choices=tour_choices,
                 required=False,
             )
         self.helper = FormHelper()
@@ -1073,6 +1100,7 @@ class Symposium2022Form(forms.Form):
 ############## form for edit json data of member (FT 2022) ######
 
 
+# ref: https://github.com/jrief/django-entangled
 class FTEventMemberForm(EntangledModelForm):
 
     YES_NO_CHOICES = (("ja", "ja"), ("nein", "nein"))

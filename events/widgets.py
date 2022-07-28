@@ -35,21 +35,24 @@ class RelatedFieldWidgetCanAddWithModal(widgets.Select):
 class MyRadioSelect(RadioSelect):
     """überschreibt im Wesentlichen Django Radio Select widget"""
 
-    def __init__(self, attrs=None, choices=(), ws_utilisations=None):
+    def __init__(
+        self, attrs=None, choices=(), ws_utilisations=None, tour_utilisations=None
+    ):
         self.ws_utilisations = ws_utilisations
+        self.tour_utilisations = tour_utilisations
         super(MyRadioSelect, self).__init__(attrs, choices=choices)
-        print("ws: ", self.ws_utilisations)
+        # print("ws: ", self.ws_utilisations)
 
     def create_option(
         self, name, value, label, selected, index, subindex=None, attrs=None
     ):
 
-        print("called")
+        # print("called")
         option = super(MyRadioSelect, self).create_option(
             name, value, label, selected, index, subindex=None, attrs=None
         )
-        print("option:", option)
-        print("ws in create option", self.ws_utilisations)
+        # print("option:", option)
+        # print("ws in create option", self.ws_utilisations)
         if not option.get("value"):
             option["attrs"]["disabled"] = "disabled"
 

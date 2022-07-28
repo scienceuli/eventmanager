@@ -13,10 +13,19 @@
     {% for key, value in ws_dict.items %}
     <p>Workshop {{ key }}: {{ value }}</p>   
     {% endfor %} 
+    <p class="my-4"><b>Übersicht Führungen:</b></p>
+    {% for key, value in tour_dict.items %}
+    <p>Führung {{ key }}: {{ value }}</p>   
+    {% endfor %}
 
     {% autoescape off %}
-  {{ plot_div }}
+  {{ ws_plot_div }}
+
+  {{ tour_plot_div }}
+
   {% endautoescape %}
+
+
 </div>
 
 <div class="max-w-2xl mx-auto py-8">

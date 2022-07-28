@@ -579,6 +579,14 @@ def event_add_member(request, slug):
                     )
         # print("ws_utilisations: ", ws_utilisations)
 
+        tour_utilisations = settings.TOUR_LIMITS.copy()
+        for member in event.members.all():
+            if member.data.get("tour"):
+                if member.data["tour"] in tour_utilisations.keys():
+                    tour_utilisations[member.data["tour"]] = (
+                        tour_utilisations[member.data["tour"]] - 1
+                    )
+
     if request.method == "GET":
         if event.registration_form == "s":
             form = EventMemberForm(initial={"country": "DE"})
@@ -586,9 +594,11 @@ def event_add_member(request, slug):
             # print(f"event label: {event.label}")
             form = SymposiumForm(event_label=event.label)
         elif event.registration_form == "f":
-            print("ws to form:", ws_utilisations)
+            # print("ws to form:", ws_utilisations)
             form = Symposium2022Form(
-                event_label=event.label, ws_utilisations=ws_utilisations
+                event_label=event.label,
+                ws_utilisations=ws_utilisations,
+                tour_utilisations=tour_utilisations,
             )
     else:
         if event.registration_form == "s":
@@ -597,7 +607,10 @@ def event_add_member(request, slug):
             form = SymposiumForm(request.POST, event_label=event.label)
         elif event.registration_form == "f":
             form = Symposium2022Form(
-                request.POST, event_label=event.label, ws_utilisations=ws_utilisations
+                request.POST,
+                event_label=event.label,
+                ws_utilisations=ws_utilisations,
+                tour_utilisations=tour_utilisations,
             )
         if form.is_valid():
             if event.registration_form == "s":
@@ -1445,6 +1458,9 @@ def ft_members_dashboard_view(request):
     ws_dict = {}
     ws_utilisation = {"I": 0, "II": 0, "III": 0, "IV": 0, "V": 0, "VI": 0}
 
+    tour_dict = {}
+    tour_utilisation = {"I": 0, "II": 0}
+
     for member in EventMember.objects.filter(event__label="ffl_mv_2022"):
         if member.data.get("ws2022"):
             if member.data["ws2022"] in ws_limits.keys():
@@ -1464,15 +1480,38 @@ def ft_members_dashboard_view(request):
 
     del ws_combined["VI"]
 
-    # create bar plot of utilisation
-    plot_div = make_bar_plot_from_dict(ws_combined, "Teilnehmer")
+    for member in EventMember.objects.filter(event__label="ffl_mv_2022"):
+        if member.data.get("tour"):
+            if member.data["tour"] in settings.TOUR_LIMITS.keys():
+                tour_utilisation[member.data["tour"]] = (
+                    tour_utilisation[member.data["tour"]] + 1
+                )
+    for key in tour_utilisation.keys():
+        tour_dict[key] = (
+            str(tour_utilisation[key]) + " (" + str(settings.TOUR_LIMITS[key]) + ")"
+        )
+
+    # dict with free places: dict comprehension
+    tour_free_places = {
+        key: settings.TOUR_LIMITS[key] - tour_utilisation.get(key, 0)
+        for key in settings.TOUR_LIMITS
+    }
+    tour_combined = {
+        key: [tour_utilisation[key], tour_free_places[key]] for key in tour_utilisation
+    }
+
+    # create bar plot of  utilisations
+    ws_plot_div = make_bar_plot_from_dict(ws_combined, "Teilnehmer")
+    tour_plot_div = make_bar_plot_from_dict(tour_combined, "Teilnehmer")
     context = {
         "count_members_of_mv": EventMember.objects.filter(
             event__label="ffl_mv_2022"
         ).count(),
         "ws_dict": ws_dict,
+        "tour_dict": tour_dict,
         "now": datetime.now(),
-        "plot_div": plot_div,
+        "ws_plot_div": ws_plot_div,
+        "tour_plot_div": tour_plot_div,
     }
     return render(request, "events/ft_members_dashboard.html", context)
 
