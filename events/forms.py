@@ -1107,6 +1107,10 @@ class FTEventMemberForm(EntangledModelForm):
     firstname = forms.CharField(label="Vorname")
     lastname = forms.CharField(label="Nachname")
     email = forms.EmailField(label="Email")
+    address_line = forms.CharField(label="Adresszusatz")
+    street = forms.CharField(label="Straße")
+    postcode = forms.CharField(label="PLZ")
+    city = forms.CharField(label="Stadt")
     ws2022 = forms.CharField(label="WS", required=False)
     ws_alter = forms.CharField(label="WS Altern.", required=False)
     takes_part_in_mv = forms.ChoiceField(label="Teilnahme MV", choices=YES_NO_CHOICES)
@@ -1125,6 +1129,10 @@ class FTEventMemberForm(EntangledModelForm):
                 "firstname",
                 "lastname",
                 "email",
+                "address_line",
+                "street",
+                "postcode",
+                "city",
                 "ws2022",
                 "ws_alter",
                 "takes_part_in_mv",

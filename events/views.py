@@ -570,7 +570,7 @@ def event_add_member(request, slug):
         from .parameters import ws_limits
 
         # print("ws_limits:", ws_limits)
-        ws_utilisations = ws_limits.copy()
+        ws_utilisations = settings.WS_LIMITS.copy()
         for member in event.members.all():
             if member.data.get("ws2022"):
                 if member.data["ws2022"] in ws_utilisations.keys():
@@ -1463,16 +1463,19 @@ def ft_members_dashboard_view(request):
 
     for member in EventMember.objects.filter(event__label="ffl_mv_2022"):
         if member.data.get("ws2022"):
-            if member.data["ws2022"] in ws_limits.keys():
+            if member.data["ws2022"] in settings.WS_LIMITS.keys():
                 ws_utilisation[member.data["ws2022"]] = (
                     ws_utilisation[member.data["ws2022"]] + 1
                 )
     for key in ws_utilisation.keys():
-        ws_dict[key] = str(ws_utilisation[key]) + " (" + str(ws_limits[key]) + ")"
+        ws_dict[key] = (
+            str(ws_utilisation[key]) + " (" + str(settings.WS_LIMITS[key]) + ")"
+        )
 
     # dict with free places: dict comprehension
     ws_free_places = {
-        key: ws_limits[key] - ws_utilisation.get(key, 0) for key in ws_limits
+        key: settings.WS_LIMITS[key] - ws_utilisation.get(key, 0)
+        for key in settings.WS_LIMITS
     }
     ws_combined = {
         key: [ws_utilisation[key], ws_free_places[key]] for key in ws_utilisation
