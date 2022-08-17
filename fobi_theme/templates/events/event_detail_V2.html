@@ -464,6 +464,13 @@
                                 <p class="font-semibold mr-2">Anmeldeschluss: {{event.close_date|date:"j. F Y"}}</p>
                                 {% endif %}
 
+                                {# special #}
+                                {% if event.label == 'ffl_mv_2022' %}
+                                <p class="font-semibold mr-2">für MV noch möglich</p>
+
+                                {% endif %}
+
+
                                 {% if event.is_full %}
                                 <span class="text-vfllred italic mr-2">Leider ausgebucht!</span>
                                 {% else %}
