@@ -265,15 +265,15 @@ def enrol_user_to_course(
         fname = "core_user_create_users"
 
         # function for replacing umlaute
-        def convert_umlaute(string_with_umlaute):
-            umlaute_dict = {"ä": "ae", "ü": "ue", "ö": "oe", "ß": "ss"}
+        def convert_umlaute_and_whitespace(string_with_umlaute):
+            umlaute_dict = {"ä": "ae", "ü": "ue", "ö": "oe", "ß": "ss", " ": ""}
             for k in umlaute_dict.keys():
                 string_with_umlaute = string_with_umlaute.replace(k, umlaute_dict[k])
 
             return string_with_umlaute
 
         # create unique username
-        username_candidate = username_original = convert_umlaute(
+        username_candidate = username_original = convert_umlaute_and_whitespace(
             lastname.lower()
         )  # standard username
 
