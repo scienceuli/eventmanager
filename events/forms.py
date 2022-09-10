@@ -937,13 +937,13 @@ class Symposium2022Form(forms.Form):
                 CustomCheckbox(
                     "takes_part_in_mv",
                 ),
-                CustomCheckbox("having_lunch"),
+                # CustomCheckbox("having_lunch"),
                 HTML(
                     """
-                    <p class='mb-2'>(Beides ist für VFLL-Mitglieder kostenfrei.)</p>
+                    <p class='mb-2'>(für VFLL-Mitglieder kostenfrei)</p>
                     """
                 ),
-                "food_preferences",
+                # "food_preferences",
             ),
             # Fieldset(
             #     "4. Rahmenprogramm",
