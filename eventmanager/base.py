@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "widget_tweaks",
     "tinymce",
     "embed_video",
+    "hitcount",
     # tailwind theme app
     "fobi_theme",
     # lokale apps

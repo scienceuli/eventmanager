@@ -32,6 +32,9 @@ from django.views.generic import (
     DeleteView,
     FormView,
 )
+
+from hitcount.views import HitCountDetailView
+
 from bootstrap_modal_forms.generic import (
     BSModalCreateView,
     BSModalUpdateView,
@@ -414,11 +417,13 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
 
 
 # class EventDetailView(LoginRequiredMixin, DetailView):
-class EventDetailView(DetailView):
+class EventDetailView(HitCountDetailView):
     login_url = "login"
     model = Event
     template_name = "events/event_detail_V2.html"
     context_object_name = "event"
+
+    count_hit = True
 
 
 class EventDeleteView(LoginRequiredMixin, BSModalDeleteView):

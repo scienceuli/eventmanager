@@ -70,6 +70,7 @@ urlpatterns = [
     path("", include("events.urls")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<int:event_id>/pdf/", admin_event_pdf, name="admin-event-pdf"),
+    path("hitcount/", include(("hitcount.urls", "hitcount"), namespace="hitcount")),
 ]
 
 

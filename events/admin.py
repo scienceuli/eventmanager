@@ -52,6 +52,8 @@ from .models import (
     EventHighlight,
 )
 
+from .admin_views import hitcount_view
+
 from .email_template import EmailTemplate
 
 from moodle.management.commands.moodle import (
@@ -627,6 +629,21 @@ class PeriodFilter(SimpleListFilter):
 
 
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
+    def get_urls(self):
+        urls = super().get_urls()
+        my_urls = [
+            path(
+                "<object_id>/hitcount/",
+                self.admin_site.admin_view(self.schema),
+                name="event_hitcount",
+            )
+        ]
+        return my_urls + urls
+
+    def schema(self, request, object_id):
+        event = get_object_or_404(Event, id=int(object_id))
+        return hitcount_view(request, self, event)
+
     change_list_template = "admin/event_change_list.html"
     change_form_template = "admin/event_change_form.html"
 

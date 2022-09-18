@@ -1,0 +1,9 @@
+{% extends "admin/base_site.html" %}
+
+{% block title %}Hit Count für {{ original.name }} {% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <p>Anzahl der Seitenbesuche: {{ original.current_hit_count }}</p>
+</div>
+{% endblock %}

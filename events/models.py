@@ -16,6 +16,10 @@ from ckeditor.fields import RichTextField
 
 from embed_video.fields import EmbedVideoField
 
+from django.contrib.contenttypes.fields import GenericRelation
+
+from hitcount.models import HitCountMixin, HitCount
+
 from .abstract import BaseModel, AddressModel
 
 from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
@@ -208,7 +212,7 @@ class EventExternalSponsor(BaseModel):
         return "{name} ({url})".format(name=self.name, url=self.url).strip()
 
 
-class Event(BaseModel):
+class Event(BaseModel, HitCountMixin):
     """Events"""
 
     category = models.ForeignKey(
@@ -413,6 +417,15 @@ class Event(BaseModel):
     )
     students_number = models.PositiveSmallIntegerField(default=0, editable=False)
 
+    # couting hits with package django-hitcount
+    # ref: https://django-hitcount.readthedocs.io/en/latest/overview.html
+
+    hit_count_generic = GenericRelation(
+        HitCount,
+        object_id_field="object_pk",
+        related_query_name="hit_count_generic_relation",
+    )
+
     class Meta:
         ordering = ("start_date",)
         verbose_name = "Veranstaltung"
@@ -556,6 +569,9 @@ class Event(BaseModel):
 
     def is_several_days(self):
         return self.event_days.count() > 1
+
+    def current_hit_count(self):
+        return self.hit_count.hits
 
     @property
     def sorted_sponsors(self):
