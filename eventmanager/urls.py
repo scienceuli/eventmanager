@@ -15,7 +15,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.contrib.staticfiles.urls import static, staticfiles_urlpatterns
 
 from users import views as user_views
@@ -70,7 +70,7 @@ urlpatterns = [
     path("", include("events.urls")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<int:event_id>/pdf/", admin_event_pdf, name="admin-event-pdf"),
-    path("hitcount/", include(("hitcount.urls", "hitcount"), namespace="hitcount")),
+    re_path(r"hitcount/", include(("hitcount.urls", "hitcount"), namespace="hitcount")),
 ]
 
 
