@@ -425,6 +425,59 @@ class EventDetailView(HitCountDetailView):
 
     count_hit = True
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        event = self.get_object()
+        registration_text = ""
+        registration_button = ""
+        show_button = False
+        show_registration = True
+        if event.category.name == "Fortbildungen unserer Kooperationspartner*innen":
+            if event.registration:
+                registration_text = event.registration
+            else:
+                show_registration = False
+            show_button = False
+        elif event.registration_possible:
+            show_button = True
+            show_registration = True
+            registration_text = event.registration
+            if event.close_date:
+                if event.is_closed_for_registration():
+                    if not event.is_full():
+                        registration_text += (
+                            "<span class='text-vfllred'>Noch wenige freie Plätze</span>"
+                        )
+                        registration_button = "Online anmelden"
+                    else:
+                        registration_text += (
+                            "<span class='italic'>Leider ausgebucht</span>"
+                        )
+                        registration_button = "Auf die Warteliste"
+                else:
+                    if not event.is_full():
+                        registration_text += "<span class='font-medium'>Anmeldeschluss: {:%d. %B %Y}</span>".format(
+                            event.close_date
+                        )
+                        if event.few_remaining_places():
+                            registration_text += "<br><span class='text-vfllred'>Nur noch wenige freie Plätze!</span>"
+                        registration_button = "Online anmelden"
+                    else:
+                        registration_text += (
+                            "<span class='italic'>Leider ausgebucht</span> "
+                        )
+                        registration_button = "Auf die Warteliste"
+
+        else:
+            show_registration = False
+
+        context["registration_text"] = registration_text
+        context["registration_button"] = registration_button
+        context["show_button"] = show_button
+        context["show_registration"] = show_registration
+        return context
+
 
 class EventDeleteView(LoginRequiredMixin, BSModalDeleteView):
     model = Event

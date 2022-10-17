@@ -11,11 +11,11 @@
 	<meta name="keywords" content="">
 	<meta name="author" content="">
 	<script src="https://kit.fontawesome.com/23664e4bd4.js" crossorigin="anonymous"></script>
-
+	<!--
 	<link rel="preconnect" href="https://fonts.gstatic.com">
 
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
-
+	-->
 	{% block extra_head %}{% endblock %}
 	{% tailwind_css %}
 </head>
@@ -65,7 +65,7 @@
 			{% if user.is_authenticated %}
 			<a class='px-3 py-3' href="{% url 'event-list-internal' %}">E</a>
 			{% if user|has_group:"mv_orga" %}
-				<a class='px-3 py-3' href="{% url 'ft-members-dashboard' %}">TN</a>
+			<a class='px-3 py-3' href="{% url 'ft-members-dashboard' %}">TN</a>
 			{% endif %}
 			<a href="{% url 'logout' %}" class="block md:inline-block text-red  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
 				Logout</a>

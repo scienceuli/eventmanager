@@ -70,7 +70,7 @@ module.exports = {
             pink: colors.fuchsia,
         },
         fontFamily: {
-            sans: ['Noto Sans JP', 'Roboto', 'sans-serif'],
+            sans: ['Noto Sans', 'Roboto', 'sans-serif'],
             serif: ['Merriweather', 'serif'],
         },
         extend: {

@@ -441,7 +441,7 @@
 
             <!-- Anmeldung -->
 
-            {% if not event.is_past and event.category.name != "vfll_intern" and event.category.name != "messen" %}
+            {% if not event.is_past and event.category.name != "vfll_intern" and event.category.name != "messen" and show_registration %}
 
             <div class="flex relative pb-8 sm:items-center md:w-2/3 mx-auto">
 
@@ -460,17 +460,19 @@
                         <div class="flex mx-auto">
                             <div class="leading-relaxed">
 
-                                {% if event.close_date %}
-                                <p class="font-semibold mr-2">Anmeldeschluss: {{event.close_date|date:"j. F Y"}}</p>
-                                {% endif %}
 
+                                <p class="leading-relaxed mr-4">{{ registration_text|safe }}</p>
+
+
+                                {% comment %}
                                 {# special #}
                                 {% if event.label == 'ffl_mv_2022' %}
                                 <p class="font-semibold mr-2">für MV noch möglich</p>
 
                                 {% endif %}
+                                {% endcomment %}
 
-
+                                {% comment %}
                                 {% if event.is_full %}
                                 <span class="text-vfllred italic mr-2">Leider ausgebucht!</span>
                                 {% else %}
@@ -486,13 +488,14 @@
 
                                 {% endif %}
                                 {% endif %}
+                                {% endcomment %}
                             </div>
-                            {% if event.category.name != 'Fortbildungen unserer Kooperationspartner*innen' and event.registration_possible %}
+                            {% if show_button %}
 
                             <div class="item">
                                 <div class="">
                                     <a class=' bg-gray-200 font-bold  text-vfllred px-2 ' href="{% url 'event-add-member' event.slug %}">
-                                        {% if not event.is_full %}Online anmelden{% else %}Auf die Warteliste{% endif %}
+                                        {{ registration_button  }}
                                     </a>
                                 </div>
                             </div>
