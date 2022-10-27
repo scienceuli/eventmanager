@@ -88,11 +88,21 @@
           </a>
         </p>
         {% if event.label != 'zukunft2021' %}
-        {% if event.is_full %}
-        <p class="text-left text-base italic">Leider ausgebucht!</p>
-        {% elif event.few_remaining_places %}
-        <p class="text-left text-base italic">Nur noch wenige freie Plätze!</p>
-        {% endif %}
+        <p class="text-left text-base">
+          {% if event.close_date %}
+          <span class="mr-2">Anmeldeschluss: {{ event.close_date |date:"j.m.Y"}}</span>
+          {% if event.is_full %}
+          <span class="italic">Leider ausgebucht!</span>
+          {% else %}
+          {% if event.is_closed_for_registration and event.few_remaining_places %}
+          <span class="italic">Anmeldung noch möglich (noch wenige freie Plätze)</span>
+          {% endif %}
+          {% if not event.is_closed_for_registration and event.few_remaining_places %}
+          <span class="italic">Nur noch wenige freie Plätze!</span>
+          {% endif %}
+          {% endif %}
+          {% endif %}
+        </p>
         {% endif %}
       </div>
     </div>
