@@ -410,7 +410,7 @@ class Event(BaseModel, HitCountMixin):
     moodle_new_user_flag = models.BooleanField(
         verbose_name="Autom. E-Mail an neue Moodle-User",
         default=False,
-        help_text="Hier kann für den Kurs festgelegt werden, ob neue Moodle-User die automatische Begrüßungsmail bekommen (default=False).",
+        help_text="Hier kann für den Kurs festgelegt werden, ob neue Moodle-User die automatische Begrüßungsmail von Moodle (mit Zufallspasswort) bekommen (default=False). Ist das Feld nicht angeklickt, verschickt Moodle keine E-Mail und die neuen User können sich mit dem Standardpasswort anmelden. Bein Änderung dieses Feldes immer erst abspeichern!",
     )
     moodle_standard_password = models.CharField(
         max_length=24, verbose_name="Moodle Standard-Passwort", default="VfllMoodle123#"
