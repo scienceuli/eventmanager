@@ -270,6 +270,8 @@ class EventModelForm(forms.ModelForm):
         queryset=EventCategory.objects.all(),
     )
 
+    registration_possible = forms.BooleanField(label="Anmeldeformular", required=False)
+
     organizer = forms.ModelChoiceField(
         label="Veranstalter",
         # required=False,
@@ -291,6 +293,7 @@ class EventModelForm(forms.ModelForm):
             "fees",
             "location",
             "organizer",
+            "registration_possible",
             "contribution",
             "notes",
             "notes_internal",

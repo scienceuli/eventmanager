@@ -333,7 +333,7 @@ class EventCreateView(LoginRequiredMixin, CreateView):
             name="messen",
             defaults={"title": "Messen und Tagungen", "position": max_position + 1},
         )
-        return {"pub_status": "UNPUB", "category": obj}
+        return {"pub_status": "UNPUB", "category": obj, "registration_possible": True}
 
     def get_context_data(self, **kwargs):
         data = super(EventCreateView, self).get_context_data(**kwargs)
