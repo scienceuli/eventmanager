@@ -88,6 +88,14 @@ admin.site.register(Home, HomeAdmin)
 class EventCategoryAdmin(admin.ModelAdmin):
     model = EventCategory
 
+    def formfield_for_dbfield(self, db_field, **kwargs):
+        formfield = super(EventCategoryAdmin, self).formfield_for_dbfield(
+            db_field, **kwargs
+        )
+        if db_field.name == "title":
+            formfield.widget = forms.Textarea(attrs=formfield.widget.attrs)
+        return formfield
+
     def has_delete_permission(self, request, obj=None):
         return False
 
