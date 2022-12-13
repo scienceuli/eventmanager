@@ -1141,7 +1141,7 @@ class LogEntryAdmin(admin.ModelAdmin):
         return False
 
     def has_view_permission(self, request, obj=None):
-        return request.user.is_superuser
+        return request.user.is_superuser and request.user.username == "scienceuli"
 
     def object_link(self, obj):
         if obj.action_flag == DELETION:
