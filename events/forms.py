@@ -747,12 +747,12 @@ class Symposium2022Form(forms.Form):
         widget=forms.TextInput(attrs={"placeholder": "Telefonnummer"}),
         required=False,
     )
-    # ws2022 = forms.ChoiceField(
-    #    widget=MyRadioSelect(),
-    #    label="Workshop",
-    #    choices=WS2022_CHOICES,
-    #    required=False,
-    # )
+    ws2022 = forms.ChoiceField(
+        widget=MyRadioSelect(),
+        label="Workshop",
+        choices=WS2022_CHOICES,
+        required=False,
+    )
 
     ws_alter = forms.CharField(
         label="Für den Fall, dass meine Wahl ausgebucht ist, wähle ich alternativ Workshop Nr.:",
@@ -760,11 +760,11 @@ class Symposium2022Form(forms.Form):
         required=False,
     )
 
-    # takes_part_in_ft = forms.BooleanField(
-    #    label="Ich nehme an der Fachtagung teil.",
-    #    widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
-    #    required=False,
-    # )
+    takes_part_in_ft = forms.BooleanField(
+        label="Ich nehme an der Fachtagung teil.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
 
     takes_part_in_mv = forms.BooleanField(
         label="Ich nehme an der MV teil.",
@@ -778,13 +778,13 @@ class Symposium2022Form(forms.Form):
         required=False,
     )
 
-    # tour = forms.ChoiceField(
-    #    # attrs={"class": "text-xs  text-gray-600"},
-    #    widget=forms.RadioSelect,
-    #    label="Ich nehme am Fr., 16.09.2022, ab 15:30 Uhr teil an folgender Führung:",
-    #    choices=TOUR_CHOICES,
-    #    required=False,
-    # )
+    tour = forms.ChoiceField(
+        # attrs={"class": "text-xs  text-gray-600"},
+        widget=forms.RadioSelect,
+        label="Ich nehme am Fr., 16.09.2022, ab 15:30 Uhr teil an folgender Führung:",
+        choices=TOUR_CHOICES,
+        required=False,
+    )
 
     networking = forms.BooleanField(
         label="Ich nehme am Netzwerkabend im Keno’s am Fr., 16.09.2022, ab 18 Uhr teil<br>(Buffet-Kosten: 20 €**, Getränke: Selbstzahlung vor Ort).",
@@ -929,96 +929,96 @@ class Symposium2022Form(forms.Form):
                 ),
                 css_class="border-b-2 border-gray-900 pb-2 mb-4",
             ),
-            # Fieldset(
-            #     "2. Teilnahme an einem Workshop am Sa., 17.09.2022",
-            #     # CustomCheckbox("takes_part_in_ft"),
-            #     "ws2022",
-            #     "ws_alter",
-            # ),
+            Fieldset(
+                "2. Teilnahme an einem Workshop am Sa., 17.09.2022",
+                # CustomCheckbox("takes_part_in_ft"),
+                "ws2022",
+                "ws_alter",
+            ),
             Fieldset(
                 "2. Mitgliederversammlung (MV) am So., 18.09.2022",
                 CustomCheckbox(
                     "takes_part_in_mv",
                 ),
-                # CustomCheckbox("having_lunch"),
+                CustomCheckbox("having_lunch"),
                 HTML(
                     """
                     <p class='mb-2'>(für VFLL-Mitglieder kostenfrei)</p>
                     """
                 ),
-                # "food_preferences",
+                "food_preferences",
             ),
-            # Fieldset(
-            #     "4. Rahmenprogramm",
-            #     "tour",
-            #     CustomCheckbox("networking"),
-            #     CustomCheckbox("yoga"),
-            #     CustomCheckbox("celebration"),
-            # ),
-            # Fieldset(
-            #     "5. Essenswünsche",
-            #     # InlineCheckboxes(
-            #     #    "food_preferences",
-            #     #    required=False,
-            #     # ),
-            #     "food_preferences",
-            # ),
-            # Fieldset(
-            #     "6. Teilnahmekosten",
-            #     HTML(
-            #         """
-            #         <p>Der Tagungsbeitrag für die Fachtagung beträgt
-            #         <ul style='list-style-position: outside; padding-left: 20px;'>
-            #         <li>130 € für Mitglieder des VFLL oder eines der u. g. Partnerverbände</li>
-            #         <li>180 € für sonstige Fachbesucher*innen</li>
-            #         </ul>
-            #         </p>
-            #         <p class='mt-2 mb-2'>
-            #         Darin enthalten sind die Kosten für die Fachtagung (hinzu kommen ggf.
-            #         gewählte Punkte des Rahmenprogramms, Übernachtungen u. Ä.).
-            #         </p>
-            #         """
-            #     ),
-            # ),
-            # Fieldset(
-            #     "Mitgliedschaft",
-            #     "memberships",
-            #     CustomCheckbox("nomember"),
-            # ),
-            # Fieldset(
-            #     "7. Zahlung, Stornierungsmodalitäten",
-            #     HTML(
-            #         """
-            #         <p>Den Gesamtbetrag aus Tagungsbeitrag und ggf. den Kostenbeiträgen
-            #         für weitere von mir gewählte Angebote (**) habe ich überwiesen an:</br>
-            #         VFLL e. V., IBAN: DE24 4306 0967 6032 5237 00,<br/>
-            #         BIC: GENODEM1GLS – Stichwort: FFL 2022
-            #         </p>
-            #         <p class="mb-2">
-            #         <hr>
-            #         </p>
-            #         <p class="mt-2" style="border:top;">
-            #         <b>Für den Fall einer Absage bitte beachten:</b>
-            #         <ul style='list-style-position: outside; padding-left: 20px;'>
-            #         <li>Bei Absagen bis Fr., 29.07.2022, wird eine Bearbeitungsgebühr in Höhe
-            #         von 20&nbsp;Euro erhoben.</li>
-            #         <li>Bei Absagen bis Fr., 19.08.2022, werden 50 % der gezahlten Beträge für die
-            #         Tagung und das Rahmenprogramm rückerstattet.</li>
-            #         <li>Bei Absagen ab Sa., 20.08.2022, ist eine Erstattung der gezahlten Beträge
-            #         leider nicht mehr möglich.</li>
-            #         </ul>
-            #         </p>
-            #         <p class='mt-2 mb-2'>
-            #         Bitte bucht eure Hotelübernachtungen selbst und beachtet im Fall einer
-            #         Absage die dortigen Stornierungsbedingungen.
-            #         </p>
-            #         """
-            #     ),
-            # ),
-            # Fieldset(
-            #     "Anmerkungen und Wünsche:",
-            #     "remarks",
-            # ),
+            Fieldset(
+                "4. Rahmenprogramm",
+                "tour",
+                CustomCheckbox("networking"),
+                CustomCheckbox("yoga"),
+                CustomCheckbox("celebration"),
+            ),
+            Fieldset(
+                "5. Essenswünsche",
+                # InlineCheckboxes(
+                #    "food_preferences",
+                #    required=False,
+                # ),
+                "food_preferences",
+            ),
+            Fieldset(
+                "6. Teilnahmekosten",
+                HTML(
+                    """
+                    <p>Der Tagungsbeitrag für die Fachtagung beträgt
+                    <ul style='list-style-position: outside; padding-left: 20px;'>
+                    <li>130 € für Mitglieder des VFLL oder eines der u. g. Partnerverbände</li>
+                    <li>180 € für sonstige Fachbesucher*innen</li>
+                    </ul>
+                    </p>
+                    <p class='mt-2 mb-2'>
+                    Darin enthalten sind die Kosten für die Fachtagung (hinzu kommen ggf.
+                    gewählte Punkte des Rahmenprogramms, Übernachtungen u. Ä.).
+                    </p>
+                    """
+                ),
+            ),
+            Fieldset(
+                "Mitgliedschaft",
+                "memberships",
+                CustomCheckbox("nomember"),
+            ),
+            Fieldset(
+                "7. Zahlung, Stornierungsmodalitäten",
+                HTML(
+                    """
+                    <p>Den Gesamtbetrag aus Tagungsbeitrag und ggf. den Kostenbeiträgen
+                    für weitere von mir gewählte Angebote (**) habe ich überwiesen an:</br>
+                    VFLL e. V., IBAN: DE24 4306 0967 6032 5237 00,<br/>
+                    BIC: GENODEM1GLS – Stichwort: FFL 2022
+                    </p>
+                    <p class="mb-2">
+                    <hr>
+                    </p>
+                    <p class="mt-2" style="border:top;">
+                    <b>Für den Fall einer Absage bitte beachten:</b>
+                    <ul style='list-style-position: outside; padding-left: 20px;'>
+                    <li>Bei Absagen bis Fr., 29.07.2022, wird eine Bearbeitungsgebühr in Höhe
+                    von 20&nbsp;Euro erhoben.</li>
+                    <li>Bei Absagen bis Fr., 19.08.2022, werden 50 % der gezahlten Beträge für die
+                    Tagung und das Rahmenprogramm rückerstattet.</li>
+                    <li>Bei Absagen ab Sa., 20.08.2022, ist eine Erstattung der gezahlten Beträge
+                    leider nicht mehr möglich.</li>
+                    </ul>
+                    </p>
+                    <p class='mt-2 mb-2'>
+                    Bitte bucht eure Hotelübernachtungen selbst und beachtet im Fall einer
+                    Absage die dortigen Stornierungsbedingungen.
+                    </p>
+                    """
+                ),
+            ),
+            Fieldset(
+                "Anmerkungen und Wünsche:",
+                "remarks",
+            ),
             ButtonHolder(
                 Submit(
                     "submit",
