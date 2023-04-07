@@ -181,6 +181,16 @@ class EventOrganizerModelForm(BSModalModelForm):
         ]
 
 
+class EventOrganizerNMModelForm(forms.ModelForm):
+    class Meta:
+        model = EventOrganizer
+        fields = [
+            "name",
+            "contact",
+            "url",
+        ]
+
+
 class EventLocationModelForm(BSModalModelForm):
     state = forms.ChoiceField(required=False, label="Bundesland", choices=STATE_CHOICES)
 

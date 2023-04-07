@@ -16,10 +16,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.contrib.admin.views.decorators import staff_member_required
 
+from django.contrib.auth.models import User, Group
 
 from django.core.mail import send_mail, BadHeaderError
 
-from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.auth.mixins import UserPassesTestMixin, PermissionRequiredMixin
+
 from django.contrib.auth.decorators import login_required, user_passes_test
 
 from django.conf import settings
@@ -77,6 +79,7 @@ from .models import (
     EventCategory,
     Event,
     EventLocation,
+    EventOrganizer,
     EventImage,
     EventMember,
     EventHighlight,
@@ -90,6 +93,7 @@ from .forms import (
     EventLocationModelForm,
     EventLocationNMModelForm,
     EventOrganizerModelForm,
+    EventOrganizerNMModelForm,
     EventModelForm,
     EventMemberForm,
     EventDocumentFormSet,
@@ -177,6 +181,11 @@ class EventListInternalView(LoginRequiredMixin, ListView):
         if "search" in self.request.GET:
             qs = qs.filter(name__icontains=self.request.GET["search"])
         return qs
+
+    def get_context(self):
+        context = super().get_context()
+        context["can_delete"] = self.request.user.has_perm("events.delete_event")
+        return context
 
 
 class EventListFilterInternalView(LoginRequiredMixin, BSModalFormView):
@@ -317,23 +326,42 @@ class FilteredEventListView(ListView):
         return context
 
 
-class EventCreateView(LoginRequiredMixin, CreateView):
+class EventCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+    permission_required = "events.add_event"
     form_class = EventModelForm
     template_name = "events/bootstrap/create_event_nm.html"
     success_message = "Erfolg: Veranstaltung wurde angelegt."
     success_url = reverse_lazy("event-list-internal")
+
+    def get_form_class(self):
+        modelform = super().get_form_class()
+        # salon_group = Group.objects.get(name="salon")
+        if self.request.user.groups.filter(name="salon"):
+            modelform.base_fields["category"].limit_choices_to = {
+                "name": "Fortbildungen der Regionalgruppen des VFLL"
+            }
+        return modelform
 
     def get_initial(self):
         # get the max position value of categories
         max_position = EventCategory.objects.aggregate(Max("position")).get(
             "position__max"
         )
-        # get the category vfll-intern or create it
-        obj, created = EventCategory.objects.get_or_create(
-            name="messen",
-            defaults={"title": "Messen und Tagungen", "position": max_position + 1},
-        )
-        return {"pub_status": "UNPUB", "category": obj, "registration_possible": True}
+        # get the category messen or create it
+        if self.request.user.groups.filter(name="salon"):
+            cat, created = EventCategory.objects.get_or_create(
+                name="Fortbildungen der Regionalgruppen des VFLL",
+                defaults={
+                    "title": "Seminare der VFLL-Regionalgruppen & VFLL-Salons",
+                    "position": max_position + 1,
+                },
+            )
+        else:
+            cat, created = EventCategory.objects.get_or_create(
+                name="messen",
+                defaults={"title": "Messen und Tagungen", "position": max_position + 1},
+            )
+        return {"pub_status": "UNPUB", "category": cat, "registration_possible": True}
 
     def get_context_data(self, **kwargs):
         data = super(EventCreateView, self).get_context_data(**kwargs)
@@ -480,7 +508,8 @@ class EventDetailView(HitCountDetailView):
         return context
 
 
-class EventDeleteView(LoginRequiredMixin, BSModalDeleteView):
+class EventDeleteView(LoginRequiredMixin, PermissionRequiredMixin, BSModalDeleteView):
+    permission_required = "events.delete_event"
     model = Event
     template_name = "events/bootstrap/delete_event.html"
     success_message = "Erfolg: Veranstaltung wurde gelöscht."
@@ -548,6 +577,14 @@ class EventOrganizerCreateView(LoginRequiredMixin, BSModalCreateView):
     form_class = EventOrganizerModelForm
     template_name = "events/bootstrap/create_organizer.html"
     success_message = "Veranstalter erfolgreich angelegt"
+    success_url = reverse_lazy("event-list-internal")
+
+
+class EventOrganizerUpdateView(LoginRequiredMixin, UpdateView):
+    model = EventOrganizer
+    template_name = "events/bootstrap/update_event_organizer_nm.html"
+    form_class = EventOrganizerNMModelForm
+    success_message = "Veranstalter wurde aktualisiert."
     success_url = reverse_lazy("event-list-internal")
 
 
@@ -1131,11 +1168,11 @@ class EventApi(APIView):
         if request.GET.get("start"):
             start = request.GET.get("start")
         else:
-            start = "2022-01-01"
+            start = "2023-01-01"
         if request.GET.get("end"):
             end = request.GET.get("end")
         else:
-            end = "2022-12-01"
+            end = "2023-12-31"
         events = (
             Event.objects.exclude(event_days=None)
             .filter(first_day__gt=start, first_day__lt=end)

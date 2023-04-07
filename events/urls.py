@@ -20,6 +20,7 @@ from .views import (
     EventLocationReadView,
     EventLocationDeleteView,
     EventOrganizerCreateView,
+    EventOrganizerUpdateView,
     EventCategoryListView,
     EventCategoryCreateView,
     EventUpdateView,
@@ -92,6 +93,11 @@ urlpatterns = [
         "event_organizer_create/",
         EventOrganizerCreateView.as_view(),
         name="event-organizer-create",
+    ),
+    path(
+        "event_organizer_update/<int:pk>",
+        EventOrganizerUpdateView.as_view(),
+        name="event-organizer-update",
     ),
     path(
         "event_create_nm/",
