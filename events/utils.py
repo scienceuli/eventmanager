@@ -136,12 +136,17 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
         else:
             speaker_string = ", ".join(speaker_list)
 
+        if event.close_date:
+            close_date = event.close_date.strftime("%d.%m.%Y")
+        else:
+            close_date = ""
+
         formatting_dict.update(
             {
                 "event": event.name,
                 "label": event.label,
                 "start": event.get_first_day_start_date(),
-                "close_date": event.close_date.strftime("%d.%m.%Y"),
+                "close_date": close_date,
                 "addresses_string": addresses_string,
                 "speaker_string": speaker_string,
                 "memberships_labels": form.selected_memberships_labels(),

@@ -94,6 +94,10 @@
           <span class="text-left pl-1 text-base">{{ event.first_day }}&ndash;{{ event.last_day }}</span>
           {% else %}
           <span class="text-left text-base text-vfllred font-bold">{% if event.category.singular %}{{ event.category.singular }}{% else %}{{ event.category }}{% endif %}</span>
+          {% if event.eventformat %}
+          <span class="text-left text-base font-semibold">|&nbsp;{{ event.eventformat }}</span>
+          {% endif %}
+
           <span class="text-left pl-1 text-base">{% with event.event_days.all|first as first %}{{ first.start_date|date:"d.m.Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"d.m.Y" }}{% endif %}</span>
           {% endif %}
           {% if event.video and event.show_video %}

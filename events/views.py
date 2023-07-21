@@ -221,7 +221,7 @@ class EventReadView(LoginRequiredMixin, BSModalReadView):
 
 class EventListView(ListView):
     model = Event
-    template_name = "events/event_list_tw.html"
+    template_name = "events/event_list_filter.html"
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -666,8 +666,8 @@ def search_event(request):
                 events_dict[year][month] = list(inner_group)
         context = {"events_dict": events_dict}
 
-        return render(request, "events/event_list_tw.html", context)
-    return render(request, "events/event_list_tw.html")
+        return render(request, "events/event_list_filter.html", context)
+    return render(request, "events/event_list_filter.html")
 
 
 def get_mail_to_admin_template_name(registration_form):
