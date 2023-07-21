@@ -6,8 +6,6 @@ from .export_excel import ExportExcelAction
 from openpyxl.styles import Font
 from unidecode import unidecode
 
-from events.models import EventMember
-
 
 def style_output_file(file):
     black_font = Font(color="000000", bold=True)

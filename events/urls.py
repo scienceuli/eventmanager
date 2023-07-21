@@ -26,6 +26,7 @@ from .views import (
     EventUpdateView,
     EventReadView,
     EventDetailView,
+    EventCollectionDetailView,
     EventDeleteView,
     EventMemberUpdateView,
     FTEventMemberUpdateView,
@@ -124,6 +125,7 @@ urlpatterns = [
         name="create-event-category",
     ),
     path("detail/<slug:slug>", EventDetailView.as_view(), name="event-detail"),
+    path("ec/detail/<slug:slug>", EventCollectionDetailView.as_view(), name="event-collection-detail"),
     path(
         "event/<int:pk>/update_capacity/",
         EventUpdateCapacityView.as_view(),

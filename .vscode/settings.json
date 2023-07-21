@@ -5,7 +5,10 @@
         "titleBar.activeForeground": "#F8FDE1"
     },
     "editor.formatOnSave": true,
-    "python.formatting.provider": "black",
+    "python.formatting.provider": "none",
     "python.pythonPath": "/Users/scienceuli/.pyenv/versions/3.9.1/envs/eventmanagerenv/bin/python",
-    "html.format.wrapLineLength": 0
+    "html.format.wrapLineLength": 0,
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.black-formatter"
+    }
 }

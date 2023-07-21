@@ -324,6 +324,9 @@ from .choices import (
 
 
 class EventMemberForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["education_bonus"].initial = False
 
     # ref: https://stackoverflow.com/questions/9993939/django-display-values-of-the-selected-multiple-choice-field-in-a-template
     def selected_memberships_labels(self):
@@ -371,7 +374,7 @@ class EventMemberForm(forms.Form):
                 "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
             }
         ),
-        required=True,
+        required=False,
     )
     street = forms.CharField(
         widget=forms.TextInput(
@@ -429,11 +432,16 @@ class EventMemberForm(forms.Form):
                 "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
             }
         ),
-        required=True,
+        required=False,
     )
 
+    # the onclick attribute is for changing the price if vfll member
     vfll = forms.BooleanField(
-        widget=forms.CheckboxInput(attrs={"class": "form-radio"}), required=False
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-radio", "onclick": "changePrice()"}
+        ),
+        required=False,
+        initial=False,
     )
 
     memberships = forms.MultipleChoiceField(
@@ -457,8 +465,11 @@ class EventMemberForm(forms.Form):
         required=False,
     )
 
+    # education_bonus = forms.BooleanField(
+    #    widget=forms.CheckboxInput(attrs={"class": "form-radio"}), required=False
+    # )
     education_bonus = forms.BooleanField(
-        widget=forms.CheckboxInput(attrs={"class": "form-radio"}), required=False
+        widget=forms.HiddenInput(), required=False, initial=False
     )
 
     message = forms.CharField(
@@ -1116,7 +1127,6 @@ class Symposium2022Form(forms.Form):
 
 # ref: https://github.com/jrief/django-entangled
 class FTEventMemberForm(EntangledModelForm):
-
     YES_NO_CHOICES = (("ja", "ja"), ("nein", "nein"))
     firstname = forms.CharField(label="Vorname")
     lastname = forms.CharField(label="Nachname")

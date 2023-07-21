@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
 
-{% load static timetags %}
+{% load static timetags modeltags %}
 {% load i18n %}
 
 {% block title %}Veranstaltungen{% endblock title %}
@@ -34,33 +34,56 @@
     <h3 class="text-xl md:text-3xl py-3 font-semibold tracking-tight text-left">{{ month }}</h3>
 
     {% for event in events %}
+    {% class_name event as class_name_value %}
 
     <!-- Two columns -->
+
     <div class="flex flex-wrap mb-4 border-b-2 py-1">
       <div class="w-full  md:w-1/3 mb-4">
-        <p class="text-center text-vfllred text-2xl md:text-6xl">{{ event.get_first_day.start_date|date:"d" }}</p>
-        <p class="text-center text-vfllred text-sm">{{ event.get_first_day.start_date|date:"F" }}</p>
+        <p class="text-center text-vfllred text-2xl md:text-6xl">{{ event.first_day|date:"d" }}</p>
+        <p class="text-center text-vfllred text-sm">{{ event.first_day|date:"F" }}</p>
 
 
       </div>
       <div class="w-full md:w-2/3">
         <p>
+          {% if class_name_value == 'EventCollection' %}
+          <span class="text-left text-base text-vfllred font-bold">Veranstaltungsreihe</span>
+          <span class="text-left pl-1 text-base">{{ event.first_day }}&ndash;{{ event.last_day }}</span>
+          {% else %}
           <span class="text-left text-base text-vfllred font-bold">{% if event.category.singular %}{{ event.category.singular }}{% else %}{{ event.category }}{% endif %}</span>
-          <span class="text-left pl-1 text-base">{% with event.event_days.all|first as first %}{{ first.start_date|date:"l, j. F Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"l, j. F Y" }}{% endif %}</span>
+          <span class="text-left pl-1 text-base">{% with event.event_days.all|first as first %}{{ first.start_date|date:"d.m.Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"d.m.Y" }}{% endif %}</span>
+          {% endif %}
           {% if event.video and event.show_video %}
           <span class="text-left ml-4 text-base"><i class="fa fa-video-camera" aria-hidden="true"></i></span>
           {% endif %}
         </p>
-        <p class="text-left text-xl font-bold">
-          <a href="{% url 'event-detail' event.slug %}">
-            {{ event.name }}
-          </a>
+        <p class="text-left">
+          <span class="text-xl font-bold">
+
+            {% if class_name_value == 'EventCollection' %}
+            <a href="{% url 'event-collection-detail' event.slug %}">
+              {{ event.name }}
+            </a>
+            {% else %}
+            <a href="{% url 'event-detail' event.slug %}">
+              {{ event.name }}
+            </a>
+            {% endif %}
+          </span>
+
+
+          {% if event.event_collection %}
+          <br />
+          <span class="text-sm">im Rahmen der Veranstaltungsreihe</span>
+          <span class="text-sm italic"><a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{ event.event_collection.name }}</a></span>
+          {% endif %}
         </p>
         {% if event.label != 'zukunft2021' %}
         <p class="text-left text-base">
           {% if event.registration_possible %}
           {% if event.close_date %}
-          <span class="mr-2">Anmeldeschluss: {{ event.close_date |date:"j.m.Y"}}</span>
+          <span class="mr-2">Anmeldeschluss: {{ event.close_date |date:"d.m.Y"}}</span>
           {% if event.is_full %}
           <span class="italic">Leider ausgebucht!</span>
           {% else %}
@@ -77,6 +100,7 @@
         {% endif %}
       </div>
     </div>
+
     {% endfor %}
     {% endfor %}
     {% empty %}

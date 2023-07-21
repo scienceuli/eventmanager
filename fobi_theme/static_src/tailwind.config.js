@@ -15,7 +15,7 @@ module.exports = {
      * Set mode to "aot" if you want to generate the stylesheet in advance and purge later (aka legacy mode).
      */
     mode: "jit",
-
+    
     purge: [
         /**
          * HTML. Paths to Django template files that will contain Tailwind CSS classes.
@@ -80,6 +80,12 @@ module.exports = {
             },
             borderRadius: {
                 '4xl': '2rem',
+            },
+            width: {
+                '128': '32rem',
+            },
+            height: {
+                '128': '32rem',
             }
         },
         listStyleType: {
@@ -100,4 +106,5 @@ module.exports = {
         require('@tailwindcss/line-clamp'),
         require('@tailwindcss/aspect-ratio'),
     ],
+
 }

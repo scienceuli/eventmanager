@@ -10,6 +10,8 @@ from django.utils.encoding import force_text
 from django import forms
 from django.db.models import Min, Max
 from django.forms.models import BaseInlineFormSet
+from django.forms import inlineformset_factory
+
 from django.contrib.admin.models import LogEntry
 
 
@@ -32,8 +34,10 @@ from .validators import csv_content_validator
 
 from .models import (
     Home,
+    PayLessAction,
     EventCategory,
     EventFormat,
+    EventCollection,
     Event,
     EventDay,
     EventHighlight,
@@ -106,6 +110,70 @@ class EventOrganizerAdmin(admin.ModelAdmin):
     model = EventOrganizer
 
 
+class PayLessActionForm(forms.ModelForm):
+    """Form is needed to select existing Events to PayLessAction,
+    because standard inline is for creating new events but not
+    for selecting exiting events
+    ref: https://stackoverflow.com/questions/6034047/one-to-many-inline-select-with-django-admin
+    """
+
+    events = forms.ModelMultipleChoiceField(
+        queryset=Event.objects.all(), required=False
+    )
+    name = forms.CharField(max_length=255)
+
+    price_premium = forms.DecimalField(
+        max_digits=10, decimal_places=2, label="normaler Preis"
+    )
+    price_members = forms.DecimalField(
+        max_digits=10, decimal_places=2, label="Mitgliederpreis"
+    )
+
+    class Meta:
+        model = PayLessAction
+        fields = ["events", "name", "price_premium", "price_members"]
+
+    def __init__(self, *args, **kwargs):
+        super(PayLessActionForm, self).__init__(*args, **kwargs)
+        if self.instance:
+            self.fields["events"].initial = self.instance.events.all()
+
+    def save_m2m(self):
+        pass
+
+    def save(self, *args, **kwargs):
+        self.fields["events"].initial.update(payless_collection=None)
+        payless_collection_instance = PayLessAction()
+        payless_collection_instance.pk = self.instance.pk
+        payless_collection_instance.name = self.instance.name
+        payless_collection_instance.price_premium = self.instance.price_premium
+        payless_collection_instance.price_members = self.instance.price_members
+        payless_collection_instance.save()
+        self.cleaned_data["events"].update(
+            payless_collection=payless_collection_instance
+        )
+        return payless_collection_instance
+
+
+class PayLessActionAdmin(admin.ModelAdmin):
+    model = PayLessAction
+    list_display = (
+        "name",
+        "price_premium",
+        "price_members",
+        "events_display",
+    )
+    form = PayLessActionForm
+
+    def events_display(self, obj):
+        return ", ".join([ev.name for ev in obj.events.all()])
+
+    events_display.short_description = "Veranstaltungen"
+
+
+admin.site.register(PayLessAction, PayLessActionAdmin)
+
+
 class InlineWithoutDelete(BaseInlineFormSet):
     """
     is needed to provide Inlines without Delete Checkbox
@@ -166,7 +234,6 @@ class EventMemberRoleInline(admin.TabularInline):
 
 
 class EventMemberAdmin(admin.ModelAdmin):
-
     list_display = [
         "lastname",
         "firstname",
@@ -577,6 +644,7 @@ class EventExternalSponsorAdmin(admin.ModelAdmin):
 
 admin.site.register(EventExternalSponsor, EventExternalSponsorAdmin)
 
+
 # generating link to event pdf
 def admin_event_pdf(obj):
     return mark_safe(
@@ -638,6 +706,13 @@ class PeriodFilter(SimpleListFilter):
         return queryset.all()
 
 
+class EventCollectionAdmin(admin.ModelAdmin):
+    model = EventCollection
+
+
+admin.site.register(EventCollection, EventCollectionAdmin)
+
+
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     def get_urls(self):
         urls = super().get_urls()
@@ -674,6 +749,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     ordering = ("name",)
     search_fields = ("name",)
     readonly_fields = (
+        "full_price",
         "uuid",
         "slug",
         "moodle_id",
@@ -682,6 +758,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "date_modified",
     )
     # readonly_fields = ('uuid', 'label', 'slug', 'date_created', 'date_modified')
+
     exclude = (
         "start_date",
         "end_date",
@@ -690,6 +767,26 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         (
             "Name, Kurztitel, Format",
             {"fields": ("name", "label", "category", "eventformat", "pub_status")},
+        ),
+        (
+            "Übergeordnete Veranstaltung, Bezahlung",
+            {
+                "fields": (
+                    "event_collection",
+                    "direct_payment",
+                    "price",
+                    "full_price",
+                )
+            },
+        ),
+        (
+            "PayLess-Aktion",
+            {
+                "fields": (
+                    "payless_collection",
+                    "oneliner",
+                )
+            },
         ),
         (
             "Inhaltliche Angaben",
@@ -713,8 +810,8 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "organizer",
                     "fees",
                     "catering",
-                    "lodging",
-                    "total_costs",
+                    # "lodging",
+                    # "total_costs",
                 )
             },
         ),
@@ -768,6 +865,16 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
     )
+
+    def full_price(self, obj):
+        return format_html(
+            "<div class='c-2'>{}<br><p class='grp-help'>{}</p></div>",
+            obj.premium_price,
+            "Berechnetes Feld. Unreduzierter Preis für Nicht-Mitglieder, der in der Ausschreibung angezeigt wird. Dieser Preis muss mit der Preisangabe im entsprechenden Textfeld übereinstimmen.",
+        )
+
+    full_price.short_description = "Voller Preis"
+
     inlines = (
         EventDayInline,
         EventSpeakerThroughInline,

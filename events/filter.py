@@ -5,7 +5,6 @@ from events.models import Event, EventCategory, EventMember
 
 
 class EventFilter(django_filters.FilterSet):
-
     category = django_filters.ModelChoiceFilter(
         queryset=EventCategory.objects.all(),
         empty_label="Alle",

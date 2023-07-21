@@ -1,4 +1,6 @@
 {% extends 'base/base.html' %}
+
+{% load static tooltip_tags %}
 {% block title %}Anmeldung{% endblock title %}
 {% block breadcrumb %}Anmeldung{% endblock breadcrumb %}
 
@@ -9,6 +11,7 @@
 <!-- component -->
 <div class="grid min-h-screen place-items-center">
   <div class="w-11/12 p-12 bg-white sm:w-8/12 md:w-1/2 lg:w-5/12">
+    {% if event %}
     <h1 class="text-xl font-semibold">Anmeldung <span class="font-normal">zur Veranstaltung</span> {{ event.name }}</h1>
     <p class='text-left'>
       {% with event.event_days.all|first as first %}
@@ -24,6 +27,10 @@
       {{speaker.full_name}}{% if not forloop.last %}, {% endif %}
       {% endfor %}
     </p>
+    {% elif order_summary_html_string %}
+    <h1 class="text-xl font-semibold">Anmeldung <span class="font-normal">zu den Veranstaltungen</h1>
+    {{ order_summary_html_string|safe }}
+    {% endif %}
 
     <form class="mt-6 divide-y divide-red" method="post">
       {% csrf_token %}
@@ -81,6 +88,8 @@
           {{ form.vfll }}
           <span class="ml-3 text-xs font-semibold text-gray-600 uppercase">Ich bin VFLL-Mitglied</span>
         </label>
+        <p id="test_text" style="display:none">Checkbox is CHECKED!</p>
+
         <label for="memberships" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Ich bin Mitglied bei
           ...</label>
         {{ form.memberships }}
@@ -94,12 +103,17 @@
             {{ form.attention_other }}
           </span>
         </div>
+        {% comment %}
         <span class="pt-2 text-xs font-semibold text-gray-600 uppercase">Bildungsprämie</span>
+
         <label for="education_bonus" class="inline-flex items-center">
           {{ form.education_bonus }}
           <span class="ml-3 text-xs text-gray-600">Ich nehme die Bildungsprämie in Anspruch und lege den
             Prämiengutschein bei.</span>
         </label>
+        <input type="hidden" name="{{ form.education_bonus.name }}" id="{{ form.education_bonus.id_for_label }}" value="False">
+        {% endcomment %}
+
 
 
 
@@ -160,6 +174,38 @@
 
       </div>
       <div class="grid grid-cols-1 py-5">
+        <span class="pt-2  font-semibold text-gray-600 uppercase">Kosten</span>
+
+        {% if order_price_html_string %}
+        <p id="price">
+          {{ order_price_html_string|safe }}
+        </p>
+        {% endif %}
+        {% if order_discounted_price_html_string %}
+        <p id="discounted-price" style='display:none'>
+          {{ order_discounted_price_html_string|safe }}
+        </p>
+        {% endif %}
+        {% if order_totalprice_html_string %}
+        <p id="totalprice">
+          {{ order_totalprice_html_string|safe }}
+        </p>
+        {% endif %}
+
+        {% if order_discounted_totalprice_html_string %}
+        <p id="discounted-totalprice" style='display:none'>
+          {{ order_discounted_totalprice_html_string|safe }}
+        </p>
+        {% endif %}
+
+        {% if waiting_list_string %}
+        <span class="pt-2  font-semibold text-gray-600 uppercase">Warteliste {% include 'tooltips/_tooltip.html' with key='waiting' %}</span>
+        <p>{{ waiting_list_string }}<br /><small>Die Rechnung wird erst nach der Teilnahmebestätigung verschickt.</small></p>
+        {% endif %}
+
+      </div>
+
+      <div class="grid grid-cols-1 py-5">
         <button type="submit" class="w-full py-3 mt-6 text-xl font-bold rounded-full tracking-widest text-vfllred uppercase bg-gray-200 focus:outline-none hover:shadow-lg">
           Verbindlich anmelden
         </button>
@@ -175,3 +221,8 @@
 
 
 {% endblock content %}
+
+{% block extrascript %}
+<script src="{% static 'js/change_price.js' %}"></script>
+
+{% endblock extrascript %}

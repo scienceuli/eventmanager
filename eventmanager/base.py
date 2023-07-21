@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     "tinymce",
     "embed_video",
     "hitcount",
+    "paypal.standard.ipn",  # django-paypal
     # tailwind theme app
     "fobi_theme",
     # lokale apps
@@ -70,6 +71,9 @@ INSTALLED_APPS = [
     "users.apps.UsersConfig",
     "moodle.apps.MoodleConfig",
     "bugz.apps.BugzConfig",
+    "shop.apps.ShopConfig",
+    "payment.apps.PaymentConfig",
+    "faqs.apps.FaqsConfig",
 ]
 
 MIDDLEWARE = [
@@ -96,6 +100,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "events.custom_context_processor.category_renderer",
+                "shop.context_processors.cart",
             ],
         },
     },
@@ -160,7 +165,6 @@ CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
 CRISPY_TEMPLATE_PACK = "tailwind"
 # CRISPY_TEMPLATE_PACK = "bootstrap4"
 
-
 # Ckeditor config
 CKEDITOR_JQUERY_URL = "https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"
 
@@ -223,7 +227,6 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 # GRAPPELLI setting
 GRAPPELLI_ADMIN_TITLE = "FOBI Eventmanager"
 
-
 # REST FRAMEWORK
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
@@ -232,3 +235,18 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly"
     ]
 }
+
+# SESSION, SHOP
+CART_SESSION_ID = "cart"
+
+# django-paypal settings
+PAYPAL_BUY_BUTTON_IMAGE = (
+    "https://veranstaltungskalender.vfll.de/static/images/checkout-logo-small-de.png"
+)
+
+# Tooltips
+
+TOOLTIPS = {"waiting": "Rechnungsstellung, wenn Teilnahme bestätigt"}
+
+# faq settings
+FAQ_SETTINGS = []

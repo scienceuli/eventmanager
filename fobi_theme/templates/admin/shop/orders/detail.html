@@ -1,0 +1,98 @@
+{% extends "admin/base.html" %}
+{% block title %}
+Bestellung {{ order.id }} {{ block.super }}
+{% endblock %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a> &rsaquo;
+    <a href="{% url 'admin:shop_order_changelist' %}">Bestellungen</a>
+    &rsaquo;
+    <a href="{% url 'admin:shop_order_change' order.id %}">Bestellung {{ order.id }}</a>
+    &rsaquo; Detail
+</div>
+{% endblock %}
+{% block content %}
+<div class="grp-module">
+    <h1>Bestellung {{ order.get_order_number }}</h1>
+    <ul class="grp-object-tools">
+        <li>
+            <a href="#" onclick="window.print();">
+                Drucken
+            </a>
+        </li>
+    </ul>
+    <table class="grp-table">
+        <tr class="grp-tr">
+            <th class="grp-th">Angelegt</th>
+            <td class="grp-td">{{ order.date_created }}</td>
+        </tr>
+        <tr>
+            <th>bestellt von</th>
+            <td>{{ order.firstname }} {{ order.lastname }}</td>
+        </tr>
+        <tr>
+            <th>E-mail</th>
+            <td><a href="mailto:{{ order.email }}">{{ order.email }}</a></td>
+        </tr>
+        <tr>
+            <th>Anschrift</th>
+            <td>
+                {{ order.street }},
+                {{ order.postcode }} {{ order.city }}
+            </td>
+        </tr>
+        <tr>
+            <th>Gesamtbetrag</th>
+            <td>{{ order.get_total_cost }} €</td>
+        </tr>
+        <tr>
+            <th>reduziert</th>
+            <td>{{ order.discounted|yesno:"ja,nein,vielleicht" }}</td>
+        </tr>
+        <tr>
+            <th>Bezahltyp</th>
+            <td>{{ order.get_payment_type_display }}</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>{% if order.paid %}bezahlt{% else %}offen{% endif %}</td>
+        </tr>
+        {% if order.payment_type == 'p' %}
+        <tr>
+            <th>PayPal</th>
+            <td>
+
+                <a href="#" target="_blank">
+                    to do: papyal object
+                </a>
+
+            </td>
+        </tr>
+        {% endif %}
+    </table>
+</div>
+<div class="grp-module">
+    <h2>Bestellte Veranstaltungen</h2>
+    <table class="grp-table" style="width:100%">
+        <thead>
+            <tr>
+                <th>Event</th>
+                <th>Preis</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in order.items.all %}
+            <tr class="row{% cycle '1' '2' %}">
+                <td>{{ item.event.name }}</td>
+                <td class="num">${{ item.get_cost }}</td>
+            </tr>
+            {% endfor %}
+            <tr class="total">
+                <td style="font-weight: bold;">Gesamt</td>
+                <td style="font-weight: bold;" class="num">{{ order.get_total_cost }} €</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends 'base/base.html' %}
+{% block title %}FAQ | {{category}}{% endblock %}
+{% block heading %}FAQ | {{category}}{% endblock %}
+
+
+
+{% block content %}
+
+
+<section class="py-20 px-20 bg-white">
+
+    <div class="container max-w-6xl mx-auto">
+        <div class="grid gap-4 md:grid-cols-2">
+            <div class="mb-6 md:mb-0">
+                <h2 class="mb-6 text-3xl font-bold">FAQs - {{category.name}}</h2>
+
+                <p class="text-neutral-500 dark:text-neutral-300">
+                    Weitere Fragen?
+                    <a href="#!" class="text-primary transition duration-300 hover:text-primary-600 focus:text-primary-600 active:text-primary-700 dark:text-primary-400 dark:hover:text-primary-500 dark:focus:text-primary-500 dark:active:text-primary-600">Kontaktiere das FOBI-Team.</a>.
+                </p>
+                {% if category.description %}
+                <p>{{category.description}}</p>
+                {% endif %}
+                <p class="mt-4"><a href="{% url 'faqs:index-view' %}">zurück</a></p>
+            </div>
+
+            <div class="mb-6 md:mb-0">
+                {% for question in category.question_set.all %}
+
+                <p class="mb-4 font-bold">{{question.question}}</p>
+                <div class="mb-4">
+                    {% for answer in question.answer_set.all %}
+                    <p class="text-neutral-500 dark:text-neutral-300">
+                        {{answer.answer}}
+                    </p>
+                    {% endfor %}
+                </div>
+
+                {% endfor %}
+            </div>
+
+        </div>
+
+
+    </div>
+</section>
+
+{% endblock %}

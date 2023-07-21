@@ -1,0 +1,85 @@
+{% extends "base/base.html" %}
+{% load static %}
+{% block title %}Bezahlen{% endblock %}
+{% block content %}
+
+<div class="bg-white px-6 py-32 lg:px-8">
+    <div class="mx-auto max-w-3xl text-base leading-7 text-gray-700">
+
+        <div class="px-4 sm:px-6 lg:px-8">
+            <div class="sm:flex sm:items-center">
+                <div class="sm:flex-auto">
+                    <h1 class="text-base font-semibold leading-6 text-gray-900">Deine Bestellung</h1>
+                    <p class="mt-2 text-sm text-gray-700">Übersicht der gebuchten Veranstaltungen</p>
+                </div>
+
+            </div>
+            <div class="mt-8 flow-root">
+                <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+                    <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+                        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+                            <table class="min-w-full divide-y divide-gray-300">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Veranstaltung</th>
+                                        {% comment %}
+                                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Einzelpreis</th>
+                                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Anzahl</th>
+                                        {% endcomment %}
+
+                                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Preis</th>
+
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200 bg-white">
+                                    {% for item in order.items.all %}
+                                    <tr>
+                                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{{ item.event.name }}</td>
+                                        {% comment %}
+
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">€ {{ item.price }}</td>
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ item.quantity }}</td>
+                                        {% endcomment %}
+
+                                        <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">€ {{ item.get_cost }}</td>
+
+                                    </tr>
+                                    {% endfor %}
+                                    <tr>
+                                        <td colspan='1' class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-bold text-gray-900 sm:pl-6">Gesamtpreis</td>
+
+                                        <td class="whitespace-nowrap px-3 py-4 font-bold text-sm text-gray-500">€ {{ order.get_total_cost }}{% if order.discounted %}*{% endif %}</td>
+                                    </tr>
+                                    {% if order.discounted %}
+                                    <tr>
+                                        <td colspan='2' class="whitespace-nowrap py-4 pl-4 pr-3 text-sm  text-gray-900 sm:pl-6">*&nbsp;reduzierter Preis</td>
+
+                                    </tr>
+                                    {% endif %}
+
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="sm:flex sm:items-center flex flex-row justify-normal">
+                <div class="sm:flex-auto mr-8">
+                    {{ paypal_form.render }}
+                </div>
+                <div class="pl-8 ml-8 mt-3 sm:ml-16 sm:mt-0 sm:flex-none">
+
+                    <form method="post" action="{% url 'payment:payment-by-invoice' order_id=order.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="rounded bg-white px-2 py-1 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">Auf Rechnung</button>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

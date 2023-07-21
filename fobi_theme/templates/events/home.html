@@ -25,12 +25,12 @@
 
         <p class="text-xl  text-gray-600 mt-4 max-w-3xl mx-auto">{{ home.text }}</p>
 
-        <div class="grid grid-cols-4 gap-8 mt-10 sm:grid-cols-4 md:grid-cols-8 lg:grid-cols-12 sm:px-8 xl:px-0">
+        <div class="grid grid-cols-3 gap-8 mt-10 sm:grid-cols-3 md:grid-cols-9 lg:grid-cols-12 sm:px-8 xl:px-0">
 
 
 
 
-            <div class="flex flex-col items-center justify-between col-span-4 px-8 py-12 space-y-4 bg-gray-300 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+            <div class="flex flex-col items-center justify-between col-span-3 px-8 py-12 space-y-4 bg-gray-300 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
                 <a href="{% url 'event-filter' %}">
                     <div class="p-3 text-white bg-vfllred rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 " viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -51,7 +51,7 @@
             {% for c in all_categories %}
 
 
-            <div class="flex flex-col items-center justify-between col-span-4 px-8 py-12 space-y-4 bg-gray-100 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+            <div class="flex flex-col items-center justify-between col-span-3 px-8 py-12 space-y-4 bg-gray-100 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
                 <a href="{% url 'event-filter' %}?category={{ c.id }}">
                     <div class="p-3 text-white bg-vfllred rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 " viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
@@ -70,10 +70,27 @@
             </div>
 
             {% endfor %}
+            <div class="flex flex-col items-center justify-between col-span-3 px-8 py-12 space-y-4 bg-gray-300 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+                <a href="{% url 'event-filter' %}">
+                    <div class="p-3 text-white bg-vfllred rounded-full">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 " viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M8 9l3 3l-3 3" />
+                            <line x1="13" y1="15" x2="16" y2="15" />
+                            <rect x="3" y="4" width="18" height="16" rx="2" />
+                        </svg>
+                    </div>
+                </a>
+                <h4 class="text-xl font-bold text-gray-700 text-center">
+                    <a href="{% url 'event-filter' %}">Alle Seminare und Veranstaltungen</a>
+
+                </h4>
+                <p class="text-base text-center text-gray-500"></p>
+            </div>
 
             {% if event_highlight %}
 
-            <div class="flex flex-col items-center justify-between col-span-4 px-8 py-12 space-y-4 bg-red-100 sm:rounded-xl border-vfllred shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+            <div class="flex flex-col items-center justify-between col-span-3 px-8 py-12 space-y-4 bg-red-100 sm:rounded-xl border-vfllred shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
 
                 <h4 class="text-xl font-medium text-gray-700 text-center">Highlight:</h4>
                 <a class="text-xl" href="{% url 'event-detail' event_highlight.event.slug %}">{{ event_highlight.event.name }}</a>

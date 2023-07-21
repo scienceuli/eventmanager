@@ -1,0 +1,13 @@
+{% extends 'faqs/question_base.html' %}
+
+{% block question_content %}
+<h3>Antwort</h3>
+<ul>
+    {% for answer in question.answer_set.all %}
+    <li><b>{{answer.answer}}</b>
+    </li>
+    {% endfor %}
+</ul>
+
+
+{% endblock %}

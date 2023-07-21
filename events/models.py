@@ -26,6 +26,8 @@ from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
 
 from events.utils import find_duplicates_in_list
 
+from shop.utils import premium_price
+
 
 class Home(BaseModel):
     """
@@ -41,6 +43,24 @@ class Home(BaseModel):
     class Meta:
         verbose_name = "Home"
         verbose_name_plural = "Home"
+
+    def __str__(self):
+        return self.name
+
+
+class PayLessAction(models.Model):
+    name = models.CharField(max_length=255)
+
+    price_premium = models.DecimalField(
+        verbose_name="normaler Preis", max_digits=10, decimal_places=2
+    )
+    price_members = models.DecimalField(
+        verbose_name="Rabattpreis", max_digits=10, decimal_places=2
+    )
+
+    class Meta:
+        verbose_name = "Pay-Less-Aktion"
+        verbose_name_plural = "Pay-Less-Aktionen"
 
     def __str__(self):
         return self.name
@@ -212,6 +232,60 @@ class EventExternalSponsor(BaseModel):
         return "{name} ({url})".format(name=self.name, url=self.url).strip()
 
 
+class EventCollection(BaseModel):
+    name = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=255, null=False, unique=True, editable=True)
+    frontend_flag = models.BooleanField(
+        verbose_name="im Frontend zeigen?", default=True
+    )
+    label = models.CharField(
+        max_length=64,
+        verbose_name="Kurzname",
+        unique=True,
+        help_text="eindeutiger Kurzname",
+    )
+    description = RichTextUploadingField(
+        verbose_name="Teaser", blank=True, config_name="short"
+    )
+    first_day = models.DateField(null=True, blank=True)
+    last_day = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        max_length = self._meta.get_field("slug").max_length
+        last_id = 0
+        if EventCollection.objects.exists():
+            last_id = EventCollection.objects.latest("id").id
+        if not self.id:
+            self.slug = slugify(f"{self.name}-{str(last_id+1)}")[:max_length]
+        add = not self.pk
+        # super(Event, self).save(*args, **kwargs)
+        if add:
+            # if not self.slug:
+            #    self.slug = slugify(self.name)[:max_length]
+            if not self.label:
+                self.label = f"{self.name.partition(' ')[0]}-{date.today().year}-{str(last_id+1)}"
+            kwargs["force_insert"] = False  # create() uses this, which causes error.
+
+        self.first_day = self.get_first_day_start_date()
+        self.last_day = self.get_last_day_start_date()
+        return super().save(*args, **kwargs)
+
+    def get_first_day_start_date(self):
+        return self.events.aggregate(earliest_start=models.Min("first_day"))[
+            "earliest_start"
+        ]
+
+    def get_last_day_start_date(self):
+        return self.events.aggregate(latest_end=models.Max("last_day"))["latest_end"]
+
+    def is_in_future(self):
+        current_date = date.today()  # or datetime.utcnow() for UTC time
+        return self.get_first_day_start_date() > current_date
+
+
 class Event(BaseModel, HitCountMixin):
     """Events"""
 
@@ -221,8 +295,24 @@ class Event(BaseModel, HitCountMixin):
         related_name="events",
         on_delete=models.CASCADE,
     )
+    event_collection = models.ForeignKey(
+        EventCollection,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="events",
+    )
+    payless_collection = models.ForeignKey(
+        PayLessAction,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="events",
+    )
+    direct_payment = models.BooleanField(default=False)
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
+    oneliner = models.CharField(max_length=80, blank=True)
     slug = models.SlugField(max_length=255, null=False, unique=True, editable=True)
     eventurl = models.URLField(null=True, blank=True)
 
@@ -263,6 +353,12 @@ class Event(BaseModel, HitCountMixin):
     )
     objectives = RichTextUploadingField(
         verbose_name="Lernziele", null=True, blank=True, config_name="short"
+    )
+    price = models.DecimalField(
+        verbose_name="Mitgliederpreis",
+        max_digits=10,
+        decimal_places=2,
+        help_text="Hier kommt der reduzierte Mitgliederpreis rein. Der volle Preis ist 35% höher, wobei auf 10 Euro aufgerundet wird.",
     )
 
     speaker = models.ManyToManyField(
@@ -371,11 +467,14 @@ class Event(BaseModel, HitCountMixin):
         verbose_name="Freitextfeld Intro", null=True, blank=True, config_name="short"
     )
 
+    # obsolete
     start_date = models.DateTimeField(
         verbose_name="Beginn",
         null=True,
         help_text="Datum: Picker verwenden oder in der Form tt.mm.jj; Zeit: hh:mm",
     )
+
+    # obsolete
     end_date = models.DateTimeField(
         verbose_name="Ende",
         null=True,
@@ -390,6 +489,7 @@ class Event(BaseModel, HitCountMixin):
         verbose_name="Anmeldefrist Ende", null=True, blank=True
     )
     first_day = models.DateField(null=True, blank=True)
+    last_day = models.DateField(null=True, blank=True)
     capacity = models.PositiveIntegerField(verbose_name="Kapazität", default=15)
     STATUS_CHOICES = (
         ("active", "findet statt"),
@@ -567,6 +667,13 @@ class Event(BaseModel, HitCountMixin):
         except IndexError:
             pass
 
+    def get_last_day_start_date(self):
+        try:
+            return self.event_days.all().order_by("-start_date")[0].start_date
+
+        except IndexError:
+            pass
+
     def is_several_days(self):
         return self.event_days.count() > 1
 
@@ -576,6 +683,12 @@ class Event(BaseModel, HitCountMixin):
     @property
     def sorted_sponsors(self):
         return self.sponsors.order_by("eventsponsorthrough__position")
+
+    @property
+    def premium_price(self):
+        return premium_price(self.price)
+
+    premium_price.fget.short_description = "Nicht reduzierter Preis"
 
     def save(self, *args, **kwargs):
         max_length = self._meta.get_field("slug").max_length
@@ -594,6 +707,7 @@ class Event(BaseModel, HitCountMixin):
             kwargs["force_insert"] = False  # create() uses this, which causes error.
 
         self.first_day = self.get_first_day_start_date()
+        self.last_day = self.get_last_day_start_date()
 
         return super().save(*args, **kwargs)
 
@@ -727,7 +841,7 @@ class EventAgenda(BaseModel):
 
 
 class EventImage(BaseModel):
-    event = models.OneToOneField(Event, on_delete=models.CASCADE)
+    event = models.OneToOneField(Event, related_name="image", on_delete=models.CASCADE)
     image = models.ImageField(upload_to="event_image/")
 
 

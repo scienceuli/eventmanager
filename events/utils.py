@@ -7,11 +7,15 @@ import pandas as pd
 import plotly.express as px
 from plotly.offline import plot
 
-from django.core.mail import EmailMultiAlternatives
+from django.core.mail import EmailMultiAlternatives, BadHeaderError
 
 from django.conf import settings
+from django.http import HttpResponse
 
 from events.email_template import EmailTemplate
+
+from events.parameters import ws_limits
+
 
 logger = logging.getLogger(__name__)
 
@@ -59,22 +63,22 @@ def send_email(
     formatting_dict = formatting_dict or {}
     template = get_email_template(template_name)
     text_template = getattr(template, "text_template", "")
-    html_template = getattr(template, "html_template", "")
+    # html_template = getattr(template, "html_template", "")
 
     if not text_template:
         logger.critical(
             "Missing text template (required) for the input {}.".format(text_template)
         )
         raise EmailTemplateError("Email template is not valid for the input.")
-    if not html_template:
-        logger.warning(
-            "Invalid html template (not required) for the input {}.".format(
-                html_template
-            )
-        )
+    # if not html_template:
+    #     logger.warning(
+    #         "Invalid html template (not required) for the input {}.".format(
+    #             html_template
+    #         )
+    #     )
 
     text_content = validate_email_template(text_template, formatting_dict)
-    html_content = validate_email_template(html_template, formatting_dict, False)
+    # html_content = validate_email_template(html_template, formatting_dict, False)
 
     to = addresses.get("to", [])
     cc = addresses.get("cc", [])
@@ -83,8 +87,8 @@ def send_email(
     msg = EmailMultiAlternatives(
         subject, text_content, from_email=from_email, to=to, cc=cc, bcc=bcc
     )
-    if html_content:
-        msg.attach_alternative(html_content, "text/html")
+    # if html_content:
+    #     msg.attach_alternative(html_content, "text/html")
 
     try:
         msg.send()
@@ -96,6 +100,66 @@ def send_email(
         if kwargs.get("verbose", 0) > 1:
             print(msg)
         return True
+
+
+def send_email_after_registration(to, event, form, template, formatting_dict):
+    if event.registration_form == "s":
+        subject = f"Anmeldung am Kurs {event.name}"
+    # mails to vfll
+    addresses_list = []
+    if to == "vfll":
+        if event.sponsors:
+            for sponsor in event.sponsors.all().exclude(email__isnull=True):
+                addresses_list.append(sponsor.email)
+        if len(addresses_list) == 0:
+            if event.registration_recipient:
+                addresses_list.append(event.registration_recipient)
+            else:
+                addresses_list.append(settings.EVENT_RECEIVER_EMAIL)
+
+    elif to == "member":
+        addresses_list.append(formatting_dict.get("email"))
+
+    addresses = {"to": addresses_list}
+
+    addresses_string = " oder ".join(addresses_list)
+
+    # Dozenten - nur bei Fortbildungen
+    if event.registration_form == "s":
+        speaker_list = []
+        if event.speaker:
+            for sp in event.speaker.all():
+                speaker_list.append(sp.full_name)
+
+        if len(speaker_list) == 0:
+            speaker_string = "NN"
+        else:
+            speaker_string = ", ".join(speaker_list)
+
+        formatting_dict.update(
+            {
+                "event": event.name,
+                "label": event.label,
+                "start": event.get_first_day_start_date(),
+                "close_date": event.close_date.strftime("%d.%m.%Y"),
+                "addresses_string": addresses_string,
+                "speaker_string": speaker_string,
+                "memberships_labels": form.selected_memberships_labels(),
+            }
+        )
+
+        if event.registration_form == "s" or event.registration_form == "f":
+            try:
+                send_email(
+                    addresses,
+                    subject,
+                    settings.DEFAULT_FROM_EMAIL,
+                    template,
+                    formatting_dict=formatting_dict,
+                )
+                return True
+            except BadHeaderError:
+                return HttpResponse("Invalid header found.")
 
 
 def boolean_translate(boolean_value):
@@ -135,3 +199,31 @@ def make_bar_plot_from_dict(data, y_string):
     fig.update_yaxes(title_text="Teiln.")
     plt_div = plot(fig, output_type="div")
     return plt_div
+
+
+def get_utilisations(event):
+    ws_utilisations = settings.WS_LIMITS.copy()
+    for member in event.members.all():
+        if member.data.get("ws2022"):
+            if member.data["ws2022"] in ws_utilisations.keys():
+                ws_utilisations[member.data["ws2022"]] = (
+                    ws_utilisations[member.data["ws2022"]] - 1
+                )
+
+    tour_utilisations = settings.TOUR_LIMITS.copy()
+    for member in event.members.all():
+        if member.data.get("tour"):
+            if member.data["tour"] in tour_utilisations.keys():
+                tour_utilisations[member.data["tour"]] = (
+                    tour_utilisations[member.data["tour"]] - 1
+                )
+
+    return ws_utilisations, tour_utilisations
+
+
+def update_boolean_values(dictionary):
+    for key, value in dictionary.items():
+        if isinstance(value, bool):
+            dictionary[key] = boolean_translate(
+                value
+            )  # Replace value with function call

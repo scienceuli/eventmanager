@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "flowbite": "^1.7.0",
     "node-sass": "^6.0.1"
   },
   "devDependencies": {

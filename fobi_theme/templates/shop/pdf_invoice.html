@@ -1,0 +1,364 @@
+{% load static xhtml2pdf_tags %}
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Rechnung</title>
+    <style>
+        /*
+  Common invoice styles. These styles will work in a browser or using the HTML
+  to PDF anvil endpoint.
+*/
+        @page {
+            size: A4 portrait;
+            margin-bottom: 2cm;
+            margin-left: 2.5cm;
+            margin-right: 2.5cm;
+            margin-top: 1.2cm;
+
+            @frame footer_frame {
+                /* Another static Frame */
+                -pdf-frame-content: footer_content;
+                left: 100pt;
+                width: 400pt;
+                top: 780pt;
+                height: 100pt;
+            }
+        }
+
+        body {
+            font-size: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        tr.extra-space {
+            padding-top: 10px;
+        }
+
+        table tr td {
+            padding: 0;
+        }
+
+        table tr td:last-child {
+            text-align: right;
+        }
+
+        .bold {
+            font-weight: bold;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .large {
+            font-size: 1.75em;
+        }
+
+        .total {
+            font-weight: bold;
+            color: #ed1c24;
+        }
+
+        .invoice-header {
+            font-size: 9px;
+            color: #ed1c24;
+        }
+
+        .logo-container {
+            margin: 20px 0 70px 0;
+            color: #ed1c24;
+        }
+
+        .invoice-info-container {
+            font-size: 0.875em;
+        }
+
+        .invoice-info-container td {
+            padding: 4px 0;
+        }
+
+        .client-name {
+            font-size: 1.5em;
+            vertical-align: top;
+        }
+
+        .line-items-container {
+            margin: 10px 0;
+            font-size: 12px;
+        }
+
+        .line-items-container th {
+            text-align: left;
+            color: #999;
+            border-bottom: 2px solid #ddd;
+            padding: 10px 0 15px 0;
+            font-size: 0.75em;
+            text-transform: uppercase;
+        }
+
+        .line-items-container th:last-child {
+            text-align: right;
+        }
+
+        .line-items-container td {
+            vertical-align: top;
+            padding: 5px 0;
+        }
+
+
+        .payment-info {
+            width: 38%;
+            font-size: 0.75em;
+            line-height: 1.5;
+        }
+
+        .footer {
+            margin-top: 100px;
+        }
+
+        .footer-thanks {
+            font-size: 1.125em;
+        }
+
+        .footer-thanks img {
+            display: inline-block;
+            position: relative;
+            top: 1px;
+            width: 16px;
+            margin-right: 4px;
+        }
+
+        .footer-info {
+            float: right;
+            margin-top: 5px;
+            font-size: 0.75em;
+            color: #ccc;
+        }
+
+        .footer-info span {
+            padding: 0 5px;
+            color: black;
+        }
+
+        .footer-info span:last-child {
+            padding-right: 0;
+        }
+
+        .page-container {
+            display: none;
+        }
+
+
+        .address-line {
+            margin-top: 80px;
+            font-size: 9px;
+            color: #ed1c24;
+        }
+
+        .sub-invoice-header {
+            font-size: 9px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .address {
+            font-size: 12px;
+        }
+
+        .invoice-data {
+            font-size: 10px;
+            margin-top: 10px;
+            text-align: right;
+        }
+
+        .invoice-label {
+            margin-top: 50px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .invoice-number {
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .amount {
+            text-align: right;
+        }
+
+        .total-amount {
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .euro {
+            text-align: right;
+        }
+
+        .invoice-remark {
+            margin-top: 30px;
+            font-size: 12px;
+        }
+
+        .invoice-footer {
+
+            font-size: 12px;
+            color: gray;
+            text-align: center;
+        }
+
+        .signature {
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        .payment-text {
+            font-size: 12px;
+            margin-top: 15px;
+        }
+
+        .invoice-small {
+            font-size: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="web-container" style="position: relative;">
+
+        <table class="invoice-header">
+            <tr>
+                <td>Verband der <br />
+                    Freien Lektorinnen<br />
+                    und Lektoren e. V.
+                </td>
+                <td>
+                    Heinrich-Albert-Str. 3<br />
+                    63916 Amorbach
+                </td>
+                <td>
+                    Telefon 0 93 73/59 38 151<br />
+                    geschaeftsstelle.adelmann@vfll.de
+                </td>
+            </tr>
+
+
+        </table>
+
+        <div class="sub-invoice-header">
+            Geschäftsstelle
+        </div>
+
+
+        <div class="address-line">
+            VFLL e. V., Heinrich-Albert-Str. 3, 63916 Amorbach
+        </div>
+
+        <div class="address">
+            {{order.firstname}} {{order.lastname}}<br />
+            {{ order.street }}<br />
+            {{ order.postcode }} {{ order.city }}
+
+        </div>
+        <div class="invoice-data">
+            Steuernummer: 204/111/20369<br />
+            Amorbach, {{order.date_created|date}}
+        </div>
+        <div class="invoice-label">
+
+            Rechnung
+        </div>
+        <div class="invoice-number">
+
+            Rechnungsnummer: {{ order.get_order_number }}
+        </div>
+
+        Teilnahmekosten für die VFLL-Fortbildungen <br />
+
+
+
+        <table class="line-items-container">
+            <thead>
+
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td colspan="2">{{ item.event.name }}<br />
+                        {% with item.event as event %}
+                        {% with event.event_days.all|first as first %}{{ first.start_date|date:"j. F Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"j. F Y" }}{% endif %}
+                        {% if event.category.name != "Onlineseminare" and event.location %}
+                        | {{ event.location.title }}
+                        {% endif %}
+                        {% if event.category.name == "Onlineseminare" %}
+                        | Online
+                        {% endif %}
+                        {% if event.speaker.all %}
+                        |&nbsp;Doz.:&nbsp;
+                        {% for speaker in event.speaker.all %}
+                        {{speaker.full_name}}
+                        {% endfor %}
+                        {% endif %}
+                        {% endwith %}
+                    </td>
+                    <td class="amount"><span class="euro">{{ item.get_cost }} €
+                        </span></td>
+                </tr>
+                {% endfor %}
+
+                <tr>
+
+                    <td colspan="2"><span class="total-amount">Rechnungsbetrag<sup>{{ust_footnote_counter}}</sup></span>
+
+                    </td>
+                    <td class="amount"><span class="total-amount">{{ order.get_total_cost }} €
+                            {% if order.discounted %}*{% endif %}
+                        </span></td>
+                </tr>
+
+
+
+            </tbody>
+        </table>
+        <div class="invoice-remark">
+            {% if order.discounted %}
+            *) reduzierter Preis<br />
+            {% endif %}
+            Mangels Umsatzsteuerpflicht ist kein Ausweis der Umsatzsteuer möglich.
+        </div>
+        <div class="payment-text">
+            {% if order.payment_type == 'p' and order.paid %}
+            Der Rechnungsbetrag wurde per PayPal bezahlt.
+            {% endif %}
+            {% if order.payment_type == 'r' %}
+            <b>Zahlbar sofort und ohne Abzug.</b>
+            {% endif %}
+        </div>
+        <div class="signature">
+            Mit freundlichen Grüßen<br />
+            Veronika Adelmann, Geschäftsstelle
+        </div>
+
+
+
+
+    </div>
+
+    <!-- Content for Static Frame 'footer_frame' -->
+    <div id="footer_content" class="invoice-footer">
+        GLS Bank // IBAN: DE 24 4306 0967 6032 5237 00 // BIC: GENODEM1GLS<br />
+        Bitte geben Sie folgenden Verwendungszweck an: <br />
+        VFLL-Fortbildung Re-Nr. {{ order.get_order_number }}
+    </div>
+
+</body>
+
+</html>
