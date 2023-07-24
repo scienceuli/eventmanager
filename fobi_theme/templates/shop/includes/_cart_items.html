@@ -33,7 +33,7 @@
             <td class=" px-4 py-2">
                 <form action="{% url 'shop:cart-remove' event.id %}" method="post">
                     {% csrf_token %}
-                    <button type="submit"><i class='fa fa-trash' aria-hidden='true'></i></button>
+                    <button type="submit">&times;</button>
                 </form>
             </td>
         </tr>

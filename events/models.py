@@ -1,8 +1,10 @@
 import json
 import ast
+from decimal import Decimal
+
 
 from django.db import models
-from django.db.models import F
+from django.db.models import F, Sum
 from datetime import datetime
 from datetime import date
 from django.db.models.fields import related
@@ -50,6 +52,9 @@ class Home(BaseModel):
 
 class PayLessAction(models.Model):
     name = models.CharField(max_length=255)
+    title = RichTextField(
+        verbose_name="Anzeigetitel", null=True, blank=True, config_name="short"
+    )
 
     price_premium = models.DecimalField(
         verbose_name="normaler Preis", max_digits=10, decimal_places=2
@@ -64,6 +69,23 @@ class PayLessAction(models.Model):
 
     def __str__(self):
         return self.name
+
+    def get_action_prices(self):
+        # take all events of the action minus first when ordered to price
+        full_discounted_price = sum(item.price for item in self.events.all())
+        action_discounted_price = sum(
+            item.price for item in self.events.all().order_by("price")[1:]
+        )
+        full_premium_price = sum(item.premium_price for item in self.events.all())
+        action_premium_price = sum(
+            item.premium_price for item in self.events.all().order_by("price")[1:]
+        )
+        return (
+            action_discounted_price,
+            full_discounted_price,
+            action_premium_price,
+            full_premium_price,
+        )
 
 
 class EventCategory(BaseModel):
@@ -686,7 +708,8 @@ class Event(BaseModel, HitCountMixin):
 
     @property
     def premium_price(self):
-        return premium_price(self.price)
+        if self.price:
+            return premium_price(self.price)
 
     premium_price.fget.short_description = "Nicht reduzierter Preis"
 

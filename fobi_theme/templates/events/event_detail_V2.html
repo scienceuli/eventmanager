@@ -31,6 +31,7 @@
 
 {% block content %}
 
+{% comment %}
 
 <!-- payless  Modal -->
 <div id="paylessModal" tabindex="-1" aria-hidden="true" class=" fixed top-0 left-0 right-0 z-50 hidden w-full p-4 overflow-x-hidden overflow-y-auto md:inset-0 h-[calc(100%-1rem)] max-h-full">
@@ -63,6 +64,7 @@
     </div>
 </div>
 <!-- End Payless Modal -->
+{% endcomment %}
 
 
 
@@ -736,7 +738,7 @@
                         <!-- Title / Close-->
 
                         <div class="">
-                            <h5 class="mr-3 text-2xl font-bold max-w-none"><span class="text-gray-700">KAUF 3,</span> <span class="text-vfllred">ZAHL 2!</span></h5>
+                            <h5 class="mr-3 text-2xl font-bold max-w-none"><span class="text-gray-700">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</span></h5>
 
                         </div>
                         <!-- content -->
@@ -744,9 +746,9 @@
                         <p class="pt-2 font-semibold text-vfllred"><a href="{% url 'event-detail' event.slug %}">{{event.name}}</a></p>
                         <p>{{ event.oneliner }}</p>
                         {% endfor %}
-                        <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.price_members }}</p>
+                        <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.get_action_prices.0 }}&thinsp;€ statt {{ payless_collection.get_action_prices.1 }}&thinsp;€</p>
                         <p>Preis für Mitglieder</p>
-                        <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.price_premium }}</p>
+                        <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.get_action_prices.2 }}&thinsp;€ statt {{ payless_collection.get_action_prices.3 }}&thinsp;€</p>
                         <p>Preis für Nichtmitglieder</p>
                         <div class="pt-4">
                             <button type="button" class="z-50 cursor-pointer" @click="showModal = false">

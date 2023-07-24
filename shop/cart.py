@@ -3,6 +3,31 @@ from django.conf import settings
 from events.models import Event
 
 
+def get_action_prices(event_id, cart):
+    """
+    returns action_price
+    two conditions:
+    1. The Action Events the actual event belongs to are subset of cart events
+    2. The actual event is cheapest of action events
+    """
+    cart_events = cart.get_events()
+    print("cart_events: ", cart_events)
+    # ordered by price so action_events[0] is cheapest
+    event = Event.objects.get(id=event_id)
+    action_events = event.payless_collection.events.all().order_by("price")
+    print("action_events: ", action_events)
+    cheapest_action_event = action_events[0]
+    print(set(action_events).issubset(set(cart_events)))
+
+    # action price is returned
+    if (set(action_events).issubset(cart_events)) and (
+        event.id == cheapest_action_event.id
+    ):
+        return str(Decimal("0.00")), str(Decimal("0.00"))
+    else:
+        return str(event.price), str(event.premium_price)
+
+
 class Cart:
     def __init__(self, request):
         """
@@ -31,7 +56,11 @@ class Cart:
             self.cart[event_id]["quantity"] = quantity
         else:
             self.cart[event_id]["quantity"] += quantity
+
         self.save()
+
+        # we have to calculate for all events possible action prices
+        self.calculate_action_prices()
 
     def save(self):
         # mark the session as "modified" to make sure it gets saved
@@ -45,6 +74,9 @@ class Cart:
         if event_id in self.cart:
             del self.cart[event_id]
             self.save()
+
+        # have to calculate the prices again because of actions
+        self.calculate_action_prices()
 
     def __iter__(self):
         """
@@ -86,6 +118,12 @@ class Cart:
             if not item["is_full"]
         )
 
+    def get_events(self):
+        event_ids = self.cart.keys()
+        # get the event objects
+        events = Event.objects.filter(id__in=event_ids)
+        return events
+
     def get_number_of_items(self):
         return self.__len__()
 
@@ -93,3 +131,17 @@ class Cart:
         # remove cart from session
         del self.session[settings.CART_SESSION_ID]
         self.save()
+
+    def calculate_action_prices(self):
+        cart_events = self.get_events()
+        # ordered by price so action_events[0] is cheapest
+        for id in self.cart.keys():
+            event = Event.objects.get(id=id)
+            action_events = event.payless_collection.events.all().order_by("price")
+            cheapest_action_event = action_events[0]
+
+            if (set(action_events).issubset(cart_events)) and (
+                event.id == cheapest_action_event.id
+            ):
+                self.cart[id]["price"] = str(Decimal("0.00"))
+                self.cart[id]["premium_price"] = str(Decimal("0.00"))

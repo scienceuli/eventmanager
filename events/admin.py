@@ -121,6 +121,7 @@ class PayLessActionForm(forms.ModelForm):
         queryset=Event.objects.all(), required=False
     )
     name = forms.CharField(max_length=255)
+    title = forms.Textarea()
 
     price_premium = forms.DecimalField(
         max_digits=10, decimal_places=2, label="normaler Preis"
@@ -131,7 +132,7 @@ class PayLessActionForm(forms.ModelForm):
 
     class Meta:
         model = PayLessAction
-        fields = ["events", "name", "price_premium", "price_members"]
+        fields = ["events", "title", "name", "price_premium", "price_members"]
 
     def __init__(self, *args, **kwargs):
         super(PayLessActionForm, self).__init__(*args, **kwargs)
@@ -146,6 +147,7 @@ class PayLessActionForm(forms.ModelForm):
         payless_collection_instance = PayLessAction()
         payless_collection_instance.pk = self.instance.pk
         payless_collection_instance.name = self.instance.name
+        payless_collection_instance.title = self.instance.title
         payless_collection_instance.price_premium = self.instance.price_premium
         payless_collection_instance.price_members = self.instance.price_members
         payless_collection_instance.save()
@@ -867,9 +869,15 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     )
 
     def full_price(self, obj):
+        if obj.price:
+            return format_html(
+                "<div class='c-2'>{}<br><p class='grp-help'>{}</p></div>",
+                obj.premium_price,
+                "Berechnetes Feld. Unreduzierter Preis für Nicht-Mitglieder, der in der Ausschreibung angezeigt wird. Dieser Preis muss mit der Preisangabe im entsprechenden Textfeld übereinstimmen.",
+            )
         return format_html(
             "<div class='c-2'>{}<br><p class='grp-help'>{}</p></div>",
-            obj.premium_price,
+            "-",
             "Berechnetes Feld. Unreduzierter Preis für Nicht-Mitglieder, der in der Ausschreibung angezeigt wird. Dieser Preis muss mit der Preisangabe im entsprechenden Textfeld übereinstimmen.",
         )
 
