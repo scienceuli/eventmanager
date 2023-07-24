@@ -426,9 +426,7 @@
             {% if event.premium_price or event.price or event.fees %}
             <div class="flex relative pb-8 sm:items-center md:w-2/3 mx-auto">
 
-
                 <div class="flex-grow flex sm:items-center items-start flex-col sm:flex-row">
-
 
                     <div class="h-full w-16 absolute inset-0 flex items-center justify-center">
                         <div class="h-full w-1 bg-gray-200 pointer-events-none"></div>
@@ -439,14 +437,12 @@
                     <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
                         <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Kosten</h2>
                         <p class="leading-relaxed">
-                            {% if event.premium_price %}
-                            {{ event.premium_price }}&nbsp;€
                             {% if event.price %}
-                            &nbsp;/&nbsp;
-                            {{ event.price }}&nbsp;€ für Mitglieder des VFLL und Partnerorganisationen
+                            {{ event.price }}&nbsp;€ für Mitglieder*
+                            {% if event.premium_price and not event.vfll_only %}
+                            /&nbsp;{{ event.premium_price }}&nbsp;€ für Nichtmitglieder
                             {% endif %}
-                            {% elif event.price %}
-                            {{ event.price }} für Mitglieder des VFLL und Partnerorganisationen
+                            <br><small>*VFLL, VdÜ, BücherFrauen, Illustratoren Organisation, Berufsverband Text und Konzept, Selfpublisher-Verband, Junge Verlags- und Medienmenschen, ATICOM, texttreff.de</small>
                             {% else %}
                             {{ event.fees|safe }}
                             {% endif %}
@@ -730,7 +726,7 @@
             <div x-data="{ 'showModal': false }" @keydown.escape="showModal = false">
                 <!-- Trigger for Modal -->
                 <div class="absolute top-0 right-4 w-2/5">
-                    <button type="button" @click="showModal = true" class="animate-pulse inline-block w-48 h-48 rounded-full  font-bold text-xl text-center uppercase align-middle  border border-solid  shadow-none cursor-pointer  leading-pro bg-red-100 border-vfllred transition ease-in-out delay-150  hover:-translate-y-1 hover:scale-110  duration-300">KAUF 3, ZAHL 2!</button>
+                    <button type="button" @click="showModal = true" class="animate-pulse inline-block w-48 h-48 rounded-full  font-bold text-xl text-center uppercase align-middle  border border-solid  shadow-none cursor-pointer  leading-pro bg-red-100 border-vfllred transition ease-in-out delay-150  hover:-translate-y-1 hover:scale-110  duration-300">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</button>
                 </div>
 
                 <!-- Modal -->

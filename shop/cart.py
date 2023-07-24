@@ -134,10 +134,13 @@ class Cart:
 
     def calculate_action_prices(self):
         cart_events = self.get_events()
+        print("cart_events: ", cart_events)
         # ordered by price so action_events[0] is cheapest
         for id in self.cart.keys():
             event = Event.objects.get(id=id)
+            print("event: ", event)
             action_events = event.payless_collection.events.all().order_by("price")
+            print("action_events: ", action_events)
             cheapest_action_event = action_events[0]
 
             if (set(action_events).issubset(cart_events)) and (
@@ -145,3 +148,7 @@ class Cart:
             ):
                 self.cart[id]["price"] = str(Decimal("0.00"))
                 self.cart[id]["premium_price"] = str(Decimal("0.00"))
+            else:
+                self.cart[id]["price"] = str(event.price)
+                self.cart[id]["premium_price"] = str(event.premium_price)
+        self.save()

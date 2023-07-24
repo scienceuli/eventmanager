@@ -332,6 +332,7 @@ class Event(BaseModel, HitCountMixin):
         related_name="events",
     )
     direct_payment = models.BooleanField(default=False)
+    vfll_only = models.BooleanField(default=False)
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     oneliner = models.CharField(max_length=80, blank=True)

@@ -207,7 +207,11 @@
 
       <div class="grid grid-cols-1 py-5">
         <button type="submit" class="w-full py-3 mt-6 text-xl font-bold rounded-full tracking-widest text-vfllred uppercase bg-gray-200 focus:outline-none hover:shadow-lg">
+          {% if event.direct_payment %}
+          Jetzt bezahlen
+          {% else %}
           Verbindlich anmelden
+          {% endif %}
         </button>
 
 

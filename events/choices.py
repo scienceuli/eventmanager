@@ -26,15 +26,16 @@ REGIO_GROUP_CHOICES = (
 )
 
 MEMBERSHIP_CHOICES = (
-    ("vfll", "VFLL"),
     ("vdu", "VdÜ"),
     ("bf", "BücherFrauen"),
     ("il", "Illustratoren Organisation"),
-    ("tv", "Texterverband"),
-    ("jv", "Junge Verlagsmenschen"),
+    ("tv", "Berufsverband Text und Konzept"),
+    ("jv", "Junge Verlags- und Medienmenschen"),
     ("sp", "Selfpublisher-Verband"),
     ("at", "ATICOM"),
+    ("tt", "texttreff.de"),
 )
+
 
 ATTENTION_CHOICES = (
     ("vfll", "VFLL-Website oder -Blog"),

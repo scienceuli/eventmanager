@@ -821,6 +821,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             "Kapazität, Anmeldung, Hinweise, Freitextfeld, Status",
             {
                 "fields": (
+                    "vfll_only",
                     "capacity",
                     "registration_form",
                     "registration",

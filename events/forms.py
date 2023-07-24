@@ -496,6 +496,14 @@ class EventMemberForm(forms.Form):
     #
     #    return data
 
+    # def clean(self):
+    #     cleaned_data = super().clean()
+    #     vfll = cleaned_data.get("vfll")
+    #     if not vfll and self.instance.vfll_only:
+    #         self.add_error(
+    #             "Veranstaltung ist nur für Mitglieder. Bitte entsprechende Checkbox bestätigen."
+    #         )
+
 
 class SymposiumForm(forms.Form):
     def member_type_label(self):

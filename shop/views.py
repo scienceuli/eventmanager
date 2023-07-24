@@ -81,13 +81,16 @@ def order_create(request):
     order_price_html_string = "<br>".join(
         [f"{item['event'].name} - {item['premium_price']} €*" for item in payment_cart]
     )
+
     order_discounted_price_html_string = "<br>".join(
         [f"{item['event'].name} - {item['price']} €" for item in payment_cart]
     )
+
     order_totalprice_html_string = (
         f"<span class='font-semibold'>Gesamtpreis: {cart.get_total_price()} €</span>"
     )
     order_totalprice_html_string += "<br><span class='italic'>*Voller Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span>"
+
     order_discounted_totalprice_html_string = f"<span class='font-semibold'>reduzierter Gesamtpreis*: {cart.get_discounted_total_price()} €</span>"
 
     non_payment_cart = split_cart(cart)[1]
