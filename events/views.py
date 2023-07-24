@@ -77,7 +77,7 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(filename="mail_sent.log", encoding="utf-8", level=logging.DEBUG)
+logging.basicConfig(filename="kolltool.log", encoding="utf-8", level=logging.ERROR)
 
 #
 
