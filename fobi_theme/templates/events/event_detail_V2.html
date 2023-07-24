@@ -447,6 +447,8 @@
                             {% endif %}
                             {% elif event.price %}
                             {{ event.price }} für Mitglieder des VFLL und Partnerorganisationen
+                            {% else %}
+                            {{ event.fees|safe }}
                             {% endif %}
                         </p>
                     </div>
