@@ -52,6 +52,7 @@ from .views import (
     export_ft_members_xls,
 )
 
+
 # sentry test
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -124,8 +125,22 @@ urlpatterns = [
         EventCategoryCreateView.as_view(),
         name="create-event-category",
     ),
+    re_path(
+        r"^detail/kopie-von-(?P<slug>[-\w\d]+)$",
+        EventDetailView.as_view(),
+        name="event-detail-kopie",
+    ),
     path("detail/<slug:slug>", EventDetailView.as_view(), name="event-detail"),
-    path("ec/detail/<slug:slug>", EventCollectionDetailView.as_view(), name="event-collection-detail"),
+    # path(
+    #     "detail/kopie-von-<slug:slug>",
+    #     EventDetailView.as_view(),
+    #     name="event-detail-kopie",
+    # ),  # the former urls of copied events
+    path(
+        "ec/detail/<slug:slug>",
+        EventCollectionDetailView.as_view(),
+        name="event-collection-detail",
+    ),
     path(
         "event/<int:pk>/update_capacity/",
         EventUpdateCapacityView.as_view(),

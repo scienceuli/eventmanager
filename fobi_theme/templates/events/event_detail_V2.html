@@ -497,7 +497,7 @@
 
             {% if not event.is_past and event.category.name != "vfll_intern" and event.category.name != "messen" and show_registration %}
 
-            <div class="flex relative pb-8 sm:items-center md:w-2/3 mx-auto">
+            <div class="flex relative  sm:items-center md:w-2/3 mx-auto">
 
 
                 <div class="flex-grow flex sm:items-center items-start flex-col sm:flex-row">
@@ -550,7 +550,7 @@
                                     <form action="{% url 'shop:cart-add' event.id %}" method="post">
                                         {{ cart_event_form }}
                                         {% csrf_token %}
-                                        <input type="submit" value="In den Warenkorb">
+                                        <input type="submit" value="&rarr;&nbsp;Warenkorb">
                                     </form>
 
                                 </div>
@@ -720,7 +720,7 @@
             {% endvideo %}
             {% endif %}
 
-            {% if pc_events %}
+            {% if pc_events and show_action_button %}
 
             <!-- Pay less Modal powered by alpine.js -->
             <div x-data="{ 'showModal': false }" @keydown.escape="showModal = false">
@@ -740,10 +740,15 @@
 
                         </div>
                         <!-- content -->
+                        {% if payless_collection.type == 'n' %}
                         {% for event in pc_events %}
                         <p class="pt-2 font-semibold text-vfllred"><a href="{% url 'event-detail' event.slug %}">{{event.name}}</a></p>
                         <p>{{ event.oneliner }}</p>
                         {% endfor %}
+                        {% elif payless_collection.type == 'p' %}
+                        <p class="pt-2 text-center font-semibold text-vfllred">bei Buchung aller Veranstaltungen der Reihe: <a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{event.event_collection.name}}</a></p>
+
+                        {% endif %}
                         <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.get_action_prices.0 }}&thinsp;€ statt {{ payless_collection.get_action_prices.1 }}&thinsp;€</p>
                         <p>Preis für Mitglieder</p>
                         <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.get_action_prices.2 }}&thinsp;€ statt {{ payless_collection.get_action_prices.3 }}&thinsp;€</p>

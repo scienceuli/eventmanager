@@ -1,4 +1,5 @@
 from django.contrib import admin, messages
+from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.utils import timezone
 from django.utils.safestring import mark_safe
@@ -13,7 +14,6 @@ from django.forms.models import BaseInlineFormSet
 from django.forms import inlineformset_factory
 
 from django.contrib.admin.models import LogEntry
-
 
 from django.contrib.admin import SimpleListFilter
 
@@ -122,6 +122,8 @@ class PayLessActionForm(forms.ModelForm):
     )
     name = forms.CharField(max_length=255)
     title = forms.Textarea()
+    type = forms.ChoiceField(choices=PayLessAction.TYPE_CHOICES)
+    percents = forms.IntegerField(required=False, label="Prozentsatz")
 
     price_premium = forms.DecimalField(
         max_digits=10, decimal_places=2, label="normaler Preis"
@@ -132,7 +134,15 @@ class PayLessActionForm(forms.ModelForm):
 
     class Meta:
         model = PayLessAction
-        fields = ["events", "title", "name", "price_premium", "price_members"]
+        fields = [
+            "events",
+            "title",
+            "name",
+            "type",
+            "percents",
+            "price_premium",
+            "price_members",
+        ]
 
     def __init__(self, *args, **kwargs):
         super(PayLessActionForm, self).__init__(*args, **kwargs)
@@ -148,6 +158,8 @@ class PayLessActionForm(forms.ModelForm):
         payless_collection_instance.pk = self.instance.pk
         payless_collection_instance.name = self.instance.name
         payless_collection_instance.title = self.instance.title
+        payless_collection_instance.type = self.instance.type
+        payless_collection_instance.percents = self.instance.percents
         payless_collection_instance.price_premium = self.instance.price_premium
         payless_collection_instance.price_members = self.instance.price_members
         payless_collection_instance.save()
@@ -161,6 +173,8 @@ class PayLessActionAdmin(admin.ModelAdmin):
     model = PayLessAction
     list_display = (
         "name",
+        "type",
+        "percents",
         "price_premium",
         "price_members",
         "events_display",
@@ -1066,6 +1080,13 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     def copy_event(self, request, queryset):
         # TODO: handling of fk's , ref: https://stackoverflow.com/questions/32234986/duplicate-django-model-instance-and-all-foreign-keys-pointing-to-it
+        # with this
+        if settings.COPY_ONLY_ALLOWED_FOR_SINGLE_OBJECT and queryset.count() != 1:
+            self.message_user(
+                request, "Bitte nur ein Objekt zum Kopieren auswählen.", level="error"
+            )
+            return
+
         for event in queryset:
             # fk's to copy
             old_agendas = event.agendas.all()
@@ -1108,6 +1129,16 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             # one for fkeys_a and one for fkeys_b
             for cls, list_of_fks in new_agendas.items():
                 cls.objects.bulk_create(list_of_fks)
+
+            # go to new object if only one was copied
+            # Get the URL of the new object and redirect to it
+            if queryset.count() == 1:
+                new_object_url = reverse(
+                    "admin:%s_%s_change"
+                    % (event._meta.app_label, event._meta.model_name),
+                    args=[event.pk],
+                )
+                return HttpResponseRedirect(new_object_url)
 
     copy_event.short_description = "Copy Event"
 

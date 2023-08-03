@@ -174,7 +174,9 @@
 
       </div>
       <div class="grid grid-cols-1 py-5">
-        <span class="pt-2  font-semibold text-gray-600 uppercase">Kosten</span>
+        {% if show_costs_string %}
+        <span class="pt-2  font-semibold text-gray-600 uppercase">{{show_costs_string}}</span>
+        {% endif %}
 
         {% if order_price_html_string %}
         <p id="price">

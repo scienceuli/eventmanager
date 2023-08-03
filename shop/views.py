@@ -11,17 +11,15 @@ from django.utils import timezone
 
 from xhtml2pdf import pisa
 
-from events.models import Event
+from events.models import Event, EventCollection
+from events.forms import EventMemberForm
+from events.views import handle_form_submission
+
 from shop.cart import Cart
 from shop.forms import CartAddEventForm
-
 from shop.models import Order, OrderItem
-from events.models import EventMember
-from events.forms import EventMemberForm
-
 from shop.tasks import order_created
 
-from events.views import handle_form_submission
 from payment.utils import render_to_pdf
 
 
@@ -41,6 +39,16 @@ def cart_add(request, event_id):
     if form.is_valid():
         cd = form.cleaned_data
         cart.add(event=event, quantity=cd["quantity"], override_quantity=cd["override"])
+
+    return redirect("shop:cart-detail")
+
+
+def cart_add_collection(request, event_collection_id):
+    cart = Cart(request)
+    event_collection = get_object_or_404(EventCollection, id=event_collection_id)
+
+    for event in event_collection.events.all():
+        cart.add(event=event, quantity=1, override_quantity=True)
 
     return redirect("shop:cart-detail")
 
@@ -73,6 +81,8 @@ def order_create(request):
     cart = Cart(request)
 
     payment_cart = split_cart(cart)[0]
+
+    show_costs_string = "Kosten"
 
     order_summary_html_string = "<br>".join(
         [f"{item['event'].name}" for item in payment_cart]
@@ -131,6 +141,7 @@ def order_create(request):
                         price=item["price"],
                         premium_price=item["premium_price"],
                         quantity=item["quantity"],
+                        is_action_price=item["action_price"],
                     )
 
             # create EventMemberInstances for ALL cart items
@@ -230,6 +241,7 @@ def order_create(request):
         {
             "cart": cart,
             "form": form,
+            "show_costs_string": show_costs_string,
             "order_summary_html_string": order_summary_html_string,
             "order_price_html_string": order_price_html_string,
             "order_discounted_price_html_string": order_discounted_price_html_string,

@@ -1,53 +1,36 @@
-<table class="table-auto w-full md:w-1/2">
-    <thead>
-        <tr>
-            <th colspan="2" class="px-4 py-2">Veranstaltung</th>
+<div class="flex mt-10 mb-5">
+    <h3 class="font-semibold text-gray-600 text-xs uppercase w-2/5">Veranstaltung</h3>
+    <h3 class="font-semibold text-center text-gray-600 text-xs uppercase w-1/5 text-center">Preis für Mitglieder<sup>*</sup></h3>
+    <h3 class="font-semibold text-center text-gray-600 text-xs uppercase w-1/5 text-center">normaler Preis</h3>
+    <h3 class="font-semibold text-center text-gray-600 text-xs uppercase w-1/5 text-center"></h3>
+</div>
 
-            {% comment %}
-            <th class="px-4 py-2">Anzahl</th>
-            <th class="px-4 py-2">Einzelpreis</th>
-            {% endcomment %}
-            <th class="px-4 py-2 text-left">Preis für Mitglieder</th>
-            <th class="px-4 py-2 text-left">normaler Preis</th>
 
-            <th class="px-4 py-2"></th>
-        </tr>
-    </thead>
-    <tbody>
-        <!-- Repeat this row for each item in the shopping cart -->
-        {% for item in cart %}
-        {% with event=item.event %}
-        <tr>
-            <td class=" px-4 py-2">{{ event.name }}</td>
-            <td class=" px-4 py-2">
-                {% with event.event_days.all|first as first %}{{ first.start_date|date:"d.m.Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"d.m.Y" }}{% endif %}
 
-            </td>
+{% for item in cart %}
+{% with event=item.event %}
 
-            {% comment %}<td class="border px-4 py-2">{{ item.quantity }}</td>
-            <td class=" px-4 py-2">€ {{ item.price }}</td>
-            <td class=" px-4 py-2">€ {{ item.premium_price }}</td>
-            {% endcomment %}
-            <td class=" px-4 py-2 text-left">€ {{ item.total_price }}</td>
-            <td class=" px-4 py-2 text-left">€ {{ item.total_premium_price }}</td>
-            <td class=" px-4 py-2">
-                <form action="{% url 'shop:cart-remove' event.id %}" method="post">
-                    {% csrf_token %}
-                    <button type="submit">&times;</button>
-                </form>
-            </td>
-        </tr>
-        {% endwith %}
-        {% endfor %}
-        {% if show_total_price %}
-        <tr>
-            <td colspan="2" class="border px-4 py-2 font-bold text-xl">Gesamtpreis</td>
-            <td class="border px-4 py-2 font-bold text-xl">€ {{ discounted_total_price }}</td>
-            <td class="border px-4 py-2 font-bold text-xl">€ {{ total_price }}</td>
-            <td></td>
-        </tr>
-        {% endif %}
+<div class="flex items-center hover:bg-gray-100 mb-2 py-2">
+    <span class="w-2/5 font-normal text-sm">{{ event.name }} | {% with event.event_days.all|first as first %}{{ first.start_date|date:"d.m.Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"d.m.Y" }}{% endif %}</span>
+    <span class="text-center w-1/5 font-normal text-sm">€ {{ item.total_price }}</span> {% if item.action_price %}<span class="text-vfllred font-bold">!</span>{% endif %}
+    <span class="text-center w-1/5 font-normal text-sm">€ {{ item.total_premium_price }}</span> {% if item.action_price %}<span class="text-vfllred font-bold">!</span>{% endif %}
+    <span class="text-center w-1/5 font-normal text-sm">
+        <form action="{% url 'shop:cart-remove' event.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit">&times;</button>
+        </form>
+    </span>
 
-        <!-- End of item row -->
-    </tbody>
-</table>
+</div>
+{% endwith %}
+{% endfor %}
+
+{% if show_total_price %}
+<div class="flex items-center bg-red-200 border-t mb-5 py-5">
+    <span class="text-right w-2/5 font-semibold text-sm">Gesamtpreis</span>
+    <span class="text-center w-1/5 font-semibold text-sm">€ {{ discounted_total_price }}</span>
+    <span class="text-center w-1/5 font-semibold text-sm">€ {{ total_price }}</span>
+    <span class="text-center w-1/5 font-semibold text-sm"></span>
+</div>
+
+{% endif %}

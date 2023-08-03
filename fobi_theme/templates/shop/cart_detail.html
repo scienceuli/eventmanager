@@ -1,5 +1,5 @@
 {% extends 'base/base.html' %}
-{% load static %}
+{% load static shop_tags %}
 
 {% block title %}
 Warenkorb
@@ -8,39 +8,73 @@ Warenkorb
 {% block content %}
 
 
+<section class="py-20 bg-gray-100">
+    <div class="container max-w-6xl mx-auto">
+        <div class="flex shadow-md my-10 bg-gray-200">
+            <div class="w-3/4 bg-white px-10 py-10">
+                <div class="flex justify-between border-b pb-4">
+                    <h1 class="text-2xl font-semibold">Warenkorb</h1>
+                </div>
 
-<div class="container mx-auto p-4">
-    <h1 class="text-2xl font-bold mb-4">Warenkorb</h1>
-    {% if payment_cart %}
-    <!-- Cart Items Table-->
+                {% if payment_cart %}
+                <!-- Cart Items Table-->
 
-    {% include 'shop/includes/_cart_items.html' with cart=payment_cart show_total_price=True %}
-    <!-- End Cart Items Table -->
+                {% include 'shop/includes/_cart_items.html' with cart=payment_cart show_total_price=True %}
+                <!-- End Cart Items Table -->
 
-    <div class="mt-4">
-        <p class="text-left">Jetzt <span class="text-vfllred font-bold">VFLL-Mitglied</span> werden!</p>
+                {% else %}
+                <p class="mt-2">Noch keine Veranstaltungen hinzugefügt</p>
+
+
+                {% endif %}
+                {% if non_payment_cart %}
+                <div class="mt-4 border-b border-vfllred">
+
+                </div>
+                <div class="flex justify-between border-b pt-4 pb-4">
+                    <h1 class="text-2xl font-semibold">Warteliste</h1>
+                </div>
+                <p class="mt-2">Die folgenden Veranstaltungen werden erst in Rechnung gestellt, wenn die Teilnahme bestätigt ist.</p>
+
+                <!-- Cart Items Table-->
+                {% include 'shop/includes/_cart_items.html' with cart=non_payment_cart %}
+                <!-- End Cart Items Table-->
+
+                {% endif %}
+                <a href="{% url 'event-list' %}" class="flex font-semibold text-indigo-600 text-sm mt-10">&larr;&nbsp;Zu den Veranstaltungen</a>
+
+
+            </div>
+            <div id="summary" class="bg-gray-300 w-1/4 px-8 py-10">
+                <h1 class="font-semibold text-2xl border-b pb-4">Anmerkungen</h1>
+                <div class="flex justify-between mt-10 mb-5">
+                    <span class="font-normal text-sm"><sup>*</sup>&nbsp;Falls VFLL-Mitglied, bitte im nächsten Schritt (Anmeldeformular) entsprechendes Feld anklicken.</span>
+
+                </div>
+                {% if payment_cart|has_show_true %}
+                <div class="flex justify-between mt-10 mb-5">
+                    <span class="font-semibold text-vfllred text-sm">!&nbsp;Aktionspreis</span>
+                </div>
+                {% endif %}
+
+
+
+
+                <div class="mt-4">
+                    <p class="text-left">Jetzt <span class="text-vfllred font-bold">VFLL-Mitglied</span> werden!</p>
+                </div>
+
+
+                <div class="mt-8">
+
+                    <a href="{% url 'shop:order-create' %}" class="bg-white text-vfllred font-semibold hover:bg-vfllred py-3 px-6 text-sm hover:text-white uppercase w-full">{% if payment_cart %}Zur Kasse{% else %}Zur Anmeldung{% endif %}</a>
+                </div>
+            </div>
+        </div>
+
     </div>
-    {% endif %}
-    {% if non_payment_cart %}
-    <div class="mt-4">
-        <hr />
-    </div>
-    <h1 class="text-2xl font-bold mb-4 mt-6">Warteliste</h1>
-    <p>Die folgenden Veranstaltungen werden erst in Rechnung gestellt, wenn die Teilnahme bestätigt ist.</p>
 
-    <!-- Cart Items Table-->
-    {% include 'shop/includes/_cart_items.html' with cart=non_payment_cart %}
-    <!-- End Cart Items Table-->
 
-    {% endif %}
-
-    <div class="flex justify-between mt-4">
-        <a href="{% url 'event-list' %}" class="bg-blue-500 hover:bg-blue-700 font-bold py-2 px-4 rounded">Zu den Veranstaltungen</a>
-        {% if payment_cart or non_payment_cart %}
-        <a href="{% url 'shop:order-create' %}" class="bg-green-500 hover:bg-green-700 font-bold py-2 px-4 rounded">
-            {% if payment_cart %}Zur Kasse{% else %}Zur Anmeldung{% endif %}</a>
-        {% endif %}
-    </div>
-</div>
+</section>
 
 {% endblock %}

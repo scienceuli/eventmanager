@@ -18,6 +18,8 @@ from payment.forms import CustomPayPalPaymentsForm
 def payment_process(request):
     order_id = request.session.get("order_id", None)
     order = get_object_or_404(Order, id=order_id)
+    order.payment_type = "p"
+    order.save()
 
     # success_url = request.build_absolute_uri(
     #                 reverse('payment:completed'))

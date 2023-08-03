@@ -484,6 +484,19 @@ class EventCollectionDetailView(DetailView):
     template_name = "events/event_collection_detail.html"
     context_object_name = "event_collection"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # due to settings.ONLY_NOT_FULL_EVENTS_CAN_HAVE_ACTION the has_action method
+        # returns True also if one of events is full or only if none of events is full
+        context["show_action"] = self.object.has_action()[0]
+        # and all(
+        #    [not event.is_full() for event in self.object.events.all()]
+        # )
+        # print(self.object.has_action()[0])
+        context["payless_collection"] = self.object.has_action()[1]
+        # print(self.object.has_action()[1].type)
+        return context
+
 
 # class EventDetailView(LoginRequiredMixin, DetailView):
 class EventDetailView(HitCountDetailView):
@@ -549,6 +562,7 @@ class EventDetailView(HitCountDetailView):
         pc_events = []
         if payless_collection:
             pc_events = payless_collection.events.all()
+            show_action_button = payless_collection.action_is_possible()
 
         context["registration_text"] = registration_text
         context["registration_button"] = registration_button
@@ -557,6 +571,7 @@ class EventDetailView(HitCountDetailView):
         context["cart_event_form"] = cart_event_form
         context["pc_events"] = pc_events
         context["payless_collection"] = payless_collection
+        context["show_action_button"] = show_action_button
         return context
 
 

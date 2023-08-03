@@ -6,6 +6,11 @@ app_name = "shop"
 urlpatterns = [
     path("", views.cart_detail, name="cart-detail"),
     path("add/<int:event_id>/", views.cart_add, name="cart-add"),
+    path(
+        "add_collection/<int:event_collection_id>/",
+        views.cart_add_collection,
+        name="cart-add-collection",
+    ),
     path("remove/<int:event_id>/", views.cart_remove, name="cart-remove"),
     path("order_create/", views.order_create, name="order-create"),
     path(

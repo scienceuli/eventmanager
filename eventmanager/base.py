@@ -250,3 +250,9 @@ TOOLTIPS = {"waiting": "Rechnungsstellung, wenn Teilnahme bestätigt"}
 
 # faq settings
 FAQ_SETTINGS = []
+
+# action settings
+ONLY_NOT_FULL_EVENTS_CAN_HAVE_ACTION = True
+
+# copy settings
+COPY_ONLY_ALLOWED_FOR_SINGLE_OBJECT = True

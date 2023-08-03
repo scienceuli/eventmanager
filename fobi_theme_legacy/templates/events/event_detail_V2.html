@@ -184,55 +184,55 @@
                             {% endif %}
                             {% endfor %}
                             {% for speaker in event.speaker.all %}
-                        <div class="hidden overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none justify-center items-center" id="modal-id-{{forloop.counter}}">
-                            <div class="relative w-auto my-6 mx-auto max-w-3xl">
-                                <!--content-->
-                                <div class="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
-                                    <!--header-->
-                                    <div class="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
-                                        <h3 class="text-3xl font-semibold">
-                                            {{ speaker.full_name }}
-                                        </h3>
-                                        <button class="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none" onclick="toggleModal('modal-id')">
-                                            <span class="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
-                                                ×
-                                            </span>
-                                        </button>
-                                    </div>
-                                    <!--body-->
-                                    <div class="relative p-6 flex-auto">
-                                        {% if speaker.image %}
-                                        <div class="absolute top-0 right-0">
-                                            <img src="{{speaker.image.url}}" class="rounded-full w-28 h-28 object-cover border-solid border-gray-500 border-2 ml-4 mr-4 -mt-14">
+                            <div class="hidden overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none justify-center items-center" id="modal-id-{{forloop.counter}}">
+                                <div class="relative w-auto my-6 mx-auto max-w-3xl">
+                                    <!--content-->
+                                    <div class="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
+                                        <!--header-->
+                                        <div class="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
+                                            <h3 class="text-3xl font-semibold">
+                                                {{ speaker.full_name }}
+                                            </h3>
+                                            <button class="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none" onclick="toggleModal('modal-id')">
+                                                <span class="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
+                                                    ×
+                                                </span>
+                                            </button>
                                         </div>
-                                        {% endif %}
-                                        <p>
-                                            {% if speaker.email %}
-                                            <span>{{ speaker.email }}</span>
+                                        <!--body-->
+                                        <div class="relative p-6 flex-auto">
+                                            {% if speaker.image %}
+                                            <div class="absolute top-0 right-0">
+                                                <img src="{{speaker.image.url}}" class="rounded-full w-28 h-28 object-cover border-solid border-gray-500 border-2 ml-4 mr-4 -mt-14">
+                                            </div>
                                             {% endif %}
-                                            {% if speaker.url %}
-                                            <span>{% if speaker.email %} | {% endif %}<a href="{{ speaker.url }}">
-                                                    {{ speaker.url }}</a></span>
-                                            {% endif %}
-                                            {% if speaker.bio %}
-                                        <p class="my-4 text-blueGray-500 text-lg leading-relaxed">
-                                            {{ speaker.bio }}
-                                        </p>
-                                        {% endif %}
-                                    </div>
-                                    <!--footer-->
-                                    <div class="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
-                                        <button class="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150" type="button" onclick="toggleModal('modal-id-{{forloop.counter}}')">
-                                            Schließen
-                                        </button>
+                                            <p>
+                                                {% if speaker.email %}
+                                                <span>{{ speaker.email }}</span>
+                                                {% endif %}
+                                                {% if speaker.url %}
+                                                <span>{% if speaker.email %} | {% endif %}<a href="{{ speaker.url }}">
+                                                        {{ speaker.url }}</a></span>
+                                                {% endif %}
+                                                {% if speaker.bio %}
+                                                <p class="my-4 text-blueGray-500 text-lg leading-relaxed">
+                                                    {{ speaker.bio }}
+                                                </p>
+                                                {% endif %}
+                                        </div>
+                                        <!--footer-->
+                                        <div class="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
+                                            <button class="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150" type="button" onclick="toggleModal('modal-id-{{forloop.counter}}')">
+                                                Schließen
+                                            </button>
 
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="hidden opacity-25 fixed inset-0 z-40 bg-black" id="modal-id-backdrop"></div>
+                            <div class="hidden opacity-25 fixed inset-0 z-40 bg-black" id="modal-id-backdrop"></div>
 
-                        {% endfor %}
+                            {% endfor %}
                         </p>
                         <p class="text-sm">(Namen anklicken für mehr Infos)</p>
                     </div>
@@ -410,7 +410,7 @@
                                 <span class="text-vfllred italic">Nur noch wenige Restplätze!<br /></span>
                                 {% endif %}
 
-                                {% if event.category.name == 'Fortbildungen unserer Kooperationspartner*innen' %}
+                                {% if event.category.registration == False %}
                                 {% if event.registration %}
 
                                 {{ event.registration|safe }}
@@ -419,7 +419,7 @@
                                 {% endif %}
                                 {% endif %}
                             </div>
-                            {% if event.category.name != 'Fortbildungen unserer Kooperationspartner*innen' and event.registration_possible %}
+                            {% if event.category.registration  and event.registration_possible %}
                             <div class="item">
                                 <div class="mx-4 px-4">
 

@@ -226,6 +226,10 @@
         .invoice-small {
             font-size: 10px;
         }
+
+        .action-price {
+            color: #ed1c24;
+        }
     </style>
 
 </head>
@@ -292,7 +296,7 @@
             <tbody>
                 {% for item in order.items.all %}
                 <tr>
-                    <td colspan="2">{{ item.event.name }}<br />
+                    <td colspan="2">{{ item.event.name }} {% if item.is_action_price %}<span class="action-price">Aktionspreis!</span>{% endif %}<br />
                         {% with item.event as event %}
                         {% with event.event_days.all|first as first %}{{ first.start_date|date:"j. F Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"j. F Y" }}{% endif %}
                         {% if event.category.name != "Onlineseminare" and event.location %}
@@ -330,13 +334,14 @@
         </table>
         <div class="invoice-remark">
             {% if order.discounted %}
-            *) reduzierter Preis<br />
+            * reduzierter Mitgliederpreis<br />
             {% endif %}
             Mangels Umsatzsteuerpflicht ist kein Ausweis der Umsatzsteuer möglich.
+
         </div>
         <div class="payment-text">
             {% if order.payment_type == 'p' and order.paid %}
-            Der Rechnungsbetrag wurde per PayPal bezahlt.
+            Der Rechnungsbetrag wurde bereits per PayPal bezahlt. Vielen Dank!
             {% endif %}
             {% if order.payment_type == 'r' %}
             <b>Zahlbar sofort und ohne Abzug.</b>

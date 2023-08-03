@@ -1,24 +1,24 @@
 import json
 import ast
 from decimal import Decimal
-
+from datetime import datetime
+from datetime import date
 
 from django.db import models
 from django.db.models import F, Sum
-from datetime import datetime
-from datetime import date
+from django.conf import settings
 from django.db.models.fields import related
 from django.utils import timezone
 from django.urls import reverse
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatechars
+from django.contrib.contenttypes.fields import GenericRelation
+
 from ckeditor_uploader.fields import RichTextUploadingField
 from ckeditor.fields import RichTextField
 
 from embed_video.fields import EmbedVideoField
-
-from django.contrib.contenttypes.fields import GenericRelation
 
 from hitcount.models import HitCountMixin, HitCount
 
@@ -51,10 +51,13 @@ class Home(BaseModel):
 
 
 class PayLessAction(models.Model):
+    TYPE_CHOICES = (("n", "n für m"), ("p", "Prozente"))
     name = models.CharField(max_length=255)
     title = RichTextField(
         verbose_name="Anzeigetitel", null=True, blank=True, config_name="short"
     )
+    type = models.CharField(max_length=1, choices=TYPE_CHOICES, default="n")
+    percents = models.SmallIntegerField(verbose_name="Prozente", blank=True, default=0)
 
     price_premium = models.DecimalField(
         verbose_name="normaler Preis", max_digits=10, decimal_places=2
@@ -68,24 +71,46 @@ class PayLessAction(models.Model):
         verbose_name_plural = "Pay-Less-Aktionen"
 
     def __str__(self):
-        return self.name
+        return f"{self.name} ({self.type})"
 
     def get_action_prices(self):
-        # take all events of the action minus first when ordered to price
         full_discounted_price = sum(item.price for item in self.events.all())
-        action_discounted_price = sum(
-            item.price for item in self.events.all().order_by("price")[1:]
-        )
         full_premium_price = sum(item.premium_price for item in self.events.all())
-        action_premium_price = sum(
-            item.premium_price for item in self.events.all().order_by("price")[1:]
-        )
+        if self.type == "n":
+            # take all events of the action minus first when ordered to price
+            action_discounted_price = sum(
+                item.price for item in self.events.all().order_by("price")[1:]
+            )
+            action_premium_price = sum(
+                item.premium_price for item in self.events.all().order_by("price")[1:]
+            )
+        elif self.type == "p":
+            action_discounted_price = round(
+                Decimal((100 - self.percents) / 100)
+                * sum(item.price for item in self.events.all().order_by("price")),
+                2,
+            )
+            action_premium_price = round(
+                Decimal((100 - self.percents) / 100)
+                * sum(
+                    item.premium_price for item in self.events.all().order_by("price")
+                ),
+                2,
+            )
+
         return (
             action_discounted_price,
             full_discounted_price,
             action_premium_price,
             full_premium_price,
         )
+
+    def action_is_possible(self):
+        events = self.events.all()
+        action_is_possible_values_list = [
+            event.action_is_possible() for event in events
+        ]
+        return all(action_is_possible_values_list)
 
 
 class EventCategory(BaseModel):
@@ -103,6 +128,7 @@ class EventCategory(BaseModel):
         default=True,
         help_text="gibt an, ob die Kachel auf der Startseite grundsätzlich gezeigt werden soll. Es werden aber nur die Kacheln angezeigt, zu denen auch eine Veranstaltung besteht.",
     )
+    registration = models.BooleanField(verbose_name="Anmeldung möglich", default=True)
 
     class Meta:
         ordering = ("position",)
@@ -306,6 +332,31 @@ class EventCollection(BaseModel):
     def is_in_future(self):
         current_date = date.today()  # or datetime.utcnow() for UTC time
         return self.get_first_day_start_date() > current_date
+
+    def has_action(self):
+        # take the first event of the collection
+        first_event = self.events.all()[0]
+        # get the payless_collection this event may belong to
+        first_action = first_event.payless_collection
+        # condition for action:
+        condition_for_action = first_action and set(self.events.all()).issubset(
+            first_action.events.all()
+        )
+        # additional condition due to settings
+        if settings.ONLY_NOT_FULL_EVENTS_CAN_HAVE_ACTION:
+            # check if all events are not full
+            none_is_full = all([not event.is_full() for event in self.events.all()])
+            condition_for_action = condition_for_action and none_is_full
+        if condition_for_action:
+            return True, first_action
+        return False, None
+
+    def at_least_one_event_is_full(self):
+        return any([event.is_full() for event in self.events.all()])
+
+    @property
+    def direct_payment(self):
+        return True
 
 
 class Event(BaseModel, HitCountMixin):
@@ -628,6 +679,19 @@ class Event(BaseModel, HitCountMixin):
 
     registration_over = property(is_closed_hinweis)
 
+    def action_is_possible(self):
+        """
+        This method returns if action is possible due to
+        - field registration_possible
+        - not past
+        if settings.ONLY_NOT_FULL_EVENTS_CAN_HAVE_ACTION:
+        - is full
+        """
+        condition = self.registration_possible and not self.is_past()
+        if settings.ONLY_NOT_FULL_EVENTS_CAN_HAVE_ACTION:
+            condition = condition and not self.is_full()
+        return condition
+
     def get_number_of_registered_members(self):
         return self.members.filter(attend_status="registered").count()
 
@@ -720,14 +784,16 @@ class Event(BaseModel, HitCountMixin):
         if Event.objects.exists():
             last_id = Event.objects.latest("id").id
         if not self.id:
-            self.slug = slugify(f"{self.name}-{str(last_id+1)}")[:max_length]
+            self.slug = slugify(
+                f"{self.name.replace('Kopie von ', '')}-{str(last_id+1)}"
+            )[:max_length]
         add = not self.pk
         # super(Event, self).save(*args, **kwargs)
         if add:
             # if not self.slug:
             #    self.slug = slugify(self.name)[:max_length]
             if not self.label:
-                self.label = f"{self.name.partition(' ')[0]}-{date.today().year}-{str(last_id+1)}"
+                self.label = f"{self.name.replace('Kopie von ', '').partition(' ')[0]}-{date.today().year}-{str(last_id+1)}"
             kwargs["force_insert"] = False  # create() uses this, which causes error.
 
         self.first_day = self.get_first_day_start_date()

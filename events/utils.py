@@ -7,7 +7,7 @@ import pandas as pd
 import plotly.express as px
 from plotly.offline import plot
 
-from django.core.mail import EmailMultiAlternatives, BadHeaderError
+from django.core.mail import EmailMessage, BadHeaderError
 
 from django.conf import settings
 from django.http import HttpResponse
@@ -64,6 +64,9 @@ def send_email(
     template = get_email_template(template_name)
     text_template = getattr(template, "text_template", "")
     # html_template = getattr(template, "html_template", "")
+    invoice_name = kwargs.get("invoice_name")
+    pdf = kwargs.get("pdf")
+    mime = kwargs.get("mime")
 
     if not text_template:
         logger.critical(
@@ -84,11 +87,11 @@ def send_email(
     cc = addresses.get("cc", [])
     bcc = addresses.get("bcc", settings.EMAIL_NOTIFY_BCC)
 
-    msg = EmailMultiAlternatives(
+    msg = EmailMessage(
         subject, text_content, from_email=from_email, to=to, cc=cc, bcc=bcc
     )
-    # if html_content:
-    #     msg.attach_alternative(html_content, "text/html")
+    if invoice_name and pdf and mime:
+        msg.attach(invoice_name, pdf, mime)
 
     try:
         msg.send()
