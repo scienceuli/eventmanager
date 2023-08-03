@@ -560,9 +560,11 @@ class EventDetailView(HitCountDetailView):
 
         payless_collection = event.payless_collection
         pc_events = []
+        context["show_action_button"] = False
         if payless_collection:
             pc_events = payless_collection.events.all()
             show_action_button = payless_collection.action_is_possible()
+            context["show_action_button"] = show_action_button
 
         context["registration_text"] = registration_text
         context["registration_button"] = registration_button
@@ -571,7 +573,7 @@ class EventDetailView(HitCountDetailView):
         context["cart_event_form"] = cart_event_form
         context["pc_events"] = pc_events
         context["payless_collection"] = payless_collection
-        context["show_action_button"] = show_action_button
+        # context["show_action_button"] = show_action_button
         return context
 
 
