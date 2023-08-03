@@ -515,7 +515,7 @@ class EventDetailView(HitCountDetailView):
         registration_button = ""
         show_button = False
         show_registration = True
-        if event.category.name == "Fortbildungen unserer Kooperationspartner*innen":
+        if event.category.registration == False:
             if event.registration:
                 registration_text = event.registration
             else:

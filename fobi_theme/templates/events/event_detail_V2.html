@@ -534,7 +534,7 @@
                                 <span class="text-vfllred italic mr-2">Nur noch wenige Restplätze!</span>
                                 {% endif %}
 
-                                {% if event.category.name == 'Fortbildungen unserer Kooperationspartner*innen' %}
+                                {% if event.category.registration == False %}
                                 {% if event.registration %}
 
                                 {{ event.registration|safe }}
