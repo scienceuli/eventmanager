@@ -117,19 +117,17 @@ class PayLessActionForm(forms.ModelForm):
     ref: https://stackoverflow.com/questions/6034047/one-to-many-inline-select-with-django-admin
     """
 
-    events = forms.ModelMultipleChoiceField(
-        queryset=Event.objects.all(), required=False
-    )
+    events = forms.ModelMultipleChoiceField(queryset=Event.objects.all(), required=True)
     name = forms.CharField(max_length=255)
     title = forms.Textarea()
     type = forms.ChoiceField(choices=PayLessAction.TYPE_CHOICES)
     percents = forms.IntegerField(required=False, label="Prozentsatz")
 
     price_premium = forms.DecimalField(
-        max_digits=10, decimal_places=2, label="normaler Preis"
+        max_digits=10, decimal_places=2, label="normaler Preis", required=False
     )
     price_members = forms.DecimalField(
-        max_digits=10, decimal_places=2, label="Mitgliederpreis"
+        max_digits=10, decimal_places=2, label="Mitgliederpreis", required=False
     )
 
     class Meta:
@@ -147,10 +145,42 @@ class PayLessActionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(PayLessActionForm, self).__init__(*args, **kwargs)
         if self.instance:
-            self.fields["events"].initial = self.instance.events.all()
+            events = self.instance.events.all()
+            self.fields["events"].initial = events
+            events_with_collection = events.filter(event_collection__isnull=False)
+            collection_events = []
+            if events_with_collection:
+                collection_events = list(
+                    events_with_collection[0]
+                    .event_collection.events.all()
+                    .values_list("name", flat=True)
+                )
+                help_text = (
+                    f"Bitte folgende Veranstaltungen wählen: {collection_events}"
+                )
+            else:
+                help_text = "Bitte alle Veranstaltungen wählen, die zu einer Event Collection gehören"
+
+            self.fields["events"].help_text = help_text
 
     def save_m2m(self):
         pass
+
+    def clean(self):
+        events = self.cleaned_data["events"]
+        # take first event and get its event collection
+        events_with_collection = events.filter(event_collection__isnull=False)
+        collection_events = []
+        if events_with_collection:
+            collection_events = (
+                events_with_collection.first().event_collection.events.all()
+            )
+        # the events of this event collection must be the same as events of payless collection
+        if set(events) != set(collection_events):
+            raise forms.ValidationError(
+                "Die Event Collection umfasst nicht die selben Veranstaltungen wie die Payless Collection"
+            )
+        return self.cleaned_data
 
     def save(self, *args, **kwargs):
         self.fields["events"].initial.update(payless_collection=None)
@@ -263,7 +293,7 @@ class EventMemberAdmin(admin.ModelAdmin):
     list_filter = [
         "event",
     ]
-    search_fields = ("lastname", "firstname", "email")
+    search_fields = ("lastname", "firstname", "email", "event__name")
     readonly_fields = ["name", "mail_to_admin", "via_form"]
     inlines = [
         EventMemberRoleInline,
@@ -730,6 +760,12 @@ admin.site.register(EventCollection, EventCollectionAdmin)
 
 
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(EventAdmin, self).get_form(request, obj, **kwargs)
+        form.base_fields["event_collection"].widget.can_delete_related = False
+        form.base_fields["payless_collection"].widget.can_delete_related = False
+        return form
+
     def get_urls(self):
         urls = super().get_urls()
         my_urls = [
@@ -973,7 +1009,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     def get_inline_actions(self, request, obj=None):
         actions = super(EventAdmin, self).get_inline_actions(request, obj)
-        if obj.moodle_id == 0 and obj.category.name == "Onlineseminare":
+        if obj.moodle_id == 0 and obj.eventformat.moodle:
             actions.append("create_course_in_moodle")
         if (
             not obj.moodle_id == 0

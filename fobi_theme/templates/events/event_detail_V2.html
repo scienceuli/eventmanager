@@ -513,8 +513,6 @@
                         <h2 class="font-medium title-font text-vfllred mb-1 text-xl">Anmeldung</h2>
                         <div class="flex mx-auto">
                             <div class="leading-relaxed">
-
-
                                 <p class="leading-relaxed mr-4">{{ registration_text|safe }}</p>
 
 
@@ -544,19 +542,21 @@
                                 {% endif %}
                                 {% endcomment %}
                             </div>
+
+                            {% if show_button %}
+
                             {% if event.direct_payment %}
                             <div class="item">
                                 <div class="bg-gray-200 font-bold  text-vfllred ml-2 px-2">
                                     <form action="{% url 'shop:cart-add' event.id %}" method="post">
                                         {{ cart_event_form }}
                                         {% csrf_token %}
-                                        <input type="submit" value="&rarr;&nbsp;Warenkorb">
+                                        <input type="submit" value="In den Warenkorb{% if additional_text %}*{% endif %}">
                                     </form>
 
                                 </div>
                             </div>
                             {% else %}
-                            {% if show_button %}
 
                             <div class="item">
                                 <div class="">
@@ -567,7 +567,12 @@
                             </div>
                             {% endif %}
                             {% endif %}
+
                         </div>
+                        {% if additional_text %}
+                        <div class="leading-relaxed text-xs mr-4">{{ additional_text }}</div>
+
+                        {% endif %}
                     </div>
 
 

@@ -174,6 +174,7 @@
 
       </div>
       <div class="grid grid-cols-1 py-5">
+        {% if show_costs %}
         {% if show_costs_string %}
         <span class="pt-2  font-semibold text-gray-600 uppercase">{{show_costs_string}}</span>
         {% endif %}
@@ -199,21 +200,19 @@
           {{ order_discounted_totalprice_html_string|safe }}
         </p>
         {% endif %}
+        {% endif %}
 
         {% if waiting_list_string %}
         <span class="pt-2  font-semibold text-gray-600 uppercase">Warteliste {% include 'tooltips/_tooltip.html' with key='waiting' %}</span>
-        <p>{{ waiting_list_string }}<br /><small>Die Rechnung wird erst nach der Teilnahmebestätigung verschickt.</small></p>
+        <p>{{ waiting_list_string }}</p>
+        <p class="mt-2 text-xs">Eine Zahlungspflicht besteht ab dem Zeitpunkt, zu dem Sie einen Platz in der Fortbildung annehmen.</p>
         {% endif %}
 
       </div>
 
       <div class="grid grid-cols-1 py-5">
         <button type="submit" class="w-full py-3 mt-6 text-xl font-bold rounded-full tracking-widest text-vfllred uppercase bg-gray-200 focus:outline-none hover:shadow-lg">
-          {% if event.direct_payment %}
-          Jetzt bezahlen
-          {% else %}
-          Verbindlich anmelden
-          {% endif %}
+          {{ payment_button_text }}
         </button>
 
 

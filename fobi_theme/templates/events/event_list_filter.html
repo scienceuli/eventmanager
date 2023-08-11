@@ -30,11 +30,9 @@
   <div class="container max-w-6xl mx-auto">
     <!-- Filter -->
     <div>
-      <input type="checkbox" name="agree" id="agree" class="peer w-4 h-4" />
-      <label for="agree" class="ml-3">Filter
 
-      </label>
-      <div class="invisible peer-checked:visible pb-4 flex justify-between gap-3 border-b-2">
+      <button class="text-sm text-vfllred" onclick="toggleFilter()" id="filterButton">Filter einblenden</button>
+      <div id="filter" style="display:none;" class="pb-4 flex justify-between gap-3 border-b-2">
         <form method="get" class="flex-inline">
 
           <label class=" text-gray-700 text-sm font-bold" for="id_first_day_0">
@@ -163,6 +161,30 @@
 {% endblock content %}
 
 {% block extrascript %}
+<script>
+  function toggleFilter() {
+    // get the filter
+    var myFilter = document.getElementById('filter');
 
+    // get the current value of the filter's display property
+    var displaySetting = myFilter.style.display;
+
+    // also get the filter button, so we can change what it says
+    var filterButton = document.getElementById('filterButton');
+
+    // now toggle the filter and the button text, depending on current state
+    if (displaySetting == 'block') {
+      // filter is visible. hide it
+      myFilter.style.display = 'none';
+      // change button text
+      filterButton.innerHTML = 'Filter einblenden';
+    } else {
+      // clock is hidden. show it
+      myFilter.style.display = 'block';
+      // change button text
+      filterButton.innerHTML = 'Filter ausblenden';
+    }
+  }
+</script>
 
 {% endblock %}

@@ -60,10 +60,18 @@ class PayLessAction(models.Model):
     percents = models.SmallIntegerField(verbose_name="Prozente", blank=True, default=0)
 
     price_premium = models.DecimalField(
-        verbose_name="normaler Preis", max_digits=10, decimal_places=2
+        verbose_name="normaler Preis",
+        null=True,
+        blank=True,
+        max_digits=10,
+        decimal_places=2,
     )
     price_members = models.DecimalField(
-        verbose_name="Rabattpreis", max_digits=10, decimal_places=2
+        verbose_name="Rabattpreis",
+        null=True,
+        blank=True,
+        max_digits=10,
+        decimal_places=2,
     )
 
     class Meta:
@@ -147,6 +155,7 @@ class EventCategory(BaseModel):
 class EventFormat(BaseModel):
     name = models.CharField(verbose_name="Format", max_length=255, unique=True)
     description = models.TextField("Beschreibung", blank=True)
+    moodle = models.BooleanField(default=False)
 
     class Meta:
         ordering = ("name",)

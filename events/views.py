@@ -515,6 +515,7 @@ class EventDetailView(HitCountDetailView):
         registration_button = ""
         show_button = False
         show_registration = True
+        additional_text = ""
         if event.category.registration == False:
             if event.registration:
                 registration_text = event.registration
@@ -539,6 +540,7 @@ class EventDetailView(HitCountDetailView):
                             "<span class='italic'>Leider ausgebucht</span>"
                         )
                         registration_button = "Auf die Warteliste"
+                        additional_text = "Nach Abschluss des Bestellvorgangs werden Sie auf die Warteliste gesetzt."
                 else:
                     if not event.is_full():
                         if event.few_remaining_places():
@@ -549,6 +551,8 @@ class EventDetailView(HitCountDetailView):
                             "<span class='italic'>Leider ausgebucht</span> "
                         )
                         registration_button = "Auf die Warteliste"
+                        additional_text = "*Nach Abschluss des Bestellvorgangs werden Sie auf die Warteliste gesetzt."
+
             else:
                 registration_button = "Online anmelden"
         else:
@@ -568,6 +572,7 @@ class EventDetailView(HitCountDetailView):
 
         context["registration_text"] = registration_text
         context["registration_button"] = registration_button
+        context["additional_text"] = additional_text
         context["show_button"] = show_button
         context["show_registration"] = show_registration
         context["cart_event_form"] = cart_event_form
@@ -791,9 +796,12 @@ def handle_form_submission(request, form, event):
             "vfll", event, form, mail_to_admin_template_name, formatting_dict
         )
 
-        member_mail_sent = send_email_after_registration(
-            "member", event, form, mail_to_member_template_name, formatting_dict
-        )
+        if settings.SEND_EMAIL_AFTER_REGISTRATION_TO_MEMBER:
+            member_mail_sent = send_email_after_registration(
+                "member", event, form, mail_to_member_template_name, formatting_dict
+            )
+        else:
+            member_mail_sent = False
 
         messages_dict = {
             "s": (
@@ -825,6 +833,14 @@ def handle_form_submission(request, form, event):
 # @login_required(login_url="login")
 def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
+    if event.payment_direct:
+        payment_button_text = settings.PAY_NOW_TEXT
+    else:
+        payment_button_text = settings.REGISTER_NOW_TEXT
+
+    # if event is full both texts are overwritten
+    if event.is_full():
+        payment_button_text = settings.REGISTER_NOW_TEXT_WAITING
 
     form_template = get_form_template(event.registration_form)
 
@@ -865,7 +881,7 @@ def event_add_member(request, slug):
     return render(
         request,
         form_template,
-        {"form": form, "event": event},
+        {"form": form, "event": event, "payment_button_text": payment_button_text},
     )
 
 

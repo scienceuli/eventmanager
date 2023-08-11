@@ -86,9 +86,16 @@ def send_email(
     to = addresses.get("to", [])
     cc = addresses.get("cc", [])
     bcc = addresses.get("bcc", settings.EMAIL_NOTIFY_BCC)
+    reply_to = [settings.REPLY_TO_EMAIL]
 
     msg = EmailMessage(
-        subject, text_content, from_email=from_email, to=to, cc=cc, bcc=bcc
+        subject,
+        text_content,
+        from_email=from_email,
+        to=to,
+        cc=cc,
+        bcc=bcc,
+        reply_to=reply_to,
     )
     if invoice_name and pdf and mime:
         msg.attach(invoice_name, pdf, mime)
@@ -139,6 +146,14 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
         else:
             speaker_string = ", ".join(speaker_list)
 
+        sponsors_string = ""
+        if event.sponsors:
+            sponsors_string = "Für weitere Informationen wenden Sie sich bitte an: "
+            sponsors_list = [
+                sponsor for sponsor in event.sponsors.all().exclude(email__isnull=True)
+            ]
+            sponsors_string += ", ".join(sponsors_list)
+
         if event.close_date:
             close_date = event.close_date.strftime("%d.%m.%Y")
         else:
@@ -152,6 +167,7 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
                 "close_date": close_date,
                 "addresses_string": addresses_string,
                 "speaker_string": speaker_string,
+                "sponsors_string": sponsors_string,
                 "memberships_labels": form.selected_memberships_labels(),
             }
         )

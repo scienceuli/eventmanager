@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
+from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse
 
@@ -82,6 +83,12 @@ def order_create(request):
 
     payment_cart = split_cart(cart)[0]
 
+    if payment_cart:
+        show_costs = True
+    else:
+        show_costs = False
+
+    payment_button_text = ""
     show_costs_string = "Kosten"
 
     order_summary_html_string = "<br>".join(
@@ -99,14 +106,25 @@ def order_create(request):
     order_totalprice_html_string = (
         f"<span class='font-semibold'>Gesamtpreis: {cart.get_total_price()} €</span>"
     )
-    order_totalprice_html_string += "<br><span class='italic'>*Voller Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span>"
+    order_totalprice_html_string += "<br><span class='italic'>*Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span>"
 
-    order_discounted_totalprice_html_string = f"<span class='font-semibold'>reduzierter Gesamtpreis*: {cart.get_discounted_total_price()} €</span>"
+    order_discounted_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {cart.get_discounted_total_price()} €</span>"
 
     non_payment_cart = split_cart(cart)[1]
+
+    order_summary_html_string += "<br>".join(
+        [f"{item['event'].name} (Warteliste)" for item in non_payment_cart]
+    )
+
     waiting_list_string = "<br>".join(
         [f"{item['event'].name}" for item in non_payment_cart]
     )
+
+    # generate text of registration/pay button
+    if payment_cart:
+        payment_button_text = settings.PAY_NOW_TEXT
+    elif non_payment_cart:
+        payment_button_text = settings.REGISTER_NOW_TEXT_WAITING
 
     if request.method == "POST":
         form = EventMemberForm(request.POST)
@@ -208,11 +226,11 @@ def order_create(request):
             cart.clear()
 
             if payment_cart:
-                message = f"Vielen Dank für deine Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}."
+                message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
             elif non_payment_cart:
-                message = f"Vielen Dank für deine Anmeldung."
+                message = f"Vielen Dank für Ihre Anmeldung."
             else:
-                message = f"Du hast noch keine Anmeldung vorgenommen."
+                message = f"Sie haben noch keine Anmeldung vorgenommen."
 
             messages.success(request, message)
 
@@ -242,12 +260,14 @@ def order_create(request):
             "cart": cart,
             "form": form,
             "show_costs_string": show_costs_string,
+            "show_costs": show_costs,
             "order_summary_html_string": order_summary_html_string,
             "order_price_html_string": order_price_html_string,
             "order_discounted_price_html_string": order_discounted_price_html_string,
             "order_totalprice_html_string": order_totalprice_html_string,
             "order_discounted_totalprice_html_string": order_discounted_totalprice_html_string,
             "waiting_list_string": waiting_list_string,
+            "payment_button_text": payment_button_text,
         },
     )
 
