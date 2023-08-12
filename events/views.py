@@ -833,7 +833,7 @@ def handle_form_submission(request, form, event):
 # @login_required(login_url="login")
 def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
-    if event.payment_direct:
+    if event.direct_payment:
         payment_button_text = settings.PAY_NOW_TEXT
     else:
         payment_button_text = settings.REGISTER_NOW_TEXT
