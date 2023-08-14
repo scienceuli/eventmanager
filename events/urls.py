@@ -50,6 +50,7 @@ from .views import (
     ft_members_dashboard_view,
     export_ft_members_csv,
     export_ft_members_xls,
+    export_participants,
 )
 
 
@@ -193,4 +194,9 @@ urlpatterns = [
     ),
     # re_path(r"^download/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
     re_path(r"^download/(?P<slug>[A-Za-z0-9_-]+)/$", download, name="pdf-download"),
+    path(
+        "export_participants/<int:event_id>/",
+        export_participants,
+        name="export-participants",
+    ),
 ]

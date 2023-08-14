@@ -1031,8 +1031,8 @@ class EventMember(AddressModel):
     data = models.JSONField(null=True, blank=True)
 
     class Meta:
-        verbose_name = "Teilnehmer*in"
-        verbose_name_plural = "Teilnehmer*innen"
+        verbose_name = "TeilnehmerIn"
+        verbose_name_plural = "TeilnehmerInnen"
         unique_together = ["event", "name"]
 
     def __str__(self):

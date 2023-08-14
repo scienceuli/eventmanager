@@ -1,10 +1,13 @@
 from openpyxl import Workbook
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse
+from django.db.models import Q
 from datetime import datetime, date
 from .export_excel import ExportExcelAction
 from openpyxl.styles import Font
 from unidecode import unidecode
+
+from .utils import convert_data_date, convert_boolean_field
 
 
 def style_output_file(file):
@@ -13,21 +16,11 @@ def style_output_file(file):
         cell.font = black_font
 
     for column_cells in file.columns:
-        length = max(len((cell.value)) for cell in column_cells)
-        length += 10
+        length = max(len((cell.value)) for cell in column_cells if cell.value)
+        length += 2
         file.column_dimensions[column_cells[0].column_letter].width = length
 
     return file
-
-
-def convert_data_date(value):
-    return value.strftime("%d/%m/%Y")
-
-
-def convert_boolean_field(value):
-    if value:
-        return "Yes"
-    return "No"
 
 
 def export_as_xls(self, request, queryset):

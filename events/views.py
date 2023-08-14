@@ -4,9 +4,13 @@ import json
 import pandas as pd
 from itertools import chain
 from events.actions import convert_boolean_field
+from openpyxl import Workbook
+from .export_excel import ExportExcelAction
+from openpyxl.styles import Font
+from unidecode import unidecode
 
 from django.db import transaction
-from django.db.models import Max
+from django.db.models import Max, Q
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import request, HttpResponse, Http404
 from django.contrib import messages
@@ -22,6 +26,7 @@ from django.contrib.auth.models import User, Group
 from django.core.mail import send_mail, BadHeaderError
 
 from django.contrib.auth.mixins import UserPassesTestMixin, PermissionRequiredMixin
+from django.core.exceptions import PermissionDenied
 
 from django.contrib.auth.decorators import login_required, user_passes_test
 
@@ -61,6 +66,7 @@ from rest_framework.decorators import (
 from rest_framework.response import Response
 
 from events.filter import EventFilter
+from events.actions import style_output_file
 
 from .utils import (
     send_email_after_registration,
@@ -69,6 +75,8 @@ from .utils import (
     make_bar_plot_from_dict,
     get_utilisations,
     update_boolean_values,
+    convert_data_date,
+    convert_boolean_field,
 )
 
 # import the logging library
@@ -112,6 +120,8 @@ from .forms import (
     EventCategoryFilterForm,
     FTEventMemberForm,
 )
+
+from events.admin import EventMemberAdmin
 
 from shop.forms import CartAddEventForm
 
@@ -1469,4 +1479,93 @@ def export_ft_members_xls(request):
     df = pd.DataFrame(ftm_list)
     df.to_excel(response)
 
+    return response
+
+
+def export_participants(request, event_id):
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    # opts = self.model._meta
+    # field_names = self.list_display
+    field_names = [
+        "lastname",
+        "firstname",
+        "academic",
+        "company",
+        "street",
+        "postcode",
+        "city",
+        "phone",
+        "email",
+        "vfll",
+        "check",
+        "date_created",
+    ]
+
+    field_names_participants_list = [
+        "lastname",
+        "firstname",
+        "academic",
+        "phone",
+        "email",
+    ]
+
+    event = Event.objects.get(id=event_id)
+
+    # file_name = unidecode(opts.verbose_name "_" + datetime.now())
+    file_name = f"TeilnehmerInnen_{event.label}_{datetime.now().date()}"
+    blank_line = []
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Daten"
+    # Teilnehmerliste
+    ws1 = wb.create_sheet("TN-Liste")
+    ws.append(ExportExcelAction.generate_header(EventMemberAdmin, Event, field_names))
+    ws1.append(
+        ExportExcelAction.generate_header(
+            EventMemberAdmin, Event, field_names_participants_list
+        )
+    )
+
+    def iterate(ws, queryset, field_names):
+        counter = 1
+        for obj in queryset:
+            row = [str(counter)]
+            for field in field_names:
+                is_admin_field = hasattr(EventMemberAdmin, field)
+                if (
+                    is_admin_field and not field == "check"
+                ):  # check is also admin_field, but we need model field
+                    value = getattr(EventMemberAdmin, field)(obj)
+                else:
+                    value = getattr(obj, field)
+                    if isinstance(value, datetime) or isinstance(value, date):
+                        value = convert_data_date(value)
+                    elif isinstance(value, bool):
+                        value = convert_boolean_field(value)
+
+                row.append(str(value))
+
+            ws.append(row)
+            counter += 1
+
+    # all data
+    queryset = event.members.all()
+    iterate(ws, queryset.filter(Q(attend_status="registered")), field_names)
+    ws.append(blank_line)
+    ws.append(blank_line)
+    iterate(ws, queryset.filter(Q(attend_status="waiting")), field_names)
+    iterate(
+        ws1, queryset.filter(Q(attend_status="waiting")), field_names_participants_list
+    )
+
+    ws = style_output_file(ws)
+    ws1 = style_output_file(ws1)
+
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = f"attachment; filename={file_name}.xlsx"
+    wb.save(response)
     return response

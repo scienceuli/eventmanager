@@ -261,7 +261,3 @@ COPY_ONLY_ALLOWED_FOR_SINGLE_OBJECT = True
 PAY_NOW_TEXT = "Jetzt kaufen"
 REGISTER_NOW_TEXT = "Jetzt kostenpflichtig anmelden"
 REGISTER_NOW_TEXT_WAITING = "Jetzt anmelden"
-
-# order and registration settings
-SEND_EMAIL_AFTER_ORDER_CREATION = False
-SEND_EMAIL_AFTER_REGISTRATION_TO_MEMBER = False

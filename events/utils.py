@@ -147,10 +147,11 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
             speaker_string = ", ".join(speaker_list)
 
         sponsors_string = ""
-        if event.sponsors:
+        if event.sponsors.all():
             sponsors_string = "Für weitere Informationen wenden Sie sich bitte an: "
             sponsors_list = [
-                sponsor for sponsor in event.sponsors.all().exclude(email__isnull=True)
+                sponsor.email
+                for sponsor in event.sponsors.all().exclude(email__isnull=True)
             ]
             sponsors_string += ", ".join(sponsors_list)
 
@@ -251,3 +252,13 @@ def update_boolean_values(dictionary):
             dictionary[key] = boolean_translate(
                 value
             )  # Replace value with function call
+
+
+def convert_data_date(value):
+    return value.strftime("%d.%m.%Y")
+
+
+def convert_boolean_field(value):
+    if value:
+        return "x"
+    return ""
