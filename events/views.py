@@ -1555,9 +1555,12 @@ def export_participants(request, event_id):
     iterate(ws, queryset.filter(Q(attend_status="registered")), field_names)
     ws.append(blank_line)
     ws.append(blank_line)
+    ws.append(["Warteliste"])
     iterate(ws, queryset.filter(Q(attend_status="waiting")), field_names)
     iterate(
-        ws1, queryset.filter(Q(attend_status="waiting")), field_names_participants_list
+        ws1,
+        queryset.filter(Q(attend_status="registered")),
+        field_names_participants_list,
     )
 
     ws = style_output_file(ws)
