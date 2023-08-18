@@ -43,7 +43,7 @@ def payment_completed(order_id):
 
     addresses = {"to": [order.email]}
 
-    from_email = (settings.DEFAULT_FROM_EMAIL,)
+    from_email = settings.DEFAULT_FROM_EMAIL
     reply_to = [settings.REPLY_TO_EMAIL]
 
     # create invoice e-mail
