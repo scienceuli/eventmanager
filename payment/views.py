@@ -18,8 +18,8 @@ from payment.forms import CustomPayPalPaymentsForm
 def payment_process(request):
     order_id = request.session.get("order_id", None)
     order = get_object_or_404(Order, id=order_id)
-    order.payment_type = "p"
-    order.save()
+    # order.payment_type = "p"
+    # order.save()
 
     # success_url = request.build_absolute_uri(
     #                 reverse('payment:completed'))
@@ -39,7 +39,9 @@ def payment_process(request):
         "invoice": str(order.uuid),
         "currency_code": "EUR",
         "notify_url": "http://{}{}".format(host, reverse("paypal-ipn")),
-        "return_url": "http://{}{}".format(host, reverse("payment:payment-success")),
+        "return_url": "http://{}{}".format(
+            host, reverse("payment:payment-success", args=[order.id])
+        ),
         "cancel_return": "http://{}{}".format(host, reverse("payment:payment-failed")),
     }
     paypal_form = CustomPayPalPaymentsForm(initial=paypal_dict)
@@ -52,7 +54,10 @@ def payment_process(request):
 # Payment success
 
 
-def payment_success(request):
+def payment_success(request, order_id):
+    order = Order.objects.get(id=order_id)
+    order.payment_type = "p"
+    order.save()
     return render(request, "payment/payment_success.html")
 
 

@@ -19,7 +19,7 @@ from events.models import (
 
 from events.email_template import EmailTemplate
 from shop.cart import Cart
-from shop.views import cart_add, order_create
+from shop.views import cart_add, order_create, OrderCreateView
 
 ####################
 # shop views
@@ -423,13 +423,13 @@ class OrderCreateViewTestCase(TestCase):
         self.request.session.save()
 
     def test_order_create_view_exists(self):
-        response = order_create(self.request)
+        response = OrderCreateView.as_view()(self.request)
         # cart = Cart(self.request)
         self.assertEqual(
             response.status_code, 200
         )  # self.assertEqual(response.context_data["cart"], cart)
 
     def test_order_create_view_returns_cart_as_context(self):
-        response = self.client.get(reverse("shop:order-create"))
+        response = OrderCreateView.as_view()(self.request)
         cart = Cart(self.request)
-        self.assertEqual(response.context[-1]["cart"].cart, cart.cart)
+        self.assertEqual(response.context_data["cart"].cart, cart.cart)

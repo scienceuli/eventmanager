@@ -57,7 +57,9 @@ class PayLessAction(models.Model):
         verbose_name="Anzeigetitel", null=True, blank=True, config_name="short"
     )
     type = models.CharField(max_length=1, choices=TYPE_CHOICES, default="n")
-    percents = models.SmallIntegerField(verbose_name="Prozente", blank=True, default=0)
+    percents = models.SmallIntegerField(
+        verbose_name="Prozente", null=True, blank=True, default=0
+    )
 
     price_premium = models.DecimalField(
         verbose_name="normaler Preis",

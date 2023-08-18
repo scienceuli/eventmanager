@@ -20,7 +20,7 @@ def order_created(order_id):
     )
     if order.payment_type == "p":
         message += f"Da Sie Paypal als Zahlungsweise gewählt haben, gibt es nichts weiter zu tun.\n\n Vielen Dank!"
-    elif order.payment_type == "r":
+    elif order.payment_type == "r" or order.payment_type == "n":
         message += f"Bitte überweisen Sie den Betrag auf das in der Rechnung angegebene Konto.\n\n Vielen Dank!"
 
     if settings.SEND_EMAIL_AFTER_ORDER_CREATION:

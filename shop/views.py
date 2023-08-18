@@ -1,10 +1,13 @@
 import locale
+from typing import Any
+
+from django import http
 
 locale.setlocale(locale.LC_ALL, "de_DE")
 
 from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse
+from django.urls import reverse, reverse_lazy
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse
@@ -12,6 +15,7 @@ from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.template.loader import get_template
+from django.views.generic.edit import CreateView, FormView
 
 from django.utils import timezone
 
@@ -81,6 +85,168 @@ def cart_detail(request):
             "discounted_total_price": cart.get_discounted_total_price(),
         },
     )
+
+
+class OrderCreateView(FormView):
+    model = Order
+    template_name = "events/add_event_member_tw.html"
+    form_class = EventMemberForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.cart = Cart(request)
+
+        self.payment_cart = split_cart(self.cart)[0]
+        self.non_payment_cart = split_cart(self.cart)[1]
+
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        cart = self.cart
+        payment_cart = self.payment_cart
+        non_payment_cart = self.non_payment_cart
+
+        if payment_cart:
+            show_costs = True
+        else:
+            show_costs = False
+
+        payment_button_text = ""
+        show_costs_string = "Kosten"
+
+        order_summary_html_string = "<br>".join(
+            [f"{item['event'].name}" for item in payment_cart]
+        )
+
+        order_price_html_string = "<br>".join(
+            [
+                f"{item['event'].name} – {locale.currency(item['premium_price'], grouping=False, symbol=False)} €*"
+                for item in payment_cart
+            ]
+        )
+
+        order_discounted_price_html_string = "<br>".join(
+            [
+                f"{item['event'].name} – {locale.currency(item['price'], grouping=False, symbol=False)} €"
+                for item in payment_cart
+            ]
+        )
+
+        order_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_total_price(), grouping=False,symbol=False)} €</span>"
+        order_totalprice_html_string += "<br><span class='italic'>*Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span>"
+
+        order_discounted_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_discounted_total_price(), grouping=False, symbol=False)} €</span>"
+
+        order_summary_html_string += "<br>".join(
+            [f"{item['event'].name} (Warteliste)" for item in non_payment_cart]
+        )
+
+        waiting_list_string = "<br>".join(
+            [f"{item['event'].name}" for item in non_payment_cart]
+        )
+
+        # generate text of registration/pay button
+        if payment_cart:
+            payment_button_text = settings.PAY_NOW_TEXT
+        elif non_payment_cart:
+            payment_button_text = settings.REGISTER_NOW_TEXT_WAITING
+
+        context_update = {
+            "cart": cart,
+            "show_costs_string": show_costs_string,
+            "show_costs": show_costs,
+            "order_summary_html_string": order_summary_html_string,
+            "order_price_html_string": order_price_html_string,
+            "order_discounted_price_html_string": order_discounted_price_html_string,
+            "order_totalprice_html_string": order_totalprice_html_string,
+            "order_discounted_totalprice_html_string": order_discounted_totalprice_html_string,
+            "waiting_list_string": waiting_list_string,
+            "payment_button_text": payment_button_text,
+        }
+        self.cart = cart
+        self.payment_cart = payment_cart
+        self.non_payment_cart = non_payment_cart
+
+        context.update(context_update)
+        return context
+
+    def form_valid(self, form):
+        payment_cart = self.payment_cart
+        non_payment_cart = self.non_payment_cart
+        cart = self.cart
+
+        order_saved = False
+
+        # Orders are created if there is something to pay
+        if len(split_cart(cart)[0]) > 0:
+            order = Order(
+                academic=form.cleaned_data["academic"],
+                firstname=form.cleaned_data["firstname"],
+                lastname=form.cleaned_data["lastname"],
+                address_line=form.cleaned_data["address_line"],
+                company=form.cleaned_data["company"],
+                street=form.cleaned_data["street"],
+                city=form.cleaned_data["city"],
+                state=form.cleaned_data["state"],
+                postcode=form.cleaned_data["postcode"],
+                email=form.cleaned_data["email"],
+                phone=form.cleaned_data["phone"],
+            )
+            vfll = form.cleaned_data["vfll"]
+            order.discounted = vfll
+
+            # only cart items where payment is possible belong to order
+
+            order.save()
+            print(order.payment_type)
+            order_saved = True
+            for item in split_cart(cart)[0]:
+                OrderItem.objects.create(
+                    order=order,
+                    event=item["event"],
+                    price=item["price"],
+                    premium_price=item["premium_price"],
+                    quantity=item["quantity"],
+                    is_action_price=item["action_price"],
+                )
+
+        # create EventMemberInstances for ALL cart items
+
+        for item in cart:
+            new_member = handle_form_submission(self.request, form, item["event"])
+
+        # clear the cart
+        cart.clear()
+
+        if payment_cart:
+            message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
+        elif non_payment_cart:
+            message = f"Vielen Dank für Ihre Anmeldung."
+        else:
+            message = f"Sie haben noch keine Anmeldung vorgenommen."
+
+        messages.success(self.request, message)
+
+        # send email to user if order was created
+        self.order_saved = order_saved
+        self.order = order
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        order_saved = self.order_saved
+        order = self.order
+
+        if order_saved:
+            order_created.delay(order.id)
+
+            # set the order in the session
+            self.request.session["order_id"] = order.id
+
+            # redirect for payment
+            return reverse_lazy("payment:payment-process")
+        else:
+            return reverse_lazy("event-filter")
 
 
 def order_create(request):

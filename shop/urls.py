@@ -12,7 +12,8 @@ urlpatterns = [
         name="cart-add-collection",
     ),
     path("remove/<int:event_id>/", views.cart_remove, name="cart-remove"),
-    path("order_create/", views.order_create, name="order-create"),
+    # path("order_create/", views.order_create, name="order-create"),
+    path("order_create/", views.OrderCreateView.as_view(), name="order-create"),
     path(
         "admin/order/<int:order_id>/pdf/", views.admin_order_pdf, name="admin-order-pdf"
     ),
