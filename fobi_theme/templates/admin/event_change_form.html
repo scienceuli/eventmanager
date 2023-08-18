@@ -27,6 +27,7 @@
 </script>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+{% comment %}
 <script>
     $(document).ready(function () {
         $('#export-button').click(function () {
@@ -34,6 +35,7 @@
         });
     });
 </script>
+{% endcomment %}
 {% endblock %}
 
 {% block object-tools-items %}
@@ -42,9 +44,13 @@
     <a href="{% url 'admin:event_hitcount' object_id %}"><i class="icon-tint icon-alpha75"></i>Seitenstatistik</a>
 </li>
 
-
+<li>
+    <a style="background: red;" href="{% url 'export-participants' object_id %}"><i class="icon-tint icon-alpha75"></i>TN-Liste</a>
+</li>
+{% comment %}
 <li>
     <input type="submit" value="Teilnehmerliste" class="default action" id="export-button">
 </li>
+{% endcomment %}
 
 {% endblock %}

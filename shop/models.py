@@ -8,6 +8,7 @@ from events.abstract import BaseModel, AddressModel
 from shop.utils import premium_price
 
 PAYMENT_TYPE_CHOICES = (
+    ("n", "---"),
     ("p", "PayPal"),
     ("r", "Rechnung"),
 )
@@ -25,7 +26,7 @@ class Order(AddressModel):
         verbose_name="Bezahltyp",
         max_length=1,
         choices=PAYMENT_TYPE_CHOICES,
-        default="p",
+        default="n",
     )
     discounted = models.BooleanField(verbose_name="reduziert", default=True)
     paid = models.BooleanField(verbose_name="bezahlt", default=False)

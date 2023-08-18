@@ -51,6 +51,7 @@ from .views import (
     export_ft_members_csv,
     export_ft_members_xls,
     export_participants,
+    documentation_view,
 )
 
 
@@ -61,6 +62,7 @@ def trigger_error(request):
 
 download = ObjectDownloadView.as_view(model=Event, file_field="pdf_file")
 
+# todo: ordering the urls
 urlpatterns = [
     path("sentry-debug/", trigger_error),  # sentry test
     path("tinymce/", include("tinymce.urls")),
@@ -199,4 +201,5 @@ urlpatterns = [
         export_participants,
         name="export-participants",
     ),
+    path("admin/documentation/", documentation_view, name="documentation-view"),
 ]

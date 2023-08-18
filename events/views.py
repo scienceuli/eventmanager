@@ -9,6 +9,8 @@ from .export_excel import ExportExcelAction
 from openpyxl.styles import Font
 from unidecode import unidecode
 
+import markdown
+
 from django.db import transaction
 from django.db.models import Max, Q
 from django.shortcuts import render, get_object_or_404, redirect
@@ -115,6 +117,7 @@ from .forms import (
     EventDocumentFormSet,
     Symposium2022Form,
     SymposiumForm,
+    MV2023Form,
     AddMemberForm,
     EventUpdateCapacityForm,
     EventCategoryFilterForm,
@@ -264,7 +267,6 @@ class EventListView(ListView):
         event_collections = EventCollection.objects.all().filter(
             first_day__gte=date.today()
         )
-        print(event_collections)
 
         # sorting events and event_collections
 
@@ -428,7 +430,6 @@ class EventCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         with transaction.atomic():
             # form.instance.created_by = self.request.user
             self.object = form.save()
-            print(days)
             if documents.is_valid():
                 documents.instance = self.object
                 documents.save()
@@ -476,7 +477,6 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
         with transaction.atomic():
             # form.instance.created_by = self.request.user
             self.object = form.save()
-            print(days)
             if documents.is_valid():
                 documents.instance = self.object
                 documents.save()
@@ -706,7 +706,7 @@ def get_mail_to_admin_template_name(registration_form):
     if registration_form == "s":
         mail_to_admin_template_name = "anmeldung"
     elif registration_form == "m":
-        mail_to_admin_template_name = "mv_zw_anmeldung"
+        mail_to_admin_template_name = "mv_anmeldung"
     elif registration_form == "f":
         mail_to_admin_template_name = "ft_anmeldung"
     return mail_to_admin_template_name
@@ -719,7 +719,7 @@ def get_mail_to_member_template_name(registration_form, attend_status):
         else:
             mail_to_member_template_name = "bestaetigung"
     elif registration_form == "m":
-        mail_to_member_template_name = "mv_zw_bestaetigung"
+        mail_to_member_template_name = "mv_bestaetigung"
     elif registration_form == "f":
         mail_to_member_template_name = "ft_bestaetigung"
     return mail_to_member_template_name
@@ -772,6 +772,17 @@ def get_additional_form_data(form, event, form_type):
     return data_dict
 
 
+def get_mv_form_data(form):
+    data_dict = {}
+    vote_transfer = form.cleaned_data.get("vote_transfer")
+    data_dict["vote_transfer"] = vote_transfer
+    data_dict["vote_transfer_check"] = form.cleaned_data.get("vote_transfer_check")
+    data_dict["check"] = form.cleaned_data.get("mv_check")
+    data_dict["member_type"] = form.cleaned_data.get("member_type")
+    data_dict["attend_status"] = "registered"
+    return data_dict
+
+
 def handle_form_submission(request, form, event):
     if form.is_valid():
         personal_data_dict = get_personal_form_data(form)
@@ -779,6 +790,11 @@ def handle_form_submission(request, form, event):
             s_data_dict = get_additional_form_data(form, event, "s")
             new_member = EventMember.objects.create(
                 event=event, **personal_data_dict, **s_data_dict
+            )
+        elif event.registration_form == "m":
+            m_data_dict = get_mv_form_data(form)
+            new_member = EventMember.objects.create(
+                event=event, **personal_data_dict, **m_data_dict
             )
 
         """
@@ -789,7 +805,10 @@ def handle_form_submission(request, form, event):
 
         member_label = EventMember.objects.latest("date_created").label
 
-        attend_status = get_additional_form_data(form, event, "s")["attend_status"]
+        if event.registration_form == "s":
+            attend_status = get_additional_form_data(form, event, "s")["attend_status"]
+        elif event.registration_form == "m":
+            attend_status = "registered"
 
         mail_to_admin_template_name = get_mail_to_admin_template_name(
             event.registration_form
@@ -798,9 +817,22 @@ def handle_form_submission(request, form, event):
             event.registration_form, attend_status
         )
         formatting_dict = get_personal_form_data(form)
-        formatting_dict.update(get_additional_form_data(form, event, "s"))
+
+        if event.registration_form == "s":
+            formatting_dict.update(get_additional_form_data(form, event, "s"))
+        elif event.registration_form == "m":
+            formatting_dict.update(get_mv_form_data(form))
+            if formatting_dict["vote_transfer"]:
+                transfer_string = f"Du nimmst an der Mitgliederversammlung nicht teil und überträgst deine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an: {formatting_dict['vote_transfer']}"
+            else:
+                transfer_string = ""
+            formatting_dict.update({"transfer_string": transfer_string})
 
         update_boolean_values(formatting_dict)
+
+        formatting_dict["member_type"] = dict(form.fields["member_type"].choices).get(
+            formatting_dict["member_type"]
+        )
 
         vfll_mail_sent = send_email_after_registration(
             "vfll", event, form, mail_to_admin_template_name, formatting_dict
@@ -818,7 +850,7 @@ def handle_form_submission(request, form, event):
                 "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
                 "Vielen Dank für Ihre Anmeldung. Sie wurden auf die Warteliste gesetzt und werden benachrichtigt, wenn ein Platz frei wird.",
             )[attend_status == "waiting"],
-            "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool (falls du an der MV teilnimmst) werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt. Falls die Zukunftswerkstatt ausgebucht ist, setzen wir dich gerne auf die Warteliste.",
+            "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
             "f": "Vielen Dank für deine Anmeldung. Weitere Informationen werden nach dem Anmeldeschluss versandt.",
         }
         # only for registrations with non direct payment events
@@ -837,7 +869,7 @@ def handle_form_submission(request, form, event):
             new_member.mail_to_member = True
             new_member.save()
 
-        return redirect("event-detail", event.slug)
+    return form.is_valid()
 
 
 # @login_required(login_url="login")
@@ -864,7 +896,8 @@ def event_add_member(request, slug):
             form = EventMemberForm(initial={"country": "DE"})
         elif event.registration_form == "m":
             # print(f"event label: {event.label}")
-            form = SymposiumForm(event_label=event.label)
+            # form = SymposiumForm(event_label=event.label)
+            form = MV2023Form(event_label=event.label)
         elif event.registration_form == "f":
             # print("ws to form:", ws_utilisations)
             form = Symposium2022Form(
@@ -877,7 +910,7 @@ def event_add_member(request, slug):
         if event.registration_form == "s":
             form = EventMemberForm(request.POST)
         elif event.registration_form == "m":
-            form = SymposiumForm(request.POST, event_label=event.label)
+            form = MV2023Form(request.POST, event_label=event.label)
         elif event.registration_form == "f":
             form = Symposium2022Form(
                 request.POST,
@@ -886,7 +919,9 @@ def event_add_member(request, slug):
                 tour_utilisations=tour_utilisations,
             )
 
-        return handle_form_submission(request, form, event)
+        form_is_valid = handle_form_submission(request, form, event)
+        if form_is_valid:
+            return redirect("event-detail", event.slug)
 
     return render(
         request,
@@ -962,7 +997,6 @@ class EventApi(APIView):
             .filter(pub_status="PUB")
             .order_by("first_day")
         )
-        print("Events:", events)
         serializer = EventSerializer(events, many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -1572,3 +1606,19 @@ def export_participants(request, event_id):
     response["Content-Disposition"] = f"attachment; filename={file_name}.xlsx"
     wb.save(response)
     return response
+
+
+@login_required
+def documentation_view(request):
+    # Read the Markdown content from the file
+    with open("eventmanager/static/docs/documentation.md", "r") as f:
+        documentation_content = f.read()
+
+    # Render the Markdown content using the markdown library
+    rendered_content = markdown.markdown(documentation_content)
+
+    return render(
+        request,
+        "admin/documentation_view.html",
+        {"documentation_content": rendered_content},
+    )

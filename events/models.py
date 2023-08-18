@@ -788,6 +788,7 @@ class Event(BaseModel, HitCountMixin):
     premium_price.fget.short_description = "Nicht reduzierter Preis"
 
     def save(self, *args, **kwargs):
+        # slug
         max_length = self._meta.get_field("slug").max_length
         last_id = 0
         if Event.objects.exists():
@@ -807,6 +808,8 @@ class Event(BaseModel, HitCountMixin):
 
         self.first_day = self.get_first_day_start_date()
         self.last_day = self.get_last_day_start_date()
+        if add and self.category.name == "messen":
+            self.registration_possible = False
 
         return super().save(*args, **kwargs)
 

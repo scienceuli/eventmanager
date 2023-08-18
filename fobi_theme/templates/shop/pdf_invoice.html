@@ -343,7 +343,7 @@
             {% if order.payment_type == 'p' and order.paid %}
             Der Rechnungsbetrag wurde bereits per PayPal bezahlt. Vielen Dank!
             {% endif %}
-            {% if order.payment_type == 'r' %}
+            {% if order.payment_type == 'r' or order.payment_type == "n" %}
             <b>Zahlbar sofort und ohne Abzug</b>
             {% endif %}
         </div>

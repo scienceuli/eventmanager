@@ -1,3 +1,8 @@
+import locale
+
+locale.setlocale(locale.LC_ALL, "de_DE")
+
+from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from django.conf import settings
@@ -80,6 +85,7 @@ def cart_detail(request):
 
 def order_create(request):
     cart = Cart(request)
+    print("in view: ", cart.cart)
 
     payment_cart = split_cart(cart)[0]
 
@@ -96,19 +102,23 @@ def order_create(request):
     )
 
     order_price_html_string = "<br>".join(
-        [f"{item['event'].name} - {item['premium_price']} €*" for item in payment_cart]
+        [
+            f"{item['event'].name} – {locale.currency(item['premium_price'], grouping=False, symbol=False)} €*"
+            for item in payment_cart
+        ]
     )
 
     order_discounted_price_html_string = "<br>".join(
-        [f"{item['event'].name} - {item['price']} €" for item in payment_cart]
+        [
+            f"{item['event'].name} – {locale.currency(item['price'], grouping=False, symbol=False)} €"
+            for item in payment_cart
+        ]
     )
 
-    order_totalprice_html_string = (
-        f"<span class='font-semibold'>Gesamtpreis: {cart.get_total_price()} €</span>"
-    )
+    order_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_total_price(), grouping=False,symbol=False)} €</span>"
     order_totalprice_html_string += "<br><span class='italic'>*Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span>"
 
-    order_discounted_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {cart.get_discounted_total_price()} €</span>"
+    order_discounted_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_discounted_total_price(), grouping=False, symbol=False)} €</span>"
 
     non_payment_cart = split_cart(cart)[1]
 

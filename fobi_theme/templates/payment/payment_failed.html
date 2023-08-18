@@ -1,6 +1,34 @@
 {% extends "base/base.html" %}
 {% block title %}Bezahlung abgebrochen{% endblock %}
+
+
+
+
 {% block content %}
-<h1>Die Zahlung konnte nicht durchgeführt werden.</h1>
-<p>Es gab ein Problem bei der Übermittlung der Daten.</p>
+
+
+<section class="py-20 bg-gray-100">
+    <div class="container max-w-6xl items-center mx-auto">
+
+
+        <div class="flex flex-col items-center m-4">
+            <div class="text-2xl font-semibold">Die Zahlung konnte nicht durchgeführt werden oder wurde abgebrochen.</div>
+
+
+            <div class="mt-4 border-b border-vfllred">
+            </div>
+
+            <div class="mt-2">Es wurden keine Daten übermittelt.</div>
+
+
+            <div><a href="{% url 'event-list' %}" class="flex font-semibold text-indigo-600 text-sm mt-10">&larr;&nbsp;Zu den Veranstaltungen</a></div>
+
+
+
+
+        </div>
+
+
+</section>
+
 {% endblock %}

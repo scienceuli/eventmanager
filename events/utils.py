@@ -58,7 +58,13 @@ def get_email_template(template_name):
 
 
 def send_email(
-    addresses, subject, from_email, template_name, formatting_dict=None, **kwargs
+    addresses,
+    subject,
+    from_email,
+    reply_to,
+    template_name,
+    formatting_dict=None,
+    **kwargs,
 ):
     formatting_dict = formatting_dict or {}
     template = get_email_template(template_name)
@@ -86,7 +92,7 @@ def send_email(
     to = addresses.get("to", [])
     cc = addresses.get("cc", [])
     bcc = addresses.get("bcc", settings.EMAIL_NOTIFY_BCC)
-    reply_to = [settings.REPLY_TO_EMAIL]
+    reply_to = reply_to
 
     msg = EmailMessage(
         subject,
@@ -113,8 +119,18 @@ def send_email(
 
 
 def send_email_after_registration(to, event, form, template, formatting_dict):
+    formatting_dict.update(
+        {
+            "event": event.name,
+        }
+    )
+
     if event.registration_form == "s":
         subject = f"Anmeldung am Kurs {event.name}"
+        reply_to = [settings.REPLY_TO_EMAIL]
+    elif event.registration_form == "m":
+        subject = f"Anmeldung zur Digitalen Mitgliederversammlung"
+        reply_to = [settings.MV_REPLY_TO_EMAIL]
     # mails to vfll
     addresses_list = []
     if to == "vfll":
@@ -162,7 +178,6 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
 
         formatting_dict.update(
             {
-                "event": event.name,
                 "label": event.label,
                 "start": event.get_first_day_start_date(),
                 "close_date": close_date,
@@ -173,18 +188,19 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
             }
         )
 
-        if event.registration_form == "s" or event.registration_form == "f":
-            try:
-                send_email(
-                    addresses,
-                    subject,
-                    settings.DEFAULT_FROM_EMAIL,
-                    template,
-                    formatting_dict=formatting_dict,
-                )
-                return True
-            except BadHeaderError:
-                return HttpResponse("Invalid header found.")
+    if event.registration_form == "s" or event.registration_form == "m":
+        try:
+            send_email(
+                addresses,
+                subject,
+                settings.DEFAULT_FROM_EMAIL,
+                reply_to,
+                template,
+                formatting_dict=formatting_dict,
+            )
+            return True
+        except BadHeaderError:
+            return HttpResponse("Invalid header found.")
 
 
 def boolean_translate(boolean_value):

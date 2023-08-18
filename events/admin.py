@@ -1,3 +1,5 @@
+import markdown
+
 from django.contrib import admin, messages
 from django.conf import settings
 from django.http import HttpResponseRedirect
@@ -759,7 +761,21 @@ class EventCollectionAdmin(admin.ModelAdmin):
 admin.site.register(EventCollection, EventCollectionAdmin)
 
 
+class EventForm(forms.ModelForm):
+    def clean(self):
+        payless_collection = self.cleaned_data.get("payless_collection")
+        event_collection = self.cleaned_data.get("event_collection")
+        if payless_collection and not event_collection:
+            raise forms.ValidationError(
+                {
+                    "event_collection": "Eine Veranstaltung kann nicht zur einer Payless Collection gehören ohne eine Event Collection."
+                }
+            )
+
+
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
+    form = EventForm
+
     def get_form(self, request, obj=None, **kwargs):
         form = super(EventAdmin, self).get_form(request, obj, **kwargs)
         form.base_fields["event_collection"].widget.can_delete_related = False
