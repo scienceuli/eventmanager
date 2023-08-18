@@ -24,6 +24,8 @@ def payment_completed(order_id):
     order = Order.objects.get(id=order_id)
     context = {}
 
+    print("payment_type", order.payment_type)
+
     if order.payment_type == "r":
         template_name = "invoice"
     elif order.payment_type == "p":
@@ -42,6 +44,7 @@ def payment_completed(order_id):
     addresses = {"to": [order.email]}
 
     from_email = (settings.DEFAULT_FROM_EMAIL,)
+    reply_to = [settings.REPLY_TO_EMAIL]
 
     # create invoice e-mail
     subject = f"VFLL - Rechnung Nr. {order.get_order_number}"
@@ -79,6 +82,7 @@ def payment_completed(order_id):
             addresses,
             subject,
             from_email,
+            reply_to,
             template_name,
             formatting_dict=formatting_dict,
             invoice_name="invoice.pdf",

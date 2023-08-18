@@ -393,7 +393,7 @@ class Event(BaseModel, HitCountMixin):
         on_delete=models.SET_NULL,
         related_name="events",
     )
-    direct_payment = models.BooleanField(default=False)
+    direct_payment = models.BooleanField(verbose_name="Warenkorb", default=False)
     vfll_only = models.BooleanField(default=False)
     eventformat = models.ForeignKey(EventFormat, on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
@@ -786,6 +786,7 @@ class Event(BaseModel, HitCountMixin):
     def premium_price(self):
         if self.price:
             return premium_price(self.price)
+        return round(Decimal(0), 2)
 
     premium_price.fget.short_description = "Nicht reduzierter Preis"
 

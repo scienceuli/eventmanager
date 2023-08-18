@@ -765,10 +765,17 @@ class EventForm(forms.ModelForm):
     def clean(self):
         payless_collection = self.cleaned_data.get("payless_collection")
         event_collection = self.cleaned_data.get("event_collection")
+        direct_payment = self.cleaned_data.get("direct_payment")
         if payless_collection and not event_collection:
             raise forms.ValidationError(
                 {
                     "event_collection": "Eine Veranstaltung kann nicht zur einer Payless Collection gehören ohne eine Event Collection."
+                }
+            )
+        if payless_collection and not direct_payment:
+            raise forms.ValidationError(
+                {
+                    "direct_payment": "Für eine Veranstaltung mit Payless-Aktion muss die Warenkorb-Funktion geschaltet sein."
                 }
             )
 
