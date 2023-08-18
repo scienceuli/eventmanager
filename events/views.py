@@ -829,10 +829,10 @@ def handle_form_submission(request, form, event):
             formatting_dict.update({"transfer_string": transfer_string})
 
         update_boolean_values(formatting_dict)
-
-        formatting_dict["member_type"] = dict(form.fields["member_type"].choices).get(
-            formatting_dict["member_type"]
-        )
+        if event.registration_form == "m":
+            formatting_dict["member_type"] = dict(
+                form.fields["member_type"].choices
+            ).get(formatting_dict["member_type"])
 
         vfll_mail_sent = send_email_after_registration(
             "vfll", event, form, mail_to_admin_template_name, formatting_dict
