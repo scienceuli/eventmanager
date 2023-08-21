@@ -776,8 +776,7 @@ class MV2023Form(forms.Form):
                 HTML(
                     """
                     <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse 
-                    ist Voraussetzung für die Zusendung eines Zugangscodes für das
-                    digitale Wahltool Votingtech und einer Einladungsmail für das Videokonferenztool Clickmeeting – beide Tools werden während der Mitgliederversammlung genutzt. 
+                    ist Voraussetzung für die Zusendung eines Zugangscodes für das digitale Wahltool und des Links für die Videokonferenz. 
                     </p>
                     """
                 ),
