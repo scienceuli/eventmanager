@@ -2,6 +2,7 @@ import requests
 import json
 import datetime, pytz
 import itertools
+from decimal import Decimal
 
 from django.conf import settings
 
@@ -112,6 +113,7 @@ def save_course_to_db(course_dict):
             "eventformat": eventformat,
             "name": course_dict["course_fullname"],
             "label": course_dict["course_shortname"],
+            "price": Decimal(0.00),
             #'description': course_dict['course_summary'],
             #'target_group': 'siehe Moodle',
             #'prerequisites': 'siehe Moodle',
