@@ -43,6 +43,7 @@ def paypal_payment_received(sender, **kwargs):
             order.payment_date = ipn_obj.payment_date
             order.payment_type = "p"
             order.save()
-            payment_completed.delay(order.id)
+            payment_completed(order.id)
+            # payment_completed.delay(order.id)
     else:
         logger.debug("Paypal payment status not completed: %s" % ipn_obj.payment_status)

@@ -68,13 +68,13 @@
                         <span class="text-3xl"><i class="fas fa-calendar-alt"></i></span>
                     </div>
                     <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
-                        <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Zugehörige Veranstaltungen:</h2>
+                        <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Veranstaltungen</h2>
                         <div class="flex w-1/2 flex-wrap">
                             {% for event in event_collection.events.all %}
                             <div class="w-1/2"><a href="{% url 'event-detail' event.slug %}">{{ event.name }}</a> {% if event.is_full %}<span class="italic">Leider ausgebucht</span>{% endif %}</div>
                             <div class="w-1/2">
                                 {% if event.first_day %}
-                                <span class="ml-2">{{ event.first_day|date:"j.m. Y" }}</span>
+                                <span class="ml-2">{{ event.first_day|date:"j.m.Y" }}</span>
                                 {% else %}
                                 &nbsp;
                                 {% endif %}
