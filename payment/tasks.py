@@ -15,7 +15,7 @@ from payment.utils import render_to_pdf_directly
 from events.utils import get_email_template, validate_email_template, send_email
 
 
-# @shared_task
+@shared_task
 def payment_completed(order_id):
     """
     Task to send an e-mail notification when an order is

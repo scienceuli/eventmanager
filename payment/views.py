@@ -79,8 +79,8 @@ def payment_by_invoice(request, order_id):
         order.payment_type = "r"
         order.save()
 
-        # payment_completed.delay(order_id)
-        payment_completed(order_id)
+        payment_completed.delay(order_id)
+        # payment_completed(order_id)
         return redirect("payment:payment-by-invoice-success")
 
 

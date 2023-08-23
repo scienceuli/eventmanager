@@ -199,25 +199,6 @@ THUMBNAIL_ALIASES = {
     },
 }
 
-# CELERY STUFF
-CELERY_BROKER_URL = "redis://localhost:6379"
-CELERY_RESULT_BACKEND = "redis://localhost:6379"
-CELERY_ACCEPT_CONTENT = ["application/json"]
-CELERY_TASK_SERIALIZER = "json"
-CELERY_RESULT_SERIALIZER = "json"
-CELERY_TIMEZONE = "Europe/Berlin"
-CELERY_BEAT_SCHEDULE = {
-    # Executes every minute
-    "get_courses_from_moodle_every_minute": {
-        "task": "events.tasks.get_courses_from_moodle",
-        "schedule": crontab(hour="*/8"),
-    },
-    "get_and_save_courses_from_moodle_every_minute": {
-        "task": "events.tasks.get_and_save_courses_from_moodle",
-        "schedule": crontab(hour="*/8"),
-    },
-}
-
 # Tailwind css
 TAILWIND_APP_NAME = "fobi_theme"
 
