@@ -29,7 +29,6 @@ from .views import (
     EventCollectionDetailView,
     EventDeleteView,
     EventMemberUpdateView,
-    FTEventMemberUpdateView,
     EventUpdateCapacityView,
     search_event,
     moodle,
@@ -40,8 +39,12 @@ from .views import (
     EventApi,
     EventMembersListView,
     FTEventMembersListView,
+    MVEventMembersListView,
     EventMemberDetailView,
     FTEventMemberDetailView,
+    MVEventMemberDetailView,
+    FTEventMemberUpdateView,
+    MVEventMemberUpdateView,
     EventMemberDeleteView,
     EventMemberCreateView,
     export_members_csv,
@@ -166,6 +169,11 @@ urlpatterns = [
         name="ft-member-detail",
     ),
     path(
+        "mv_members/detail/<int:pk>/",
+        MVEventMemberDetailView.as_view(),
+        name="mv-member-detail",
+    ),
+    path(
         "members/update/<int:pk>/",
         EventMemberUpdateView.as_view(),
         name="member-update",
@@ -174,6 +182,11 @@ urlpatterns = [
         "ft_members/update/<int:pk>/",
         FTEventMemberUpdateView.as_view(),
         name="ft-member-update",
+    ),
+    path(
+        "mv_members/update/<int:pk>/",
+        MVEventMemberUpdateView.as_view(),
+        name="mv-member-update",
     ),
     path(
         "members/delete/<int:pk>/",
@@ -190,6 +203,7 @@ urlpatterns = [
         "ft_members_dashboard/", ft_members_dashboard_view, name="ft-members-dashboard"
     ),
     path("ft_members/<event>/", FTEventMembersListView.as_view(), name="ft-members"),
+    path("mv_members/<event>/", MVEventMembersListView.as_view(), name="mv-members"),
     path("members_ft/export/csv/", export_ft_members_csv, name="export-members-ft-csv"),
     path(
         "members_ft/export/excel/", export_ft_members_xls, name="export-members-ft-xls"

@@ -23,7 +23,6 @@ class MemberDeleteLinkColumn(tables.LinkColumn):
 
 
 class EventMembersTable(tables.Table):
-
     counter = tables.Column(empty_values=(), orderable=False)
 
     def render_counter(self):
@@ -70,7 +69,6 @@ class EventMembersTable(tables.Table):
 
 
 class FTEventMembersTable(tables.Table):
-
     counter = tables.Column(empty_values=(), orderable=False)
 
     def render_counter(self):
@@ -101,4 +99,40 @@ class FTEventMembersTable(tables.Table):
             "firstname",
             "lastname",
             "email",
+        )
+
+
+class MVEventMembersTable(tables.Table):
+    counter = tables.Column(empty_values=(), orderable=False)
+
+    def render_counter(self):
+        self.row_counter = getattr(self, "row_counter", itertools.count())
+        return next(self.row_counter) + self.page.start_index()
+        # self.page.sart_index() is default Table function and return number of start index per page
+
+    view = MemberViewLinkColumn(
+        "mv-member-detail",
+        args=[A("pk")],
+        orderable=False,
+        text="View",
+        empty_values=(),
+    )
+
+    update = MemberUpdateLinkColumn(
+        "mv-member-update",
+        args=[A("pk")],
+        orderable=False,
+        text="Update",
+        empty_values=(),
+    )
+
+    class Meta:
+        model = EventMember
+        template_name = "django_tables2/bootstrap.html"
+        fields = (
+            "firstname",
+            "lastname",
+            "email",
+            "vote_transfer",
+            "vote_transfer_check",
         )

@@ -88,7 +88,7 @@
       <div class="w-full md:w-2/3">
         <p>
           {% if class_name_value == 'EventCollection' %}
-          <span class="text-left text-base text-vfllred font-bold">Veranstaltungsreihe</span>
+          <span class="text-left text-base text-vfllred font-bold">Bildungsangebot</span>
           <span class="text-left pl-1 text-base">{{ event.first_day }}&ndash;{{ event.last_day }}</span>
           {% else %}
           <span class="text-left text-base text-vfllred font-bold">{% if event.category.singular %}{{ event.category.singular }}{% else %}{{ event.category }}{% endif %}</span>
@@ -119,7 +119,7 @@
 
           {% if event.event_collection %}
           <br />
-          <span class="text-sm">im Rahmen der Veranstaltungsreihe</span>
+          <span class="text-sm">Teil des Bildungsangebots</span>
           <span class="text-sm italic"><a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{ event.event_collection.name }}</a></span>
           {% endif %}
         </p>

@@ -1,4 +1,5 @@
 import markdown
+from datetime import date
 
 from django.contrib import admin, messages
 from django.conf import settings
@@ -119,7 +120,14 @@ class PayLessActionForm(forms.ModelForm):
     ref: https://stackoverflow.com/questions/6034047/one-to-many-inline-select-with-django-admin
     """
 
-    events = forms.ModelMultipleChoiceField(queryset=Event.objects.all(), required=True)
+    events = forms.ModelMultipleChoiceField(
+        queryset=Event.objects.filter(first_day__gte=date.today())
+        .filter(pub_status="PUB")
+        .exclude(event_days=None)
+        .order_by("name"),
+        widget=forms.CheckboxSelectMultiple,
+        required=True,
+    )
     name = forms.CharField(max_length=255)
     title = forms.Textarea()
     type = forms.ChoiceField(choices=PayLessAction.TYPE_CHOICES)

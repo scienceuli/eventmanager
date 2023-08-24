@@ -1,0 +1,19 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto pt-8">
+
+    <h1>{{ object.firstname }} {{ object.lastname }}</h1>
+    <p class="mb-4">{{ object.email }}</p>
+    <p class="mb-4">Stimmübertragung: {{ object.vote_transfer }}</p>
+    <p class="mb-4">Check: {{ object.vote_transfer_check }}</p>
+    <p class="mb-4"><i>Angelegt:</i> {{ object.date_created|date }}</p>
+    <p>
+        <hr />
+    </p>
+    <p><a href="{% url 'mv-members' 'Digitale-Mitgliederversammlung-2023' %}">Zurück</a></p>
+
+</div>
+
+{% endblock %}

@@ -94,7 +94,7 @@
             </div>
             <div class="flex">
                 {% if event.event_collection %}
-                <span class="text-left text-xl">Teil der Veranstaltungsreihe <span class="italic"><a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{ event.event_collection.name }}</a></span></span>
+                <span class="text-left text-xl">Teil des Bildungsangebots <span class="italic"><a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{ event.event_collection.name }}</a></span></span>
                 {% endif %}
             </div>
             {% comment %}
@@ -119,7 +119,6 @@
         <div class="flex w-full flex-col relative">
 
             <!-- Termin -->
-
             <div class="flex relative pb-8 sm:items-center md:w-2/3 mx-auto">
 
 
@@ -150,6 +149,8 @@
                     </div>
                 </div>
             </div>
+
+
             <!-- Ende Termin -->
 
             <!-- Dauer -->
@@ -730,28 +731,28 @@
             <!-- Pay less Modal powered by alpine.js -->
             <div x-data="{ 'showModal': false }" @keydown.escape="showModal = false">
                 <!-- Trigger for Modal -->
-                <div class="absolute top-0 right-4 w-2/5">
+                <div class="absolute top-0 right-4 w-2/5 text-right">
                     <button type="button" @click="showModal = true" class="animate-pulse inline-block w-48 h-48 rounded-full  font-bold text-xl text-center uppercase align-middle  border border-solid  shadow-none cursor-pointer  leading-pro bg-red-100 border-vfllred transition ease-in-out delay-150  hover:-translate-y-1 hover:scale-110  duration-300">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</button>
                 </div>
 
                 <!-- Modal -->
-                <div class="fixed inset-0 z-30 flex items-center justify-center overflow-auto bg-vfllred/50" x-show="showModal">
+                <div class="fixed inset-0 z-30 flex items-center justify-center overflow-auto bg-white/50" x-show="showModal">
                     <!-- Modal inner -->
-                    <div class="w-128 h-128 px-6 px-4 mx-auto flex flex-col items-center justify-center ring-2 ring-vfllred bg-gray-300 rounded-full shadow-lg transition delay-150 duration-700 ease-in-out" @click.away="showModal = false" x-transition:enter="motion-safe:ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
+                    <div class="w-128 h-128 px-10 mx-auto flex flex-col items-center justify-center ring-2 ring-vfllred bg-gray-300 rounded-full shadow-lg transition delay-150 duration-700 ease-in-out" @click.away="showModal = false" x-transition:enter="motion-safe:ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
                         <!-- Title / Close-->
 
                         <div class="">
-                            <h5 class="mr-3 text-2xl font-bold max-w-none"><span class="text-gray-700">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</span></h5>
+                            <h5 class="mx-3 text-2xl font-bold max-w-none"><span class="text-gray-700">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</span></h5>
 
                         </div>
                         <!-- content -->
                         {% if payless_collection.type == 'n' %}
                         {% for event in pc_events %}
-                        <p class="pt-2 font-semibold text-vfllred"><a href="{% url 'event-detail' event.slug %}">{{event.name}}</a></p>
-                        <p>{{ event.oneliner }}</p>
+                        <div class="mx-4 pt-2 text-center font-semibold text-vfllred"><a href="{% url 'event-detail' event.slug %}">{{event.name}}</a></div>
+                        <p class="mx-4">{{ event.oneliner }}</p>
                         {% endfor %}
                         {% elif payless_collection.type == 'p' %}
-                        <p class="pt-2 text-center font-semibold text-vfllred">bei Buchung aller Veranstaltungen der Reihe: <a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{event.event_collection.name}}</a></p>
+                        <p class="pt-2 text-center font-semibold text-vfllred">bei Buchung aller Veranstaltungen des Bildungsangebots: <a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{event.event_collection.name}}</a></p>
 
                         {% endif %}
                         <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.get_action_prices.0 }}&thinsp;€ statt {{ payless_collection.get_action_prices.1 }}&thinsp;€</p>

@@ -104,7 +104,7 @@ from .models import (
     EventSponsor,
 )
 
-from .tables import EventMembersTable, FTEventMembersTable
+from .tables import EventMembersTable, FTEventMembersTable, MVEventMembersTable
 
 from .forms import (
     EventDayFormSet,
@@ -1082,6 +1082,37 @@ class FTEventMembersListView(GroupTestMixin, SingleTableView):
         return context
 
 
+class MVEventMembersListView(GroupTestMixin, SingleTableView):
+    model = EventMember
+    table_class = MVEventMembersTable
+    template_name = "events/mv_members_list.html"
+
+    def get_queryset(self):
+        event_members = EventMember.objects.filter(
+            event__name="Digitale Mitgliederversammlung 2023"
+        )
+        query_ln = self.request.GET.get("member_lastname")
+        query_fn = self.request.GET.get("member_firstname")
+        query_email = self.request.GET.get("member_email")
+
+        if query_fn:
+            event_members = event_members.filter(firstname__icontains=query_fn)
+        if query_ln:
+            event_members = event_members.filter(lastname__icontains=query_ln)
+        if query_email:
+            event_members = event_members.filter(email__icontains=query_email)
+
+        return event_members
+
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super().get_context_data(**kwargs)
+        # Add a context
+        context["event_label"] = self.kwargs["event"]
+        # print(context)
+        return context
+
+
 class EventMemberDetailView(GroupTestMixin, DetailView):
     model = EventMember
     template_name = "events/member_detail.html"
@@ -1098,6 +1129,11 @@ class FTEventMemberDetailView(GroupTestMixin, DetailView):
         data = obj.data
         context["data"] = data
         return context
+
+
+class MVEventMemberDetailView(GroupTestMixin, DetailView):
+    model = EventMember
+    template_name = "events/mv_member_detail.html"
 
 
 class EventMemberUpdateView(GroupTestMixin, UpdateView):
@@ -1131,6 +1167,18 @@ class FTEventMemberUpdateView(GroupTestMixin, UpdateView):
         self.object.lastname = data["lastname"]
         self.object.email = data["email"]
         return super(FTEventMemberUpdateView, self).form_valid(form)
+
+
+class MVEventMemberUpdateView(GroupTestMixin, UpdateView):
+    model = EventMember
+    template_name = "events/mv_member_update.html"
+    fields = ["lastname", "firstname", "email", "vote_transfer", "vote_transfer_check"]
+
+    def get_success_url(self):
+        pk = self.kwargs["pk"]
+
+        label = EventMember.objects.get(pk=pk).event.label
+        return reverse("mv-members", kwargs={"event": label})
 
 
 class EventMemberCreateView(GroupTestMixin, CreateView):
