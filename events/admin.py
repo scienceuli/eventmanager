@@ -893,7 +893,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "organizer",
                     "fees",
                     "catering",
-                    # "lodging",
+                    "lodging",
                     # "total_costs",
                 )
             },
