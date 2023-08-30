@@ -162,7 +162,7 @@ def choices_to_display(choice, choices):
     return choices[choice]
 
 
-class GroupTestMixin(UserPassesTestMixin):
+class MVOrgaGroupTestMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.groups.filter(name="mv_orga").exists()
 
@@ -504,6 +504,7 @@ class EventCollectionDetailView(DetailView):
         # )
         # print(self.object.has_action()[0])
         context["payless_collection"] = self.object.has_action()[1]
+        context["events"] = self.object.events.all().order_by("first_day")
         # print(self.object.has_action()[1].type)
         return context
 
@@ -1001,7 +1002,7 @@ class EventApi(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class EventMembersListView(GroupTestMixin, SingleTableView):
+class EventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
     model = EventMember
     table_class = EventMembersTable
     template_name = "events/members_list.html"
@@ -1040,12 +1041,14 @@ class EventMembersListView(GroupTestMixin, SingleTableView):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
         # Add a context
-        context["event_label"] = self.kwargs["event"]
+        event_label = self.kwargs["event"]
+        context["event_label"] = event_label
+        context["event"] = Event.objects.get(label=event_label)
         # print(context)
         return context
 
 
-class FTEventMembersListView(GroupTestMixin, SingleTableView):
+class FTEventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
     model = EventMember
     table_class = FTEventMembersTable
     template_name = "events/ft_members_list.html"
@@ -1082,7 +1085,7 @@ class FTEventMembersListView(GroupTestMixin, SingleTableView):
         return context
 
 
-class MVEventMembersListView(GroupTestMixin, SingleTableView):
+class MVEventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
     model = EventMember
     table_class = MVEventMembersTable
     template_name = "events/mv_members_list.html"
@@ -1113,12 +1116,12 @@ class MVEventMembersListView(GroupTestMixin, SingleTableView):
         return context
 
 
-class EventMemberDetailView(GroupTestMixin, DetailView):
+class EventMemberDetailView(MVOrgaGroupTestMixin, DetailView):
     model = EventMember
     template_name = "events/member_detail.html"
 
 
-class FTEventMemberDetailView(GroupTestMixin, DetailView):
+class FTEventMemberDetailView(MVOrgaGroupTestMixin, DetailView):
     model = EventMember
     template_name = "events/ft_member_detail.html"
 
@@ -1131,14 +1134,22 @@ class FTEventMemberDetailView(GroupTestMixin, DetailView):
         return context
 
 
-class MVEventMemberDetailView(GroupTestMixin, DetailView):
+class MVEventMemberDetailView(MVOrgaGroupTestMixin, DetailView):
     model = EventMember
     template_name = "events/mv_member_detail.html"
 
 
-class EventMemberUpdateView(GroupTestMixin, UpdateView):
+class EventMemberUpdateView(MVOrgaGroupTestMixin, UpdateView):
     model = EventMember
-    fields = ["firstname", "lastname", "email", "attend_status"]
+    fields = [
+        "firstname",
+        "lastname",
+        "email",
+        "member_type",
+        "attend_status",
+        "vote_transfer",
+        "vote_transfer_check",
+    ]
     template_name = "events/member_update.html"
 
     def get_success_url(self):
@@ -1148,7 +1159,7 @@ class EventMemberUpdateView(GroupTestMixin, UpdateView):
         return reverse("members", kwargs={"event": label})
 
 
-class FTEventMemberUpdateView(GroupTestMixin, UpdateView):
+class FTEventMemberUpdateView(MVOrgaGroupTestMixin, UpdateView):
     model = EventMember
 
     form_class = FTEventMemberForm
@@ -1169,7 +1180,7 @@ class FTEventMemberUpdateView(GroupTestMixin, UpdateView):
         return super(FTEventMemberUpdateView, self).form_valid(form)
 
 
-class MVEventMemberUpdateView(GroupTestMixin, UpdateView):
+class MVEventMemberUpdateView(MVOrgaGroupTestMixin, UpdateView):
     model = EventMember
     template_name = "events/mv_member_update.html"
     fields = ["lastname", "firstname", "email", "vote_transfer", "vote_transfer_check"]
@@ -1181,7 +1192,7 @@ class MVEventMemberUpdateView(GroupTestMixin, UpdateView):
         return reverse("mv-members", kwargs={"event": label})
 
 
-class EventMemberCreateView(GroupTestMixin, CreateView):
+class EventMemberCreateView(MVOrgaGroupTestMixin, CreateView):
     model = EventMember
     template_name = "events/create_member_form.html"
     form_class = AddMemberForm
@@ -1208,13 +1219,13 @@ class EventMemberCreateView(GroupTestMixin, CreateView):
         return reverse_lazy("members", kwargs={"event": self.event.label})
 
 
-class EventMemberDeleteView(GroupTestMixin, DeleteView):
+class EventMemberDeleteView(MVOrgaGroupTestMixin, DeleteView):
     model = EventMember
     success_url = reverse_lazy("members-dashboard")
     template_name = "events/confirm_member_delete.html"
 
 
-class EventUpdateCapacityView(GroupTestMixin, UpdateView):
+class EventUpdateCapacityView(MVOrgaGroupTestMixin, UpdateView):
     model = Event
     template_name = "events/update_capacity_form.html"
     form_class = EventUpdateCapacityForm
@@ -1319,7 +1330,9 @@ def export_mv_members_csv(request):
     query_vote_transfer_no = request.GET.get("member_vote_transfer_no")
 
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="members_mv.csv"'
+    response[
+        "Content-Disposition"
+    ] = f'attachment; filename="teilnehmer_mv_{date.today()}.csv"'
 
     writer = csv.writer(response)
     writer.writerow(
@@ -1335,7 +1348,9 @@ def export_mv_members_csv(request):
         ]
     )
 
-    members_mv = EventMember.objects.filter(event__label="Online-MV2021")
+    members_mv = EventMember.objects.filter(
+        event__label="Digitale-Mitgliederversammlung-2023"
+    )
     if query_fn:
         members_mv = members_mv.filter(firstname__icontains=query_fn)
     if query_ln:
