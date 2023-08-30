@@ -309,6 +309,11 @@ class EventCollection(BaseModel):
     first_day = models.DateField(null=True, blank=True)
     last_day = models.DateField(null=True, blank=True)
 
+    class Meta:
+        verbose_name = "Bildungsangebot"
+        verbose_name_plural = "Bildungsangebote"
+        ordering = ("first_day",)
+
     def __str__(self):
         return self.name
 
