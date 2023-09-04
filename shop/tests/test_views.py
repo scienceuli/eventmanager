@@ -5,6 +5,8 @@ from django.test import TestCase, RequestFactory
 from django.urls import reverse
 from django.utils import timezone
 from django.contrib.sessions.middleware import SessionMiddleware
+from django.core import mail
+from django.conf import settings
 
 from events.models import (
     Event,
@@ -19,7 +21,32 @@ from events.models import (
 
 from events.email_template import EmailTemplate
 from shop.cart import Cart
+from shop.models import Order, OrderItem
 from shop.views import cart_add, order_create, OrderCreateView
+
+
+####################
+# email sending
+####################
+
+
+class EmailTestCase(TestCase):
+    def setUp(self):
+        settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
+    def test_send_email(self):
+        mail.send_mail(
+            "That’s your subject",
+            "That’s your message body",
+            "from@yourdjangoapp.com",
+            ["ukilian@mac.com"],
+            fail_silently=False,
+        )
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "That’s your subject")
+        self.assertEqual(mail.outbox[0].body, "That’s your message body")
+
 
 ####################
 # shop views
@@ -363,7 +390,6 @@ class ShopViewsTest(TestCase):
         # cart
         session = self.request.session
         # session = self.client.session
-        print(session["cart"])
 
         self.assertEqual(response.status_code, 302)
         # self.assertIsNotNone(respo)
@@ -433,3 +459,404 @@ class OrderCreateViewTestCase(TestCase):
         response = OrderCreateView.as_view()(self.request)
         cart = Cart(self.request)
         self.assertEqual(response.context_data["cart"].cart, cart.cart)
+
+    def test_order_create_view_with_vfll_registration(self):
+        cart = Cart(self.request)
+        form_data = {
+            "lastname": "Lachmal",
+            "firstname": "Lilly",
+            "email": "lilly@lachmal.de",
+            "street": "teststraße",
+            "city": "teststadt",
+            "postcode": "12345",
+            "country": "DE",
+            "vfll": True,
+        }
+        response = OrderCreateView.as_view()(self.request, data=form_data)
+        last_order = Order.objects.all().last()
+        self.assertEqual(last_order.event, self.event1)
+
+
+class OrderCreateViewPostTestCase(TestCase):
+    def setUp(self):
+        # existing order
+        existing_order = Order(
+            lastname="Huber",
+            firstname="Hans",
+            email="hans@huber.de",
+            street="Huberstrasse",
+            postcode="11111",
+            city="Hubercity",
+            country="DE",
+        )
+        existing_order.save()
+
+        category = EventCategory.objects.create(name="testcat")
+        eventformat = EventFormat.objects.create(name="testformat")
+        location = EventLocation.objects.create(title="testloc")
+        # setup future standard events
+        self.event1 = Event.objects.create(
+            name=f"Future Event 1",
+            category=category,
+            eventformat=eventformat,
+            location=location,
+            price="100.00",
+        )
+        self.event2 = Event.objects.create(
+            name=f"Future Event 2",
+            category=category,
+            eventformat=eventformat,
+            location=location,
+            price="200.00",
+        )
+
+        # Template
+        template_anmeldung = EmailTemplate.objects.create(
+            name="anmeldung", text_template="anmeldung"
+        )
+        template_bestaetigung = EmailTemplate.objects.create(
+            name="bestaetigung", text_template="bestaetigung"
+        )
+        template_waiting = EmailTemplate.objects.create(
+            name="warteliste", text_template="warteliste"
+        )
+
+        # Event and Payless Collection
+        self.event_collection = EventCollection.objects.create(name="collection 1")
+        self.payless_collection = PayLessAction.objects.create(
+            name="payless collection 1"
+        )
+        # factory
+        self.factory = RequestFactory()
+
+        # form_data
+        form_data = {
+            "lastname": "Lachmal",
+            "firstname": "Lilly",
+            "email": "lilly@lachmal.de",
+            "street": "teststraße",
+            "city": "teststadt",
+            "postcode": "12345",
+            "country": "DE",
+            "vfll": True,
+        }
+        # request
+        self.request = self.factory.post("shop/order_create", data=form_data)
+
+        # adding session
+        middleware = SessionMiddleware()
+        middleware.process_request(self.request)
+
+        # add cart to session with one event
+        event1_id = str(self.event1.id)
+        self.request.session["cart"] = {
+            event1_id: {
+                "quantity": 1,
+                "price": str(self.event1.price),
+                "premium_price": str(self.event1.premium_price),
+                "is_full": self.event1.is_full(),
+                "action_price": False,
+            },
+        }
+        self.request.session.save()
+
+    def test_order_create_view_that_order_was_created(self):
+        cart = Cart(self.request)
+
+        response = OrderCreateView.as_view()(self.request)
+        # order are ordered by -date_created, so newest order is first one
+        newest_order = Order.objects.all().first()
+        self.assertEqual(newest_order.lastname, "Lachmal")
+
+    def test_order_create_view_that_order_was_not_created_when_email_already_registerd(
+        self,
+    ):
+        # create event member with some email as in form_data
+
+        self.event_member = EventMember.objects.create(
+            event=self.event1,
+            lastname=f"Nachname",
+            firstname=f"Vorname",
+            email=f"lilly@lachmal.de",
+            street=f"Straße",
+            city=f"Stadt",
+            postcode="12345",
+            country="DE",
+            attend_status="registered",
+        )
+
+        cart = Cart(self.request)
+
+        response = OrderCreateView.as_view()(self.request)
+        # order are ordered by -date_created, so newest order is first one
+        nr_of_orders = Order.objects.all().count()
+        # lastname of newest order is Huber
+        lastname = Order.objects.all().first().lastname
+        self.assertEqual(nr_of_orders, 1)
+        self.assertEqual(lastname, "Huber")
+
+    def test_order_create_view_all_events_from_cart_are_created_as_items(self):
+        # create event_member with email different from form_data email
+        event_member = EventMember.objects.create(
+            event=self.event1,
+            lastname=f"Nachname",
+            firstname=f"Vorname",
+            email=f"not_used@emails.de",
+            street=f"Straße",
+            city=f"Stadt",
+            postcode="12345",
+            country="DE",
+            attend_status="registered",
+        )
+
+        # add second event to cart
+        event2_id = str(self.event2.id)
+        new_event_for_cart = {
+            event2_id: {
+                "quantity": 1,
+                "price": str(self.event2.price),
+                "premium_price": str(self.event1.premium_price),
+                "is_full": self.event1.is_full(),
+                "action_price": False,
+            },
+        }
+        self.request.session["cart"].update(new_event_for_cart)
+        self.request.session.save()
+
+        response = OrderCreateView.as_view()(self.request)
+
+        # newest order
+        newest_order = Order.objects.all().first()
+
+        # number of order items
+        nr_items = newest_order.items.all().count()
+        self.assertEqual(nr_items, 2)
+
+    def test_order_create_view_only_one_event_from_cart_is_created_as_item(self):
+        # create event_member with email equal to form_data email
+        event_member = EventMember.objects.create(
+            event=self.event1,
+            lastname=f"Nachname",
+            firstname=f"Vorname",
+            email=f"lilly@lachmal.de",
+            street=f"Straße",
+            city=f"Stadt",
+            postcode="12345",
+            country="DE",
+            attend_status="registered",
+        )
+
+        # add second event to cart
+        event2_id = str(self.event2.id)
+        new_event_for_cart = {
+            event2_id: {
+                "quantity": 1,
+                "price": str(self.event2.price),
+                "premium_price": str(self.event1.premium_price),
+                "is_full": self.event1.is_full(),
+                "action_price": False,
+            },
+        }
+        self.request.session["cart"].update(new_event_for_cart)
+        self.request.session.save()
+
+        response = OrderCreateView.as_view()(self.request)
+
+        # newest order
+        newest_order = Order.objects.all().first()
+
+        # item
+        order_item = OrderItem.objects.get(order=newest_order)
+
+        # number of order items is 1 not 2
+        nr_items = newest_order.items.all().count()
+        self.assertEqual(nr_items, 1)
+        # the event of the order item is event 2
+        self.assertEqual(order_item.event, self.event2)
+
+    def test_send_email_after_order_creation(self):
+        EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+        response = OrderCreateView.as_view()(self.request)
+        # order are ordered by -date_created, so newest order is first one
+        newest_order = Order.objects.all().first()
+
+        # two mails must be created: 1 for registration, 1 to vfll
+
+        self.assertEqual(len(mail.outbox), 2)
+
+
+class OrderCreateViewPricesTestCase(TestCase):
+    def setUp(self):
+        category = EventCategory.objects.create(name="testcat")
+        eventformat = EventFormat.objects.create(name="testformat")
+        location = EventLocation.objects.create(title="testloc")
+        # setup future standard events
+        self.event1 = Event.objects.create(
+            name=f"Future Event 1",
+            category=category,
+            eventformat=eventformat,
+            location=location,
+            price="100.00",
+        )
+        self.event2 = Event.objects.create(
+            name=f"Future Event 2",
+            category=category,
+            eventformat=eventformat,
+            location=location,
+            price="200.00",
+        )
+
+        # Template
+        template_anmeldung = EmailTemplate.objects.create(
+            name="anmeldung", text_template="anmeldung"
+        )
+        template_bestaetigung = EmailTemplate.objects.create(
+            name="bestaetigung", text_template="bestaetigung"
+        )
+        template_waiting = EmailTemplate.objects.create(
+            name="warteliste", text_template="warteliste"
+        )
+
+        # Event and Payless Collection
+        self.event_collection = EventCollection.objects.create(name="collection 1")
+        self.payless_collection = PayLessAction.objects.create(
+            name="payless collection 1"
+        )
+        # factory
+        self.factory = RequestFactory()
+
+    def test_price_is_reduced_if_vfll_member(self):
+        # form_data
+        form_data = {
+            "lastname": "Lachmal",
+            "firstname": "Lilly",
+            "email": "lilly@lachmal.de",
+            "street": "teststraße",
+            "city": "teststadt",
+            "postcode": "12345",
+            "country": "DE",
+            "vfll": True,
+        }
+        # request
+        self.request = self.factory.post("shop/order_create", data=form_data)
+
+        # adding session
+        middleware = SessionMiddleware()
+        middleware.process_request(self.request)
+
+        # add cart to session with one event
+        event1_id = str(self.event1.id)
+        self.request.session["cart"] = {
+            event1_id: {
+                "quantity": 1,
+                "price": str(self.event1.price),
+                "premium_price": str(self.event1.premium_price),
+                "is_full": self.event1.is_full(),
+                "action_price": False,
+            },
+        }
+        self.request.session.save()
+
+        response = OrderCreateView.as_view()(self.request)
+
+        # newest order
+        newest_order = Order.objects.all().first()
+
+        # item (only one)
+        order_item = OrderItem.objects.get(order=newest_order)
+
+        # the get_cost method returns the price
+        price = order_item.get_cost()
+
+        # item event is event1
+        self.assertEqual(price, Decimal(self.event1.price))
+
+    def test_price_is_reduced_if_other_member(self):
+        # form_data
+        form_data = {
+            "lastname": "Lachmal",
+            "firstname": "Lilly",
+            "email": "lilly@lachmal.de",
+            "street": "teststraße",
+            "city": "teststadt",
+            "postcode": "12345",
+            "country": "DE",
+            "memberships": ["vdu", "bf"],
+            # "vfll": True,
+        }
+        # request
+        self.request = self.factory.post("shop/order_create", data=form_data)
+
+        # adding session
+        middleware = SessionMiddleware()
+        middleware.process_request(self.request)
+
+        # add cart to session with one event
+        event1_id = str(self.event1.id)
+        self.request.session["cart"] = {
+            event1_id: {
+                "quantity": 1,
+                "price": str(self.event1.price),
+                "premium_price": str(self.event1.premium_price),
+                "is_full": self.event1.is_full(),
+                "action_price": False,
+            },
+        }
+        self.request.session.save()
+
+        response = OrderCreateView.as_view()(self.request)
+        # newest order
+        newest_order = Order.objects.all().first()
+
+        # item (only one)
+        order_item = OrderItem.objects.get(order=newest_order)
+
+        # the get_cost method returns the price
+        price = order_item.get_cost()
+
+        # item event is event1
+        self.assertEqual(price, Decimal(self.event1.price))
+
+    def test_price_is_not_reduced_if_no_member(self):
+        # form_data
+        form_data = {
+            "lastname": "Lachmal",
+            "firstname": "Lilly",
+            "email": "lilly@lachmal.de",
+            "street": "teststraße",
+            "city": "teststadt",
+            "postcode": "12345",
+            "country": "DE",
+        }
+        # request
+        self.request = self.factory.post("shop/order_create", data=form_data)
+
+        # adding session
+        middleware = SessionMiddleware()
+        middleware.process_request(self.request)
+
+        # add cart to session with one event
+        event1_id = str(self.event1.id)
+        self.request.session["cart"] = {
+            event1_id: {
+                "quantity": 1,
+                "price": str(self.event1.price),
+                "premium_price": str(self.event1.premium_price),
+                "is_full": self.event1.is_full(),
+                "action_price": False,
+            },
+        }
+        self.request.session.save()
+
+        response = OrderCreateView.as_view()(self.request)
+        # newest order
+        newest_order = Order.objects.all().first()
+
+        # item (only one)
+        order_item = OrderItem.objects.get(order=newest_order)
+
+        # the get_cost method returns the price
+        price = order_item.get_cost()
+
+        # item event is event1
+        self.assertEqual(price, Decimal(self.event1.premium_price))

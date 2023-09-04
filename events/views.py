@@ -79,6 +79,7 @@ from .utils import (
     update_boolean_values,
     convert_data_date,
     convert_boolean_field,
+    no_duplicate_check,
 )
 
 # import the logging library
@@ -784,91 +785,109 @@ def get_mv_form_data(form):
     return data_dict
 
 
+def make_event_registration(request, form, event):
+    personal_data_dict = get_personal_form_data(form)
+    if event.registration_form == "s":
+        s_data_dict = get_additional_form_data(form, event, "s")
+        new_member = EventMember.objects.create(
+            event=event, **personal_data_dict, **s_data_dict
+        )
+    elif event.registration_form == "m":
+        m_data_dict = get_mv_form_data(form)
+        new_member = EventMember.objects.create(
+            event=event, **personal_data_dict, **m_data_dict
+        )
+
+    """
+    zusätzlich wird ein eindeutiges Label für diese Anmeldung kreiert, um das Label
+    für Mailversand zu haben.
+    Das wird in models.py in der save method hinzugefügt
+    """
+
+    member_label = EventMember.objects.latest("date_created").label
+
+    if event.registration_form == "s":
+        # attend_status = get_additional_form_data(form, event, "s")["attend_status"]
+        attend_status = new_member.attend_status
+    elif event.registration_form == "m":
+        attend_status = "registered"
+
+    mail_to_admin_template_name = get_mail_to_admin_template_name(
+        event.registration_form
+    )
+    mail_to_member_template_name = get_mail_to_member_template_name(
+        event.registration_form, attend_status
+    )
+    formatting_dict = get_personal_form_data(form)
+
+    if event.registration_form == "s":
+        formatting_dict.update(get_additional_form_data(form, event, "s"))
+    elif event.registration_form == "m":
+        formatting_dict.update(get_mv_form_data(form))
+        if formatting_dict["vote_transfer"]:
+            transfer_string = f"Du nimmst an der Mitgliederversammlung nicht teil und überträgst deine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an: {formatting_dict['vote_transfer']}"
+        else:
+            transfer_string = ""
+        formatting_dict.update({"transfer_string": transfer_string})
+
+    update_boolean_values(formatting_dict)
+    if event.registration_form == "m":
+        formatting_dict["member_type"] = dict(form.fields["member_type"].choices).get(
+            formatting_dict["member_type"]
+        )
+
+    # set the right attend status in the formatting_dict
+    formatting_dict["attend_status"] = attend_status
+
+    vfll_mail_sent = send_email_after_registration(
+        "vfll", event, form, mail_to_admin_template_name, formatting_dict
+    )
+
+    if settings.SEND_EMAIL_AFTER_REGISTRATION_TO_MEMBER:
+        member_mail_sent = send_email_after_registration(
+            "member", event, form, mail_to_member_template_name, formatting_dict
+        )
+    else:
+        member_mail_sent = False
+
+    messages_dict = {
+        "s": (
+            "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
+            "Vielen Dank für Ihre Anmeldung. Sie wurden auf die Warteliste gesetzt und werden benachrichtigt, wenn ein Platz frei wird.",
+        )[attend_status == "waiting"],
+        "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
+        "f": "Vielen Dank für deine Anmeldung. Weitere Informationen werden nach dem Anmeldeschluss versandt.",
+    }
+    # only for registrations with non direct payment events
+    if not event.direct_payment:
+        messages.success(
+            request, messages_dict[event.registration_form], fail_silently=True
+        )
+
+    # save new member
+    new_member = EventMember.objects.latest("date_created")
+    new_member.save()
+
+    if vfll_mail_sent:
+        new_member.mail_to_admin = True
+        new_member.save()
+
+    if member_mail_sent:
+        new_member.mail_to_member = True
+        new_member.save()
+
+
 def handle_form_submission(request, form, event):
     if form.is_valid():
         personal_data_dict = get_personal_form_data(form)
-        if event.registration_form == "s":
-            s_data_dict = get_additional_form_data(form, event, "s")
-            new_member = EventMember.objects.create(
-                event=event, **personal_data_dict, **s_data_dict
+        if no_duplicate_check(personal_data_dict.get("email"), event):
+            make_event_registration(request, form, event)
+        elif not event.direct_payment:
+            messages.error(
+                request,
+                "Es gibt bereits eine Anmeldung mit dieser E-Mail-Adresse!",
+                fail_silently=True,
             )
-        elif event.registration_form == "m":
-            m_data_dict = get_mv_form_data(form)
-            new_member = EventMember.objects.create(
-                event=event, **personal_data_dict, **m_data_dict
-            )
-
-        """
-        zusätzlich wird ein eindeutiges Label für diese Anmeldung kreiert, um das Label
-        für Mailversand zu haben.
-        Das wird in models.py in der save method hinzugefügt
-        """
-
-        member_label = EventMember.objects.latest("date_created").label
-
-        if event.registration_form == "s":
-            attend_status = get_additional_form_data(form, event, "s")["attend_status"]
-        elif event.registration_form == "m":
-            attend_status = "registered"
-
-        mail_to_admin_template_name = get_mail_to_admin_template_name(
-            event.registration_form
-        )
-        mail_to_member_template_name = get_mail_to_member_template_name(
-            event.registration_form, attend_status
-        )
-        formatting_dict = get_personal_form_data(form)
-
-        if event.registration_form == "s":
-            formatting_dict.update(get_additional_form_data(form, event, "s"))
-        elif event.registration_form == "m":
-            formatting_dict.update(get_mv_form_data(form))
-            if formatting_dict["vote_transfer"]:
-                transfer_string = f"Du nimmst an der Mitgliederversammlung nicht teil und überträgst deine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an: {formatting_dict['vote_transfer']}"
-            else:
-                transfer_string = ""
-            formatting_dict.update({"transfer_string": transfer_string})
-
-        update_boolean_values(formatting_dict)
-        if event.registration_form == "m":
-            formatting_dict["member_type"] = dict(
-                form.fields["member_type"].choices
-            ).get(formatting_dict["member_type"])
-
-        vfll_mail_sent = send_email_after_registration(
-            "vfll", event, form, mail_to_admin_template_name, formatting_dict
-        )
-
-        if settings.SEND_EMAIL_AFTER_REGISTRATION_TO_MEMBER:
-            member_mail_sent = send_email_after_registration(
-                "member", event, form, mail_to_member_template_name, formatting_dict
-            )
-        else:
-            member_mail_sent = False
-
-        messages_dict = {
-            "s": (
-                "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
-                "Vielen Dank für Ihre Anmeldung. Sie wurden auf die Warteliste gesetzt und werden benachrichtigt, wenn ein Platz frei wird.",
-            )[attend_status == "waiting"],
-            "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
-            "f": "Vielen Dank für deine Anmeldung. Weitere Informationen werden nach dem Anmeldeschluss versandt.",
-        }
-        # only for registrations with non direct payment events
-        if not event.direct_payment:
-            messages.success(request, messages_dict[event.registration_form])
-
-        # save new member
-        new_member = EventMember.objects.latest("date_created")
-        new_member.save()
-
-        if vfll_mail_sent:
-            new_member.mail_to_admin = True
-            new_member.save()
-
-        if member_mail_sent:
-            new_member.mail_to_member = True
-            new_member.save()
 
     return form.is_valid()
 

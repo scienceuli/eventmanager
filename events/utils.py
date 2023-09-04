@@ -278,3 +278,12 @@ def convert_boolean_field(value):
     if value:
         return "x"
     return ""
+
+
+def no_duplicate_check(email, event):
+    if (
+        email in list(event.members.all().values_list("email", flat=True))
+        and settings.NO_MEMBER_DUPLICATES_ALLOWED
+    ):
+        return False
+    return True

@@ -445,7 +445,9 @@ class EventMemberForm(forms.Form):
     )
 
     memberships = forms.MultipleChoiceField(
-        widget=forms.CheckboxSelectMultiple(attrs={"class": "text-xs  text-gray-600"}),
+        widget=forms.CheckboxSelectMultiple(
+            attrs={"class": "text-xs  text-gray-600", "onclick": "changePrice()"}
+        ),
         choices=MEMBERSHIP_CHOICES,
         required=False,
     )

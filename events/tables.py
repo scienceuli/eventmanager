@@ -23,7 +23,7 @@ class MemberDeleteLinkColumn(tables.LinkColumn):
 
 
 class EventMembersTable(tables.Table):
-    counter = tables.Column(empty_values=(), orderable=False)
+    counter = tables.Column(verbose_name="#", empty_values=(), orderable=False)
 
     def render_counter(self):
         self.row_counter = getattr(self, "row_counter", itertools.count())
@@ -56,7 +56,7 @@ class EventMembersTable(tables.Table):
         model = EventMember
         template_name = "django_tables2/bootstrap.html"
         fields = (
-            "event",
+            "counter",
             "firstname",
             "lastname",
             "email",

@@ -4,7 +4,7 @@ from django.conf import settings
 from shop.models import Order
 
 
-@shared_task
+# @shared_task
 def order_created(order_id):
     """
     Task to send an e-mail notification when an order is

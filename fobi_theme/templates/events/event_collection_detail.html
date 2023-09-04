@@ -5,6 +5,32 @@
 {% block extra_head %}
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.3/dist/cdn.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css" rel="stylesheet" />
+<style>
+    div.box {
+        --s: 550px;
+        /*Size of the circle */
+        --p: 15px;
+        /* padding */
+
+        height: var(--s);
+        width: var(--s);
+        border-radius: 50%;
+    }
+
+    .box i,
+    .box::before {
+        content: '';
+        float: left;
+        height: 100%;
+        width: 50%;
+        shape-outside: radial-gradient(farthest-side at right, transparent calc(100% - var(--p)), #fff 0);
+    }
+
+    .box i {
+        float: right;
+        shape-outside: radial-gradient(farthest-side at left, transparent calc(100% - var(--p)), #fff 0);
+    }
+</style>
 {% endblock %}
 
 
@@ -74,7 +100,7 @@
                             <div class="w-1/2"><a href="{% url 'event-detail' event.slug %}">{{ event.name }}</a> {% if event.is_full %}<span class="italic">Leider ausgebucht</span>{% endif %}</div>
                             <div class="w-1/2">
                                 {% if event.first_day %}
-                                <span class="ml-2">{{ event.first_day|date:"j.m.Y" }}</span>
+                                <span class="ml-2">{{ event.first_day|date:"d.m.Y" }}</span>
                                 {% else %}
                                 &nbsp;
                                 {% endif %}
@@ -143,24 +169,27 @@
             <!-- Pay less Modal powered by alpine.js -->
             <div x-data="{ 'showModal': false }" @keydown.escape="showModal = false">
                 <!-- Trigger for Modal -->
-                <div class="absolute top-0 right-4 w-2/5">
+                <div class="absolute top-0 right-4 w-2/5 text-right">
                     <button type="button" @click="showModal = true" class="animate-pulse inline-block w-48 h-48 rounded-full  font-bold text-xl text-center uppercase align-middle  border border-solid  shadow-none cursor-pointer  leading-pro bg-red-100 border-vfllred transition ease-in-out delay-150  hover:-translate-y-1 hover:scale-110  duration-300">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</button>
                 </div>
 
                 <!-- Modal -->
-                <div class="fixed inset-0 z-30 flex items-center justify-center overflow-auto bg-vfllred/50" x-show="showModal">
+                <div class="fixed inset-0 z-30 flex items-center justify-center overflow-auto bg-white/50" x-show="showModal">
                     <!-- Modal inner -->
-                    <div class="w-128 h-128 px-6 px-4 mx-auto flex flex-col items-center justify-center ring-2 ring-vfllred bg-gray-300 rounded-full shadow-lg transition delay-150 duration-700 ease-in-out" @click.away="showModal = false" x-transition:enter="motion-safe:ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
+                    <div class=" px-6 px-4 mx-auto flex flex-col items-center justify-center ring-2 ring-vfllred bg-gray-300 rounded-md shadow-lg transition delay-150 duration-700 ease-in-out" @click.away="showModal = false" x-transition:enter="motion-safe:ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
+                        <!--<div class="box ring-2 mx-auto text-center justify-center ring-vfllred bg-gray-300 shadow-lg transition delay-150 duration-700 ease-in-out" @click.away="showModal = false" x-transition:enter="motion-safe:ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
+                        <i></i> -->
+
                         <!-- Title / Close-->
 
                         <div class="">
-                            <h5 class="mr-3 text-2xl font-bold max-w-none"><span class="text-gray-700">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</span></h5>
+                            <h5 class=" mr-3 text-2xl font-bold max-w-none"><span class="text-gray-700">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</span></h5>
 
                         </div>
                         <!-- content -->
 
 
-                        <p class="pt-2 text-center font-semibold text-vfllred">bei Buchung aller Veranstaltungen der Reihe</p>
+                        <p class="pt-2 text-center font-semibold text-vfllred">bei Buchung aller Veranstaltungen des Bidlungsangebots</p>
 
 
                         <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.get_action_prices.0 }}&thinsp;€ statt {{ payless_collection.get_action_prices.1 }}&thinsp;€</p>

@@ -112,6 +112,8 @@ WSGI_APPLICATION = "eventmanager.wsgi.application"
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
 
+AUTHENTICATION_BACKENDS = ("users.backend.EmailOrUsernameBackend",)
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",

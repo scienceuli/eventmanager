@@ -24,6 +24,7 @@ from xhtml2pdf import pisa
 from events.models import Event, EventCollection
 from events.forms import EventMemberForm
 from events.views import handle_form_submission
+from events.utils import no_duplicate_check
 
 from shop.cart import Cart
 from shop.forms import CartAddEventForm
@@ -99,6 +100,11 @@ class OrderCreateView(FormView):
         self.non_payment_cart = split_cart(self.cart)[1]
 
         return super().dispatch(request, *args, **kwargs)
+
+    def get_initial(self):
+        initial = super(OrderCreateView, self).get_initial()
+        initial.update({"country": "DE"})
+        return initial
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -176,9 +182,12 @@ class OrderCreateView(FormView):
         cart = self.cart
 
         order_saved = False
+        self.order_saved = order_saved
+        order = None
 
         # Orders are created if there is something to pay
         if len(split_cart(cart)[0]) > 0:
+            email = form.cleaned_data.get("email")
             order = Order(
                 academic=form.cleaned_data["academic"],
                 firstname=form.cleaned_data["firstname"],
@@ -189,26 +198,39 @@ class OrderCreateView(FormView):
                 city=form.cleaned_data["city"],
                 state=form.cleaned_data["state"],
                 postcode=form.cleaned_data["postcode"],
-                email=form.cleaned_data["email"],
+                email=email,
                 phone=form.cleaned_data["phone"],
             )
             vfll = form.cleaned_data["vfll"]
-            order.discounted = vfll
+            memberships = form.cleaned_data["memberships"]
+            print("vfll:", vfll)
+            print("ms:", memberships, len(memberships), vfll or (len(memberships) > 0))
+            order.discounted = vfll or (len(memberships) > 0)
 
             # only cart items where payment is possible belong to order
 
             order.save()
             print(order.payment_type)
             order_saved = True
+
+            duplicate_list = []  # list of events with already existing registration
+            order_item_counter = 0
             for item in split_cart(cart)[0]:
-                OrderItem.objects.create(
-                    order=order,
-                    event=item["event"],
-                    price=item["price"],
-                    premium_price=item["premium_price"],
-                    quantity=item["quantity"],
-                    is_action_price=item["action_price"],
-                )
+                event = item["event"]
+                if no_duplicate_check(email, event):
+                    OrderItem.objects.create(
+                        order=order,
+                        event=event,
+                        price=item["price"],
+                        premium_price=item["premium_price"],
+                        quantity=item["quantity"],
+                        is_action_price=item["action_price"],
+                    )
+                    order_item_counter += 1
+                else:
+                    duplicate_list.append(event.name)
+
+            duplicate_string = ", ".join(duplicate_list)
 
         # create EventMemberInstances for ALL cart items
 
@@ -218,27 +240,42 @@ class OrderCreateView(FormView):
         # clear the cart
         cart.clear()
 
-        if payment_cart:
+        if payment_cart and order_item_counter > 0 and len(duplicate_list) == 0:
             message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
+            level = messages.SUCCESS
+        elif payment_cart and order_item_counter > 0 and len(duplicate_list) > 0:
+            message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Für folgende Veranstaltungen waren Sie bereits angemeldet: {duplicate_string}. Diese werden aus Ihrer Bestellung entfernt. Für die anderen ist die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
+            level = messages.SUCCESS
+        elif payment_cart and order_item_counter == 0:
+            message = f"Für alle von Ihnen ausgewählten Veranstaltungen sind sie bereits angemeldet. Ihre Bestellung wird daher verworfen."
+            level = messages.ERROR
         elif non_payment_cart:
             message = f"Vielen Dank für Ihre Anmeldung."
+            level = messages.SUCCESS
         else:
             message = f"Sie haben noch keine Anmeldung vorgenommen."
+            level = messages.INFO
 
-        messages.success(self.request, message)
+        messages.add_message(self.request, level, message, fail_silently=True)
 
-        # send email to user if order was created
-        self.order_saved = order_saved
-        self.order = order
+        if order:
+            if not order_item_counter == 0:
+                self.order_saved = order_saved
+                self.order = order
+            else:
+                order.delete()
+                self.order_saved = False
 
         return super().form_valid(form)
 
     def get_success_url(self):
         order_saved = self.order_saved
-        order = self.order
 
         if order_saved:
-            order_created.delay(order.id)
+            order = self.order
+            # send email to user if order was created
+            # order_created.delay(order.id)
+            order_created(order.id)
 
             # set the order in the session
             self.request.session["order_id"] = order.id
@@ -321,8 +358,10 @@ def order_create(request):
                     email=form.cleaned_data["email"],
                     phone=form.cleaned_data["phone"],
                 )
+                memberships = form.cleaned_data["memberships"]
+                print("memberships: ", memberships)
                 vfll = form.cleaned_data["vfll"]
-                order.discounted = vfll
+                order.discounted = vfll or (len(memberships) > 0)
 
                 # only cart items where payment is possible belong to order
 
@@ -408,11 +447,12 @@ def order_create(request):
             else:
                 message = f"Sie haben noch keine Anmeldung vorgenommen."
 
-            messages.success(request, message)
+            messages.success(request, message, fail_silently=True)
 
             # send email to user if order was created
             if order_saved:
-                order_created.delay(order.id)
+                # order_created.delay(order.id)
+                order_created(order.id)
 
                 # set the order in the session
                 request.session["order_id"] = order.id
