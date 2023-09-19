@@ -462,6 +462,7 @@ class OrderCreateViewTestCase(TestCase):
 
     def test_order_create_view_with_vfll_registration(self):
         cart = Cart(self.request)
+        print("cart:", cart.cart)
         form_data = {
             "lastname": "Lachmal",
             "firstname": "Lilly",
@@ -473,6 +474,7 @@ class OrderCreateViewTestCase(TestCase):
             "vfll": True,
         }
         response = OrderCreateView.as_view()(self.request, data=form_data)
+        print("orders:", Order.objects.all())
         last_order = Order.objects.all().last()
         self.assertEqual(last_order.event, self.event1)
 

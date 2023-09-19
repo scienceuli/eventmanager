@@ -18,6 +18,11 @@ urlpatterns = [
         "admin/order/<int:order_id>/pdf/", views.admin_order_pdf, name="admin-order-pdf"
     ),
     path(
+        "admin/order/<int:order_id>/pdf_and_mail/",
+        views.admin_order_pdf_and_mail,
+        name="admin-order-pdf-and-mail",
+    ),
+    path(
         "admin/order/<int:order_id>/",
         views.admin_order_detail,
         name="admin-order-detail",

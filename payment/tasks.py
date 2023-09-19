@@ -6,6 +6,7 @@ from django.template.loader import render_to_string
 from django.core.mail import EmailMessage
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.shortcuts import HttpResponse
 
 from tempfile import NamedTemporaryFile
 

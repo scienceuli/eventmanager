@@ -519,6 +519,7 @@ class Event(BaseModel, HitCountMixin):
     )
 
     registration_possible = models.BooleanField("Anmeldung möglich", default=True)
+    registration_message = models.CharField(max_length=255, blank=True, null=True)
 
     REGISTRATION_FORM_CHOICES = (
         ("s", "Standard"),
@@ -737,6 +738,21 @@ class Event(BaseModel, HitCountMixin):
         if capacity - count <= 3:
             return True
         return False
+
+    @property
+    def show_registration_boolean(self):
+        if (
+            not self.is_past()
+            and self.category.name != "vfll_intern"
+            and self.show_registration
+        ):
+            return True
+        return False
+
+    @property
+    def registration_string(self):
+        if self.registration_message:
+            return self.registration_message
 
     def get_duplicate_members(self):
         email_list = list(self.members.values_list("email", flat=True))

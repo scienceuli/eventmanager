@@ -10,7 +10,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse, reverse_lazy
 from django.conf import settings
 from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 
 from django.views.decorators.http import require_POST
 from django.contrib import messages
@@ -32,6 +32,7 @@ from shop.models import Order, OrderItem
 from shop.tasks import order_created
 
 from payment.utils import render_to_pdf
+from payment.tasks import payment_completed
 
 
 def split_cart(cart):
@@ -177,6 +178,7 @@ class OrderCreateView(FormView):
         return context
 
     def form_valid(self, form):
+        print("form valid called")
         payment_cart = self.payment_cart
         non_payment_cart = self.non_payment_cart
         cart = self.cart
@@ -510,6 +512,21 @@ def admin_order_pdf(request, order_id):
     response["Content-Disposition"] = f'filename="{filename}.pdf"'
 
     return response
+
+
+@staff_member_required
+def admin_order_pdf_and_mail(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    # set payment type to invoice
+    order.payment_type = "r"
+    order.save()
+    # call payment_completed
+    response = payment_completed(order_id)
+    # Redirect explicitly to the admin list view
+    list_view_url = reverse(
+        "admin:%s_%s_changelist" % (order._meta.app_label, order._meta.model_name)
+    )
+    return HttpResponseRedirect(list_view_url)
 
 
 @staff_member_required

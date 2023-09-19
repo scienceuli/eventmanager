@@ -20,6 +20,17 @@ def order_pdf(obj):
 order_pdf.short_description = "Rechnung"
 
 
+def order_pdf_and_mail(obj):
+    url = reverse("shop:admin-order-pdf-and-mail", args=[obj.id])
+    if obj.payment_type == "n":
+        return mark_safe(f'<a href="{url}">PDF+Mail</a>')
+    else:
+        return ""
+
+
+order_pdf_and_mail.short_description = "R+M"
+
+
 def order_detail(obj):
     url = reverse("shop:admin-order-detail", args=[obj.id])
     return mark_safe(f"<a href='{url}'>Anschauen</a>")
@@ -41,6 +52,7 @@ class OrderAdmin(admin.ModelAdmin):
         "date_modified",
         order_detail,
         order_pdf,
+        order_pdf_and_mail,
     ]
 
     list_filter = [

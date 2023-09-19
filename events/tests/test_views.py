@@ -3,6 +3,9 @@ import datetime
 from django.test import TestCase
 from django.urls import reverse
 from django.utils import timezone
+from django.conf import settings
+from django.core import mail
+
 
 from events.models import (
     Event,
@@ -249,6 +252,9 @@ class EventContextTest(TestCase):
 
 class AddEventMemberTest(TestCase):
     def setUp(self):
+        # email setting
+        settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
         # create event in the future
         category = EventCategory.objects.create(name="testcat")
         eventformat = EventFormat.objects.create(name="testformat")
@@ -357,3 +363,47 @@ class AddEventMemberTest(TestCase):
             ).attend_status,
             "waiting",
         )
+
+    def test_send_registration_email_to_member(self):
+        # two members in event so there is space for more
+        self.event.capacity = 5
+        self.event.save()
+        form_data = {
+            "firstname": "member",
+            "lastname": "Member",
+            "email": "member@members.de",
+            "street": "teststraße",
+            "city": "teststadt",
+            "postcode": "12345",
+            "country": "DE",
+        }
+        response = self.client.post(
+            reverse("event-add-member", args=[self.event.slug]), form_data, follow=True
+        )
+
+        self.assertEqual(len(mail.outbox), 2)
+
+        self.assertEqual(mail.outbox[1].subject, f"Anmeldung am Kurs {self.event.name}")
+        self.assertEqual(mail.outbox[1].body, "bestaetigung")
+
+    def test_send_registration_email_to_member(self):
+        # two members in event so it's full if capacity = 2
+        self.event.capacity = 2
+        self.event.save()
+        form_data = {
+            "firstname": "member",
+            "lastname": "Member",
+            "email": "member@members.de",
+            "street": "teststraße",
+            "city": "teststadt",
+            "postcode": "12345",
+            "country": "DE",
+        }
+        response = self.client.post(
+            reverse("event-add-member", args=[self.event.slug]), form_data, follow=True
+        )
+
+        self.assertEqual(len(mail.outbox), 2)
+
+        self.assertEqual(mail.outbox[1].subject, f"Anmeldung am Kurs {self.event.name}")
+        self.assertEqual(mail.outbox[1].body, "warteliste")
