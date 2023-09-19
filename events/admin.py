@@ -908,7 +908,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "registration_form",
                     "registration",
                     "registration_possible",
-                    "registration_message",
+                    # "registration_message",
                     "registration_recipient",
                     "close_date",
                     "status",
