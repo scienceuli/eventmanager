@@ -183,6 +183,10 @@ def home(request):
     return render(request, "events/home.html", context)
 
 
+def maintenance(request):
+    return render(request, "events/maintenance.html")
+
+
 @login_required(login_url="login")
 def dashboard(request):
     event_ctg_count = EventCategory.objects.count()
@@ -539,34 +543,42 @@ class EventDetailView(HitCountDetailView):
             show_registration = True
             registration_text = event.registration
 
-            if event.close_date:
-                registration_text += "<span class='font-medium'>Anmeldeschluss: {:%d. %B %Y}</span><br/>".format(
-                    event.close_date
-                )
-                if event.is_closed_for_registration():
-                    if not event.is_full():
-                        registration_text += "<span class='text-vfllred'>Anmeldung möglich, da noch wenige freie Plätze</span>"
-                        registration_button = "Online anmelden"
-                    else:
-                        registration_text += (
-                            "<span class='italic'>Leider ausgebucht</span>"
-                        )
-                        registration_button = "Auf die Warteliste"
-                        additional_text = "Nach Abschluss des Bestellvorgangs werden Sie auf die Warteliste gesetzt."
-                else:
-                    if not event.is_full():
-                        if event.few_remaining_places():
-                            registration_text += "<span class='text-vfllred'>Nur noch wenige freie Plätze!</span>"
-                        registration_button = "Online anmelden"
-                    else:
-                        registration_text += (
-                            "<span class='italic'>Leider ausgebucht</span> "
-                        )
-                        registration_button = "Auf die Warteliste"
-                        additional_text = "*Nach Abschluss des Bestellvorgangs werden Sie auf die Warteliste gesetzt."
-
-            else:
+            if event.registration_message:
+                registration_text += f"<span class='font-medium'>{event.registration_message}</span><br/>"
                 registration_button = "Online anmelden"
+            else:
+                if event.close_date:
+                    registration_text += "<span class='font-medium'>Anmeldeschluss: {:%d. %B %Y}</span><br/>".format(
+                        event.close_date
+                    )
+                    if event.is_closed_for_registration():
+                        if not event.is_full():
+                            if event.few_remaining_places():
+                                registration_text += "<span class='text-vfllred'>Anmeldung möglich, da noch wenige freie Plätze</span>"
+                            else:
+                                registration_text += "<span class='text-vfllred'>Anmeldung möglich, da noch freie Plätze</span>"
+
+                            registration_button = "Online anmelden"
+                        else:
+                            registration_text += (
+                                "<span class='italic'>Leider ausgebucht</span>"
+                            )
+                            registration_button = "Auf die Warteliste"
+                            additional_text = "Nach Abschluss des Bestellvorgangs werden Sie auf die Warteliste gesetzt."
+                    else:
+                        if not event.is_full():
+                            if event.few_remaining_places():
+                                registration_text += "<span class='text-vfllred'>Nur noch wenige freie Plätze!</span>"
+                            registration_button = "Online anmelden"
+                        else:
+                            registration_text += (
+                                "<span class='italic'>Leider ausgebucht</span> "
+                            )
+                            registration_button = "Auf die Warteliste"
+                            additional_text = "*Nach Abschluss des Bestellvorgangs werden Sie auf die Warteliste gesetzt."
+
+                else:
+                    registration_button = "Online anmelden"
         else:
             show_registration = False
 
@@ -895,6 +907,12 @@ def handle_form_submission(request, form, event):
 # @login_required(login_url="login")
 def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
+    if not event.registration_possible:
+        messages.add_message(
+            request, messages.ERROR, "keine Anmeldung möglich", fail_silently=True
+        )
+        return redirect("event-detail", event.slug)
+
     if event.direct_payment:
         payment_button_text = settings.PAY_NOW_TEXT
     else:

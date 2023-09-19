@@ -33,6 +33,7 @@ from .views import (
     search_event,
     moodle,
     home,
+    maintenance,
     dashboard,
     event_add_member,
     get_moodle_data,
@@ -70,6 +71,7 @@ urlpatterns = [
     path("sentry-debug/", trigger_error),  # sentry test
     path("tinymce/", include("tinymce.urls")),
     path("", home, name="home"),
+    path("maintenance/", maintenance, name="maintenance"),
     path("dashboard/", dashboard, name="dashboard"),
     path("event_list/", EventListView.as_view(), name="event-list"),
     path("event_filter/", FilteredEventListView.as_view(), name="event-filter"),
