@@ -741,11 +741,7 @@ class Event(BaseModel, HitCountMixin):
 
     @property
     def show_registration_boolean(self):
-        if (
-            not self.is_past()
-            and self.category.name != "vfll_intern"
-            and self.show_registration
-        ):
+        if not self.is_past() and self.category.name != "vfll_intern":
             return True
         return False
 
