@@ -108,6 +108,11 @@ def save_course_to_db(course_dict):
     except:
         eventformat, _ = EventFormat.objects.get_or_create(name="Online")
 
+    try:
+        price = Event.objects.get(moodle_id=course_dict["moodle_id"]).price
+    except:
+        price = Decimal(0.00)
+
     # print(f"location: {location}")
     obj, created = Event.objects.update_or_create(
         moodle_id=course_dict["moodle_id"],
@@ -116,7 +121,8 @@ def save_course_to_db(course_dict):
             "eventformat": eventformat,
             "name": course_dict["course_fullname"],
             "label": course_dict["course_shortname"],
-            "price": Decimal(0.00),
+            "price": price,
+            # "price": Decimal(0.00),
             #'description': course_dict['course_summary'],
             #'target_group': 'siehe Moodle',
             #'prerequisites': 'siehe Moodle',
