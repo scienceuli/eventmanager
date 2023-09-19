@@ -822,6 +822,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "get_start_date",
         "get_end_date",
         "price",
+        "direct_payment",
         "view_members_link",
         "capacity",
         "eventformat",
