@@ -35,7 +35,7 @@ def payment_completed(order_id):
     event_string = ", ".join([item.event.name for item in order.items.all()])
 
     formatting_dict = {
-        "academic": order.academic,
+        "academic": order.academic if order.academic else "",
         "firstname": order.firstname,
         "lastname": order.lastname,
         "event_string": event_string,
