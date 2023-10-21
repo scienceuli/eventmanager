@@ -32,7 +32,6 @@ MEMBERSHIP_CHOICES = (
     ("tv", "Berufsverband Text und Konzept"),
     ("jv", "Junge Verlags- und Medienmenschen"),
     ("sp", "Selfpublisher-Verband"),
-    ("at", "ATICOM"),
     ("tt", "texttreff.de"),
 )
 
