@@ -72,3 +72,11 @@ class OrderAdmin(admin.ModelAdmin):
         return instance.get_total_cost()
 
     amount.short_description = "Betrag"
+
+
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = [
+        "order",
+        "event",
+    ]

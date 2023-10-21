@@ -61,6 +61,8 @@ from .models import (
     EventHighlight,
 )
 
+from shop.models import Order, OrderItem
+
 from .admin_views import hitcount_view
 
 from .email_template import EmailTemplate
@@ -532,6 +534,38 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     def change_attend_status_to_registered(self, request, obj, parent_obj):
         obj.attend_status = "registered"
         obj.save()
+        event = obj.event
+        print(
+            OrderItem.objects.filter(
+                event=event,
+                order__email=obj.email,
+            ).exists()
+        )
+        if not OrderItem.objects.filter(
+            event=event,
+            order__email=obj.email,
+        ).exists():
+            order = Order.objects.create(
+                academic=obj.academic,
+                firstname=obj.firstname,
+                lastname=obj.lastname,
+                address_line=obj.address_line,
+                company=obj.company,
+                street=obj.street,
+                city=obj.city,
+                state=obj.state,
+                postcode=obj.postcode,
+                email=obj.email,
+                phone=obj.phone,
+                discounted=obj.vfll or (len(obj.memberships) > 0),
+            )
+            order_item = OrderItem.objects.create(
+                order=order,
+                event=event,
+                price=event.price,
+                premium_price=event.premium_price,
+                quantity=1,
+            )
 
     change_attend_status_to_registered.short_description = ">A"
 
