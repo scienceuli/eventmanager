@@ -301,6 +301,7 @@ class EventModelForm(forms.ModelForm):
             "eventurl",
             "target_group",
             "fees",
+            "price",
             "location",
             "organizer",
             "registration_possible",
