@@ -803,6 +803,26 @@ class EventCollectionAdmin(admin.ModelAdmin):
 admin.site.register(EventCollection, EventCollectionAdmin)
 
 
+def clean_unique(
+    form,
+    field,
+    exclude_initial=True,
+    format="%(value)s wurde für  %(field)s bereits genutzt.",
+):
+    value = form.cleaned_data.get(field)
+    if value:
+        qs = form._meta.model._default_manager.filter(**{field: value})
+        if exclude_initial and form.initial:
+            initial_value = form.initial.get(field)
+            qs = qs.exclude(**{field: initial_value})
+        if qs.count() > 0:
+            field_verbose = form._meta.model._meta.get_field(field).verbose_name
+            raise forms.ValidationError(
+                format % {"field": field_verbose, "value": value}
+            )
+    return value
+
+
 class EventForm(forms.ModelForm):
     def clean(self):
         payless_collection = self.cleaned_data.get("payless_collection")
@@ -820,6 +840,9 @@ class EventForm(forms.ModelForm):
                     "direct_payment": "Für eine Veranstaltung mit Payless-Aktion muss die Warenkorb-Funktion geschaltet sein."
                 }
             )
+
+    def clean_label(self):
+        return clean_unique(self, "label")
 
 
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
