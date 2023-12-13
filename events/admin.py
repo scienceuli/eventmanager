@@ -858,6 +858,11 @@ class EventForm(forms.ModelForm):
 class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     form = EventForm
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "category":
+            kwargs["queryset"] = EventCategory.shown_event_categories.all()
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
     def get_form(self, request, obj=None, **kwargs):
         form = super(EventAdmin, self).get_form(request, obj, **kwargs)
         form.base_fields["event_collection"].widget.can_delete_related = False

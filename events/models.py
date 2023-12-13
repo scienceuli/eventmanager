@@ -23,7 +23,7 @@ from embed_video.fields import EmbedVideoField
 from hitcount.models import HitCountMixin, HitCount
 
 from .abstract import BaseModel, AddressModel
-from .managers import EventCategoryManager
+from .managers import ShownEventCategoriesManager
 
 from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
 
@@ -141,7 +141,8 @@ class EventCategory(BaseModel):
     )
     registration = models.BooleanField(verbose_name="Anmeldung möglich", default=True)
 
-    objects = EventCategoryManager()
+    objects = models.Manager()
+    shown_event_categories = ShownEventCategoriesManager()
 
     class Meta:
         ordering = ("position",)
