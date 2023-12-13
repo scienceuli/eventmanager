@@ -277,7 +277,7 @@ class EventModelForm(forms.ModelForm):
     category = forms.ModelChoiceField(
         label="Kategorie",
         required=True,
-        queryset=EventCategory.objects.all(),
+        queryset=EventCategory.objects.filter(show=True),
     )
 
     registration_possible = forms.BooleanField(label="Anmeldeformular", required=False)

@@ -1,6 +1,7 @@
 import csv
-from datetime import datetime
+from datetime import datetime, date
 from django.http import HttpResponse
+from django.core.files.base import ContentFile
 
 
 def export_to_csv(modeladmin, request, queryset):
@@ -26,3 +27,8 @@ def export_to_csv(modeladmin, request, queryset):
             data_row.append(value)
         writer.writerow(data_row)
     return response
+
+
+def download_invoices_as_zipfile(modeladmin, request, queryset):
+    zipfile_name = f"rechnungen:{date.now()}"
+    temp_file = ContentFile(b"", name=zipfile_name)

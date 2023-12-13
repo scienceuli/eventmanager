@@ -99,6 +99,16 @@ admin.site.register(Home, HomeAdmin)
 class EventCategoryAdmin(admin.ModelAdmin):
     model = EventCategory
 
+    list_display = [
+        "name",
+        "title",
+        "description",
+        "singular",
+        "position",
+        "show",
+        "registration",
+    ]
+
     def formfield_for_dbfield(self, db_field, **kwargs):
         formfield = super(EventCategoryAdmin, self).formfield_for_dbfield(
             db_field, **kwargs
@@ -968,6 +978,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "registration_possible",
                     # "registration_message",
                     "registration_recipient",
+                    "open_date",
                     "close_date",
                     "status",
                     "free_text_field_intro",

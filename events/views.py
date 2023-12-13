@@ -390,7 +390,7 @@ class EventCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         # salon_group = Group.objects.get(name="salon")
         if self.request.user.groups.filter(name="salon"):
             modelform.base_fields["category"].limit_choices_to = {
-                "name": "Fortbildungen der Regionalgruppen des VFLL"
+                "name": settings.SALON_CATEGORY
             }
         return modelform
 
@@ -399,20 +399,17 @@ class EventCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
         max_position = EventCategory.objects.aggregate(Max("position")).get(
             "position__max"
         )
-        # get the category messen or create it
+        # get the category salon or create it
         if self.request.user.groups.filter(name="salon"):
-            cat, created = EventCategory.objects.get_or_create(
-                name="Fortbildungen der Regionalgruppen des VFLL",
-                defaults={
-                    "title": "Seminare der VFLL-Regionalgruppen & VFLL-Salons",
-                    "position": max_position + 1,
-                },
-            )
+            if EventCategory.objects.filter(name=settings.SALON_CATEGORY).exists():
+                cat = EventCategory.objects.filter(name=settings.SALON_CATEGORY)
+            else:
+                cat = None
         else:
-            cat, created = EventCategory.objects.get_or_create(
-                name="messen",
-                defaults={"title": "Messen und Tagungen", "position": max_position + 1},
-            )
+            if EventCategory.objects.filter(name=settings.MESSEN_CATEGORY).exists():
+                cat = EventCategory.objects.get(name=settings.MESSEN_CATEGORY)
+            else:
+                cat = None
         return {"pub_status": "UNPUB", "category": cat, "registration_possible": True}
 
     def get_context_data(self, **kwargs):

@@ -23,6 +23,7 @@ from embed_video.fields import EmbedVideoField
 from hitcount.models import HitCountMixin, HitCount
 
 from .abstract import BaseModel, AddressModel
+from .managers import EventCategoryManager
 
 from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
 
@@ -139,6 +140,8 @@ class EventCategory(BaseModel):
         help_text="gibt an, ob die Kachel auf der Startseite grundsätzlich gezeigt werden soll. Es werden aber nur die Kacheln angezeigt, zu denen auch eine Veranstaltung besteht.",
     )
     registration = models.BooleanField(verbose_name="Anmeldung möglich", default=True)
+
+    objects = EventCategoryManager()
 
     class Meta:
         ordering = ("position",)
@@ -574,7 +577,8 @@ class Event(BaseModel, HitCountMixin):
     open_date = models.DateTimeField(
         verbose_name="Anmeldefrist Beginn",
         null=True,
-        auto_now_add=True,
+        # auto_now_add=True,
+        default=datetime.now,
     )
     close_date = models.DateTimeField(
         verbose_name="Anmeldefrist Ende", null=True, blank=True

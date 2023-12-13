@@ -6,6 +6,8 @@ from shop.models import Order, OrderItem
 
 from .actions import export_to_csv
 
+from .filter import EventListFilter
+
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
@@ -36,6 +38,14 @@ def order_detail(obj):
     return mark_safe(f"<a href='{url}'>Anschauen</a>")
 
 
+def order_events(obj):
+    order_events_string = ", ".join([item.event.name for item in obj.items.all()])
+    return order_events_string
+
+
+order_events.short_description = "Veranstaltung(en)"
+
+
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     readonly_fields = ("amount",)
@@ -53,14 +63,21 @@ class OrderAdmin(admin.ModelAdmin):
         order_detail,
         order_pdf,
         order_pdf_and_mail,
+        order_events,
     ]
 
     list_filter = [
+        EventListFilter,
         "paid",
         "payment_type",
         "payment_date",
         "date_created",
         "date_modified",
+    ]
+
+    search_fields = [
+        "lastname",
+        "items__event__name",
     ]
     inlines = [OrderItemInline]
 
