@@ -3,10 +3,11 @@ from django.utils import timezone
 
 from django import forms
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_tables2 import CheckBoxColumn
 from django.core.validators import validate_email
 from django.utils.html import escape
+from django.contrib.admin.widgets import AdminDateWidget
 from jinja2 import ChainableUndefined
 
 from regex import B
@@ -1332,3 +1333,23 @@ class FTEventMemberForm(EntangledModelForm):
                 "remark",
             ]
         }  # fields provided by this form
+
+
+class DateRangeForm(forms.Form):
+    start = forms.DateField(
+        required=False,
+        label="von (Datum)",
+        widget=AdminDateWidget,
+    )
+    until = forms.DateField(
+        required=False,
+        label="bis (Datum)",
+        widget=AdminDateWidget,
+    )
+
+    def clean(self):
+        start = self.cleaned_data.get("start")
+        until = self.cleaned_data.get("until")
+
+        if start and until and start >= until:
+            self.add_error("start", "Von-Datum muss vor dem Bis-Datum liegen")

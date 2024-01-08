@@ -1,14 +1,13 @@
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 from django.forms import widgets, RadioSelect
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.html import format_html
 from django.conf import settings
 
 
 class RelatedFieldWidgetCanAddWithModal(widgets.Select):
     def __init__(self, modal_id=None, label=None, *args, **kwargs):
-
         super(RelatedFieldWidgetCanAddWithModal, self).__init__(*args, **kwargs)
 
         # Be careful that here "reverse" is not allowed
@@ -46,7 +45,6 @@ class MyRadioSelect(RadioSelect):
     def create_option(
         self, name, value, label, selected, index, subindex=None, attrs=None
     ):
-
         # print("called")
         option = super(MyRadioSelect, self).create_option(
             name, value, label, selected, index, subindex=None, attrs=None

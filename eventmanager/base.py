@@ -31,6 +31,9 @@ INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
+# Default Auto Field
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
+
 
 # Application definition
 

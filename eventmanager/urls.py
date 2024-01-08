@@ -23,6 +23,8 @@ from django.contrib.auth import views as auth_views
 
 from django.conf import settings
 
+import private_storage.urls
+
 # from .views import dashboard, login_page, logut_page
 from events.views import admin_event_pdf
 
@@ -68,6 +70,7 @@ urlpatterns = [
     ),
     # path('register/',user_views.register,name='register'),
     path("", include("events.urls")),
+    path("private-media/", include(private_storage.urls)),
     path("faqs/", include("faqs.urls")),
     path("shop/", include("shop.urls")),
     path("payment/", include("payment.urls")),

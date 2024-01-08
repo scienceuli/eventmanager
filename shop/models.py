@@ -33,6 +33,7 @@ class Order(AddressModel):
     payment_date = models.DateTimeField(
         verbose_name="Bezahldatum", null=True, blank=True
     )
+    download_marker = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-date_created"]
@@ -75,3 +76,24 @@ class OrderItem(models.Model):
         if self.order.discounted:
             return self.price * self.quantity
         return self.premium_price * self.quantity
+
+    def get_cost_property(self):
+        return self.get_cost()
+
+    get_cost_property.short_description = "Betrag"
+
+    get_cost_property = property(get_cost_property)
+
+    @property
+    def get_invoice_number(self):
+        return self.order.get_order_number
+
+    get_invoice_number.fget.short_description = "R-Nr."
+
+    @property
+    def get_order_name(self):
+        return f"{self.order.lastname}, {self.order.firstname}"
+
+    @property
+    def get_payment_type(self):
+        return self.order.payment_type

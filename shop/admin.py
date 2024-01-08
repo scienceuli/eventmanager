@@ -4,9 +4,11 @@ from django.utils.html import mark_safe
 
 from shop.models import Order, OrderItem
 
-from .actions import export_to_csv
+from .actions import export_to_csv, download_invoices_as_zipfile, reset_download_markers
 
 from .filter import EventListFilter
+
+from events.filter import DateRangeFilter
 
 
 class OrderItemInline(admin.TabularInline):
@@ -60,6 +62,7 @@ class OrderAdmin(admin.ModelAdmin):
         "discounted",
         "date_created",
         "date_modified",
+        "download_marker",
         order_detail,
         order_pdf,
         order_pdf_and_mail,
@@ -73,6 +76,8 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_date",
         "date_created",
         "date_modified",
+        "download_marker",
+        ("date_created", DateRangeFilter),
     ]
 
     search_fields = [
@@ -81,14 +86,18 @@ class OrderAdmin(admin.ModelAdmin):
     ]
     inlines = [OrderItemInline]
 
-    actions = [export_to_csv]
+    actions = [export_to_csv, download_invoices_as_zipfile, reset_download_markers]
 
     export_to_csv.short_description = "Export -> CSV"
+    download_invoices_as_zipfile.short_description = "Export -> ZIP"
+    reset_download_markers.short_description = "Reset Download Markers"
 
     def amount(self, instance):
         return instance.get_total_cost()
 
     amount.short_description = "Betrag"
+
+    change_list_template = "admin/daterange/change_list.html"
 
 
 @admin.register(OrderItem)

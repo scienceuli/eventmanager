@@ -1,6 +1,7 @@
 import os
 import pytz
 from io import StringIO, BytesIO
+import zipfile
 
 from django.http import HttpResponse
 from django.utils import timezone
@@ -79,3 +80,13 @@ def render_to_pdf_directly(template_src, context_dict={}):
         # return pdf
     else:
         return HttpResponse("Errors")
+
+
+def generate_zip(files):
+    mem_zip = BytesIO()
+
+    with zipfile.ZipFile(mem_zip, mode="w", compression=zipfile.ZIP_DEFLATED) as zf:
+        for f in files:
+            zf.writestr(f[0], f[1])
+
+    return mem_zip.getvalue()

@@ -9,7 +9,7 @@ class EventListFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         list_of_events = []
-        queryset = Event.objects.all()
+        queryset = Event.objects.all().order_by("name")
         for event in queryset:
             list_of_events.append(
                 (str(event.id), f"{event.name} ({event.get_first_day})")

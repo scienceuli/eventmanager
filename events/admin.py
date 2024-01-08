@@ -4,13 +4,11 @@ from datetime import date
 from django.contrib import admin, messages
 from django.conf import settings
 from django.http import HttpResponseRedirect
-from django.utils import timezone
 from django.utils.safestring import mark_safe
 from django.utils.http import urlencode
 from django.utils.html import format_html
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, path
-from django.utils.encoding import force_text
 from django import forms
 from django.db.models import Min, Max
 from django.forms.models import BaseInlineFormSet
@@ -46,6 +44,7 @@ from .models import (
     EventHighlight,
     EventImage,
     EventDocument,
+    PrivateDocument,
     EventOrganizer,
     EventSpeaker,
     EventSpeakerThrough,
@@ -60,6 +59,8 @@ from .models import (
     MemberRole,
     EventHighlight,
 )
+
+from events.filter import PeriodFilter, DateRangeFilter
 
 from shop.models import Order, OrderItem
 
@@ -259,8 +260,15 @@ class EventImageInline(admin.StackedInline):
 class EventDocumentInline(admin.StackedInline):
     model = EventDocument
     extra = 0
-    verbose_name = "Dokument"
-    verbose_name_plural = "Dokumente"
+    verbose_name = "öffentliches Dokument"
+    verbose_name_plural = "öffentliche Dokumente"
+
+
+class PrivateDocumentInline(admin.StackedInline):
+    model = PrivateDocument
+    extra = 0
+    verbose_name = "nicht-öffentliches Dokument"
+    verbose_name_plural = "nicht-öffentliche Dokumente"
 
 
 class EventAgendaInline(admin.StackedInline):
@@ -755,57 +763,6 @@ def admin_event_pdf(obj):
 admin_event_pdf.short_description = "Pdf"
 
 
-# admin filter: per default only future events
-class PeriodFilter(SimpleListFilter):
-    """
-    Filter the Events Happening in the Past and Future
-    ref: https://stackoverflow.com/questions/851636/default-filter-in-django-admin
-    """
-
-    default_value = "future"
-    title = "Zeitraum"
-    parameter_name = "period"
-
-    def lookups(self, request, model_admin):
-        """
-        List the Choices available for this filter.
-        """
-        return (
-            ("all", "Alle"),
-            ("future", "noch nicht gestartet"),
-            ("past", "abgeschlossen"),
-        )
-
-    def choices(self, changelist):
-        """
-        Overwrite this method to prevent the default "All".
-        """
-        value = self.value() or self.default_value
-        for lookup, title in self.lookup_choices:
-            yield {
-                "selected": value == force_text(lookup),
-                "query_string": changelist.get_query_string(
-                    {
-                        self.parameter_name: lookup,
-                    },
-                    [],
-                ),
-                "display": title,
-            }
-
-    def queryset(self, request, queryset):
-        """
-        Returns the Queryset depending on the Choice.
-        """
-        value = self.value() or self.default_value
-        now = timezone.now()
-        if value == "future":
-            return queryset.filter(first_day__gte=now) | queryset.filter(first_day=None)
-        if value == "past":
-            return queryset.filter(first_day__lt=now)
-        return queryset.all()
-
-
 class EventCollectionAdmin(admin.ModelAdmin):
     model = EventCollection
 
@@ -902,7 +859,14 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "status",
         admin_event_pdf,
     )
-    list_filter = (PeriodFilter, "eventformat", "category", "status")
+    list_filter = (
+        PeriodFilter,
+        "eventformat",
+        "category",
+        "status",
+        "start_date",
+        ("first_day", DateRangeFilter),
+    )
     ordering = ("name",)
     search_fields = ("name",)
     readonly_fields = (
@@ -1049,6 +1013,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         EventAgendaInline,
         EventImageInline,
         EventDocumentInline,
+        PrivateDocumentInline,
         EventMemberInline,
     )
     actions = ("copy_event",)

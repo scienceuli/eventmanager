@@ -894,8 +894,36 @@ class EventDocument(BaseModel):
     description = models.TextField("Beschreibung", null=True, blank=True)
     upload = models.FileField(upload_to="documents/")
 
+    class Meta:
+        verbose_name = "öffentliches Dokument"
+        verbose_name_plural = "öffentliche Dokumente"
+
     def __str__(self):
         return self.title
+
+
+from private_storage.fields import PrivateFileField
+
+
+class PrivateDocument(BaseModel):
+    event = models.ForeignKey(
+        Event, related_name="event_private_documents", on_delete=models.CASCADE
+    )
+    title = models.CharField("Titel", max_length=255)
+    description = models.TextField("Beschreibung", null=True, blank=True)
+    upload = PrivateFileField(upload_to="uploaded_private_documents/")
+
+    class Meta:
+        verbose_name = "privates Dokument"
+        verbose_name_plural = "private Dokumente"
+
+    def __str__(self):
+        return self.title
+
+
+class MyModel(models.Model):
+    title = models.CharField("Title", max_length=200)
+    file = PrivateFileField("File")
 
 
 class EventDay(BaseModel):
@@ -999,15 +1027,21 @@ class EventMember(AddressModel):
         on_delete=models.CASCADE,
     )
     name = models.CharField("Kurzbezeichnung", max_length=255, null=True, blank=True)
-    academic = models.CharField("Titel", max_length=40, null=True, blank=True)
-    firstname = models.CharField("Vorname", max_length=255, blank=True)
-    lastname = models.CharField("Nachname", max_length=255, blank=True)
-    email = models.EmailField("E-Mail", blank=True, max_length=255)
-    phone = models.CharField("Tel", max_length=64, blank=True)
-    company = models.CharField("Firma", max_length=255, null=True, blank=True)
-    vfll = models.BooleanField("VFLL-Mitglied", default=False)
+    academic = models.CharField(
+        verbose_name="Titel", max_length=40, null=True, blank=True
+    )
+    firstname = models.CharField(verbose_name="Vorname", max_length=255, blank=True)
+    lastname = models.CharField(verbose_name="Nachname", max_length=255, blank=True)
+    email = models.EmailField(verbose_name="E-Mail", blank=True, max_length=255)
+    phone = models.CharField(verbose_name="Tel", max_length=64, blank=True)
+    company = models.CharField(
+        verbose_name="Firma", max_length=255, null=True, blank=True
+    )
+    vfll = models.BooleanField(verbose_name="VFLL-Mitglied", default=False)
 
-    memberships = models.CharField("Mitgliedschaften", max_length=64, blank=True)
+    memberships = models.CharField(
+        verbose_name="Mitgliedschaften", max_length=64, blank=True
+    )
     attention = models.CharField(
         "aufmerksamen geworden durch", max_length=64, blank=True
     )

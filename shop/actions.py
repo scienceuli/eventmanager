@@ -1,7 +1,11 @@
 import csv
+import zipfile
+
 from datetime import datetime, date
 from django.http import HttpResponse
 from django.core.files.base import ContentFile
+
+from payment.utils import render_to_pdf_directly, generate_zip
 
 
 def export_to_csv(modeladmin, request, queryset):
@@ -30,5 +34,30 @@ def export_to_csv(modeladmin, request, queryset):
 
 
 def download_invoices_as_zipfile(modeladmin, request, queryset):
-    zipfile_name = f"rechnungen:{date.now()}"
-    temp_file = ContentFile(b"", name=zipfile_name)
+    zipfile_name = f"rechnungen_{datetime.today().strftime('%Y-%m-%d')}.zip"
+
+    template_path = "shop/pdf_invoice.html"
+    files = []
+
+    for q in queryset.filter(download_marker=False):
+        context = {"order": q}
+        pdf = render_to_pdf_directly(template_path, context)
+        filename = "rechnung_%s" % (q.get_order_number)
+        files.append((filename + ".pdf", pdf))
+        q.download_marker = True
+        q.save()
+
+    full_zip_in_memory = generate_zip(files)
+
+    response = HttpResponse(
+        full_zip_in_memory, content_type="application/force-download"
+    )
+    response["Content-Disposition"] = 'attachment; filename="{}"'.format(zipfile_name)
+
+    return response
+
+
+def reset_download_markers(modeladmin, request, queryset):
+    for obj in queryset:
+        obj.download_marker = False
+        obj.save()

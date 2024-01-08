@@ -12,7 +12,7 @@ from unidecode import unidecode
 import markdown
 
 from django.db import transaction
-from django.db.models import Max, Q
+from django.db.models import Max, Q, Sum, Count
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import request, HttpResponse, Http404
 from django.contrib import messages
@@ -105,6 +105,8 @@ from .models import (
     EventSponsor,
 )
 
+from shop.models import OrderItem
+
 from .tables import EventMembersTable, FTEventMembersTable, MVEventMembersTable
 
 from .forms import (
@@ -126,6 +128,7 @@ from .forms import (
 )
 
 from events.admin import EventMemberAdmin
+from shop.admin import OrderItemAdmin
 
 from shop.forms import CartAddEventForm
 
@@ -1642,6 +1645,8 @@ def export_participants(request, event_id):
         "email",
     ]
 
+    invoice_items_list = ["get_cost_property", "order", "get_invoice_number"]
+
     event = Event.objects.get(id=event_id)
 
     # file_name = unidecode(opts.verbose_name "_" + datetime.now())
@@ -1652,23 +1657,32 @@ def export_participants(request, event_id):
     ws.title = "Daten"
     # Teilnehmerliste
     ws1 = wb.create_sheet("TN-Liste")
-    ws.append(ExportExcelAction.generate_header(EventMemberAdmin, Event, field_names))
+    # Rechnungen
+    ws2 = wb.create_sheet("Rechnungen")
+    # Controlling
+    ws3 = wb.create_sheet("Controlling")
+    ws.append(
+        ExportExcelAction.generate_header(EventMemberAdmin, EventMember, field_names)
+    )
     ws1.append(
         ExportExcelAction.generate_header(
-            EventMemberAdmin, Event, field_names_participants_list
+            EventMemberAdmin, EventMember, field_names_participants_list
         )
     )
+    ws2.append(
+        ExportExcelAction.generate_header(OrderItemAdmin, OrderItem, invoice_items_list)
+    )
 
-    def iterate(ws, queryset, field_names):
+    def iterate(ws, queryset, admin_cls, field_names):
         counter = 1
         for obj in queryset:
             row = [str(counter)]
             for field in field_names:
-                is_admin_field = hasattr(EventMemberAdmin, field)
+                is_admin_field = hasattr(admin_cls, field)
                 if (
                     is_admin_field and not field == "check"
                 ):  # check is also admin_field, but we need model field
-                    value = getattr(EventMemberAdmin, field)(obj)
+                    value = getattr(admin_cls, field)(obj)
                 else:
                     value = getattr(obj, field)
                     if isinstance(value, datetime) or isinstance(value, date):
@@ -1682,20 +1696,43 @@ def export_participants(request, event_id):
             counter += 1
 
     # all data
-    queryset = event.members.all()
-    iterate(ws, queryset.filter(Q(attend_status="registered")), field_names)
+    qs_event_members = event.members.all()
+    qs_event_members_registered = qs_event_members.filter(Q(attend_status="registered"))
+    qs_event_members_waiting = qs_event_members.filter(Q(attend_status="waiting"))
+    admin_cls = EventMemberAdmin
+    # registered participants
+    iterate(ws, qs_event_members_registered, admin_cls, field_names)
     ws.append(blank_line)
     ws.append(blank_line)
+    # waiting participants on same sheet
     ws.append(["Warteliste"])
-    iterate(ws, queryset.filter(Q(attend_status="waiting")), field_names)
+    iterate(ws, qs_event_members_waiting, admin_cls, field_names)
+    # registered participants with less fields on next sheet
     iterate(
         ws1,
-        queryset.filter(Q(attend_status="registered")),
+        qs_event_members_registered,
+        admin_cls,
         field_names_participants_list,
     )
+    # invoices items on next sheet
+    qs_order_items = OrderItem.objects.filter(event=event)
+    admin_cls = OrderItemAdmin
+    iterate(ws2, qs_order_items, admin_cls, invoice_items_list)
+
+    # sum of costs
+    total_costs = sum(item.get_cost_property for item in qs_order_items)
+
+    ws2.append(blank_line)
+    ws2.append(["Summe", total_costs])
 
     ws = style_output_file(ws)
     ws1 = style_output_file(ws1)
+    ws2 = style_output_file(ws1)
+
+    # Controlling
+    ws3.append(["Veranstaltung:", event.name])
+    ws3.append(["Anz. TN:", len(qs_event_members_registered)])
+    ws3.append(["Einnahmen:", total_costs])
 
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
