@@ -315,6 +315,8 @@ class EventMemberAdmin(admin.ModelAdmin):
         "firstname",
         "academic",
         "email",
+        "vfll",
+        "memberships",
         "event",
         "date_created",
         "via_form",

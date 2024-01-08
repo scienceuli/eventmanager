@@ -1,6 +1,7 @@
 import os
 import csv
 import json
+import ast
 import pandas as pd
 from itertools import chain
 from events.actions import convert_boolean_field
@@ -1697,7 +1698,9 @@ def export_participants(request, event_id):
 
     # all data
     qs_event_members = event.members.all()
-    qs_event_members_registered = qs_event_members.filter(Q(attend_status="registered"))
+    qs_event_members_registered = qs_event_members.filter(
+        Q(attend_status="registered")
+    ).annotate(vfll_true=Count("vfll", filter=Q(vfll=True)))
     qs_event_members_waiting = qs_event_members.filter(Q(attend_status="waiting"))
     admin_cls = EventMemberAdmin
     # registered participants
@@ -1733,6 +1736,14 @@ def export_participants(request, event_id):
     ws3.append(["Veranstaltung:", event.name])
     ws3.append(["Anz. TN:", len(qs_event_members_registered)])
     ws3.append(["Einnahmen:", total_costs])
+    total_vfll_true = sum(obj.vfll_true for obj in qs_event_members_registered)
+    ws3.append(["vfll Mitglieder:", total_vfll_true])
+    memberships_list = []  #
+    # obj.memberships is str repr of list so it must be converted to list
+    for obj in qs_event_members_registered:
+        memberships_list.extend(ast.literal_eval(obj.memberships))
+    for ms_short, ms_long in MEMBERSHIP_CHOICES:
+        ws3.append([ms_long, memberships_list.count(ms_short)])
 
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
