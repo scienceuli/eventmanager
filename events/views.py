@@ -188,7 +188,8 @@ def home(request):
 
 
 def maintenance(request):
-    return render(request, "events/maintenance.html")
+    context = {"maintenance_end_date": settings.MAINTENANCE_END_DATE}
+    return render(request, "events/maintenance.html", context)
 
 
 @login_required(login_url="login")
@@ -1741,7 +1742,8 @@ def export_participants(request, event_id):
     memberships_list = []  #
     # obj.memberships is str repr of list so it must be converted to list
     for obj in qs_event_members_registered:
-        memberships_list.extend(ast.literal_eval(obj.memberships))
+        if not obj.vfll:
+            memberships_list.extend(ast.literal_eval(obj.memberships))
     for ms_short, ms_long in MEMBERSHIP_CHOICES:
         ws3.append([ms_long, memberships_list.count(ms_short)])
 
