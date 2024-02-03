@@ -3,29 +3,85 @@ from django.conf import settings
 from events.models import Event
 
 
-def get_action_prices(event_id, cart):
+def recalculate_action_prices(event_prices_dict, events):
+    """calculates for given dict with ids and prices and events if event belongs to
+    event collction and payless action
+    return dict with event_ids as keys and different prices as values
     """
-    returns action_price
-    two conditions:
-    1. The Action Events the actual event belongs to are subset of cart events
-    2. The actual event is cheapest of action events
-    """
-    cart_events = cart.get_events()
-    print("cart_events: ", cart_events)
-    # ordered by price so action_events[0] is cheapest
-    event = Event.objects.get(id=event_id)
-    action_events = event.payless_collection.events.all().order_by("price")
-    print("action_events: ", action_events)
-    cheapest_action_event = action_events[0]
-    print(set(action_events).issubset(set(cart_events)))
+    event_ids = event_prices_dict.keys()
+    for id in event_ids:
+        event = Event.objects.get(id=id)
+        if event.payless_collection:
+            action_events = event.payless_collection.events.all().order_by("price")
+            cheapest_action_event = action_events[0]
+            # with this condition also not full events can be part of action
+            condition_for_action = set(action_events).issubset(events)
+            # with this additional condition only not full events can be part of action
+            if settings.ONLY_NOT_FULL_EVENTS_CAN_HAVE_ACTION:
+                condition_for_action = condition_for_action and all(
+                    [not event.is_full() for event in events]
+                )
 
-    # action price is returned
-    if (set(action_events).issubset(cart_events)) and (
-        event.id == cheapest_action_event.id
-    ):
-        return str(Decimal("0.00")), str(Decimal("0.00"))
-    else:
-        return str(event.price), str(event.premium_price)
+            if condition_for_action:
+                if event.payless_collection.type == "n":
+                    if event.id == cheapest_action_event.id:
+                        event_prices_dict[id]["price"] = str(Decimal("0.00"))
+                        event_prices_dict[id]["premium_price"] = str(Decimal("0.00"))
+                        event_prices_dict[id]["action_price"] = True
+                    else:
+                        event_prices_dict[id]["price"] = str(event.price)
+                        event_prices_dict[id]["premium_price"] = str(
+                            event.premium_price
+                        )
+                        event_prices_dict[id]["action_price"] = False
+                elif event.payless_collection.type == "p":
+                    event_prices_dict[id]["price"] = str(
+                        round(
+                            Decimal((100 - event.payless_collection.percents) / 100)
+                            * event.price,
+                            2,
+                        )
+                    )
+                    event_prices_dict[id]["premium_price"] = str(
+                        round(
+                            Decimal((100 - event.payless_collection.percents) / 100)
+                            * event.premium_price,
+                            2,
+                        )
+                    )
+                    event_prices_dict[id]["action_price"] = True
+            else:
+                event_prices_dict[id]["price"] = str(event.price)
+                event_prices_dict[id]["premium_price"] = str(event.premium_price)
+                event_prices_dict[id]["action_price"] = False
+        else:
+            event_prices_dict[id]["price"] = str(event.price)
+            event_prices_dict[id]["premium_price"] = str(event.premium_price)
+            event_prices_dict[id]["action_price"] = False
+    return event_prices_dict
+
+    # """
+    # returns action_price
+    # two conditions:
+    # 1. The Action Events the actual event belongs to are subset of cart events
+    # 2. The actual event is cheapest of action events
+    # """
+    # cart_events = cart.get_events()
+    # # print("cart_events: ", cart_events)
+    # # ordered by price so action_events[0] is cheapest
+    # event = Event.objects.get(id=event_id)
+    # action_events = event.payless_collection.events.all().order_by("price")
+    # print("action_events: ", action_events)
+    # cheapest_action_event = action_events[0]
+    # print(set(action_events).issubset(set(cart_events)))
+
+    # # action price is returned
+    # if (set(action_events).issubset(cart_events)) and (
+    #     event.id == cheapest_action_event.id
+    # ):
+    #     return str(Decimal("0.00")), str(Decimal("0.00"))
+    # else:
+    #     return str(event.price), str(event.premium_price)
 
 
 class Cart:
@@ -135,54 +191,56 @@ class Cart:
 
     def calculate_action_prices(self):
         cart_events = self.get_events()
-        print("cart_events: ", cart_events)
+        # print("cart_events: ", cart_events)
         # ordered by price so action_events[0] is cheapest
-        for id in self.cart.keys():
-            event = Event.objects.get(id=id)
-            if event.payless_collection:
-                action_events = event.payless_collection.events.all().order_by("price")
-                cheapest_action_event = action_events[0]
-                # with this condition also not full events can be part of action
-                condition_for_action = set(action_events).issubset(cart_events)
-                # with this additional condition only not full events can be part of action
-                if settings.ONLY_NOT_FULL_EVENTS_CAN_HAVE_ACTION:
-                    condition_for_action = condition_for_action and all(
-                        [not event.is_full() for event in cart_events]
-                    )
+        # event_ids = self.cart.keys()
+        self.cart = recalculate_action_prices(self.cart, cart_events)
+        # for id in self.cart.keys():
+        #     event = Event.objects.get(id=id)
+        #     if event.payless_collection:
+        #         action_events = event.payless_collection.events.all().order_by("price")
+        #         cheapest_action_event = action_events[0]
+        #         # with this condition also not full events can be part of action
+        #         condition_for_action = set(action_events).issubset(cart_events)
+        #         # with this additional condition only not full events can be part of action
+        #         if settings.ONLY_NOT_FULL_EVENTS_CAN_HAVE_ACTION:
+        #             condition_for_action = condition_for_action and all(
+        #                 [not event.is_full() for event in cart_events]
+        #             )
 
-                if condition_for_action:
-                    if event.payless_collection.type == "n":
-                        if event.id == cheapest_action_event.id:
-                            self.cart[id]["price"] = str(Decimal("0.00"))
-                            self.cart[id]["premium_price"] = str(Decimal("0.00"))
-                            self.cart[id]["action_pcice"] = True
-                        else:
-                            self.cart[id]["price"] = str(event.price)
-                            self.cart[id]["premium_price"] = str(event.premium_price)
-                            self.cart[id]["action_pcice"] = False
-                    elif event.payless_collection.type == "p":
-                        self.cart[id]["price"] = str(
-                            round(
-                                Decimal((100 - event.payless_collection.percents) / 100)
-                                * event.price,
-                                2,
-                            )
-                        )
-                        self.cart[id]["premium_price"] = str(
-                            round(
-                                Decimal((100 - event.payless_collection.percents) / 100)
-                                * event.premium_price,
-                                2,
-                            )
-                        )
-                        self.cart[id]["action_price"] = True
-                else:
-                    self.cart[id]["price"] = str(event.price)
-                    self.cart[id]["premium_price"] = str(event.premium_price)
-                    self.cart[id]["action_price"] = False
-            else:
-                self.cart[id]["price"] = str(event.price)
-                self.cart[id]["premium_price"] = str(event.premium_price)
-                self.cart[id]["action_price"] = False
+        #         if condition_for_action:
+        #             if event.payless_collection.type == "n":
+        #                 if event.id == cheapest_action_event.id:
+        #                     self.cart[id]["price"] = str(Decimal("0.00"))
+        #                     self.cart[id]["premium_price"] = str(Decimal("0.00"))
+        #                     self.cart[id]["action_price"] = True
+        #                 else:
+        #                     self.cart[id]["price"] = str(event.price)
+        #                     self.cart[id]["premium_price"] = str(event.premium_price)
+        #                     self.cart[id]["action_price"] = False
+        #             elif event.payless_collection.type == "p":
+        #                 self.cart[id]["price"] = str(
+        #                     round(
+        #                         Decimal((100 - event.payless_collection.percents) / 100)
+        #                         * event.price,
+        #                         2,
+        #                     )
+        #                 )
+        #                 self.cart[id]["premium_price"] = str(
+        #                     round(
+        #                         Decimal((100 - event.payless_collection.percents) / 100)
+        #                         * event.premium_price,
+        #                         2,
+        #                     )
+        #                 )
+        #                 self.cart[id]["action_price"] = True
+        #         else:
+        #             self.cart[id]["price"] = str(event.price)
+        #             self.cart[id]["premium_price"] = str(event.premium_price)
+        #             self.cart[id]["action_price"] = False
+        #     else:
+        #         self.cart[id]["price"] = str(event.price)
+        #         self.cart[id]["premium_price"] = str(event.premium_price)
+        #         self.cart[id]["action_price"] = False
 
         self.save()

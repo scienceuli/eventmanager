@@ -16,12 +16,14 @@ def order_created(order_id):
         f"Liebe/r {order.firstname},\n\n"
         f"Sie haben sich für kostenpflichtige VFLL-Veranstaltungen angemeldet. "
         f"Ihre Bestellnummer ist {order.get_order_number}.\n\n"
-        f"In einer weiteren Mail wird Ihnen die Rechnung zugestellt."
     )
     if order.payment_type == "p":
-        message += f"Da Sie Paypal als Zahlungsweise gewählt haben, gibt es nichts weiter zu tun.\n\n Vielen Dank!"
+        message += f"Da Sie Paypal als Zahlungsweise gewählt haben, gibt es nichts weiter zu tun.\n\n In einer weiteren Mail Ihnen die Dechnung zugestellt.\n\n Vielen Dank!"
     elif order.payment_type == "r" or order.payment_type == "n":
-        message += f"Bitte überweisen Sie den Betrag auf das in der Rechnung angegebene Konto.\n\n Vielen Dank!"
+        if settings.SEND_INVOICE_AFTER_ORDER_CREATION:
+            message += f"In einer weiteren Mail wird Ihnen die Rechnung zugestellt. Bitte überweisen Sie den Betrag auf das in der Rechnung angegebene Konto.\n\n Vielen Dank!"
+        else:
+            message += f"Kurz vor Veranstaltungsbeginn wird Ihnen die Rechnung zugestellt. Bitte überweisen Sie dann den Betrag auf das in der Rechnung angegebene Konto.\n\n Vielen Dank!"
 
     if settings.SEND_EMAIL_AFTER_ORDER_CREATION:
         mail_sent = send_mail(

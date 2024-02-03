@@ -1,5 +1,7 @@
 import os
 import pytz
+from decimal import Decimal
+from datetime import datetime
 from io import StringIO, BytesIO
 import zipfile
 
@@ -10,6 +12,10 @@ from django.contrib.staticfiles import finders
 
 from django.template.loader import get_template
 from xhtml2pdf import pisa
+
+from events.models import EventMember
+from shop.models import Order
+from shop.cart import recalculate_action_prices
 
 
 def get_local_datetime(value):
@@ -90,3 +96,53 @@ def generate_zip(files):
             zf.writestr(f[0], f[1])
 
     return mem_zip.getvalue()
+
+
+item_status_dict = {
+    "registered": "r",
+    "attending": "r",
+    "absent": "n",
+    "waiting": "w",
+    "cancelled": "s",
+}
+
+
+def update_order(order):
+    # only update if payment_date in the future
+    if order.payment_date > datetime.now().astimezone(pytz.timezone("UTC")):
+        for item in order.items.all():
+            try:
+                event_member = EventMember.objects.get(
+                    event=item.event, email=order.email
+                )
+                # set item status to u (unbestimmt) if no dict key present
+                item.status = item_status_dict.get(event_member.attend_status, "u")
+                item.save()
+            except:
+                item.status = "u"
+                item.save()
+
+        # reload order
+        updated_order = Order.objects.get(id=order.id)
+
+        # get events belonging to order where status of item is registered
+        events = updated_order.get_registered_items_events()
+
+        # initialize dict with event ids and prices
+        event_prices_dict = {}
+        for event in events:
+            event_prices_dict[event.id] = {
+                "quantity": 0,
+                "price": str(event.price),
+                "premium_price": str(event.premium_price),
+                "is_full": event.is_full(),
+                "action_price": False,
+            }
+
+        event_prices_dict = recalculate_action_prices(event_prices_dict, events)
+
+        for item in updated_order.items.filter(status="r"):
+            item.price = event_prices_dict[item.event.id]["price"]
+            item.premium_price = event_prices_dict[item.event.id]["premium_price"]
+            item.is_action_price = event_prices_dict[item.event.id]["action_price"]
+            item.save()

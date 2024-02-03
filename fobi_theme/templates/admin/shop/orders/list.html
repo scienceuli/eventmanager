@@ -1,0 +1,80 @@
+{% extends "admin/base.html" %}
+
+{% block extrastyle %}
+
+<link href="{% static 'ajax_datatable/css/style.css' %}" rel="stylesheet" />
+<!-- link rel='stylesheet' href="{% static 'datatables.net-bs/css/dataTables.bootstrap.min.css' %}" -->
+<link rel='stylesheet' href="{% static 'datatables.net-bs4/css/dataTables.bootstrap4.min.css' %}">
+<link rel='stylesheet' href="{% static 'datatables.net-buttons-bs/css/buttons.bootstrap.min.css' %}">
+
+{% endblock extrastyle %}
+
+{% block title %}
+Bestellungen {{ block.super }}
+{% endblock %}
+{% block breadcrumbs %}
+<div class="breadcrumbs">
+    <a href="{% url 'admin:index' %}">Home</a> &rsaquo;
+    <a href="{% url 'admin:shop_order_changelist' %}">Bestellungen</a>
+    &rsaquo;
+
+</div>
+{% endblock %}
+{% block content %}
+<div class="grp-module">
+    <h1>Bestellungen</h1>
+
+    <table class="grp-table">
+        <tr class="grp-tr">
+            <th class="grp-th">Angelegt</th>
+            <th>bestellt von</th>
+            <th>E-mail</th>
+            <th>Anschrift</th>
+            <th>Gesamtbetrag</th>
+            <th>reduziert</th>
+            <th>Bezahltyp</th>
+            <th>Status</th>
+        </tr>
+
+        {% for order in orders %}
+        <tr class="grp-tr">
+
+            <td class="grp-td">{{ order.date_created }}</td>
+
+            <td>{{ order.firstname }} {{ order.lastname }}</td>
+
+            <td><a href="mailto:{{ order.email }}">{{ order.email }}</a></td>
+
+            <td>
+                {{ order.street }},
+                {{ order.postcode }} {{ order.city }}
+            </td>
+
+            <td>{{ order.get_total_cost }} €</td>
+
+            <td>{{ order.discounted|yesno:"ja,nein,vielleicht" }}</td>
+
+            <td>{{ order.get_payment_type_display }}</td>
+
+            <td>{% if order.paid %}bezahlt{% else %}offen{% endif %}</td>
+        </tr>
+
+        {% endfor %}
+    </table>
+</div>
+
+{% endblock %}
+
+{% block extrastyle %}
+
+<link href="{% static 'ajax_datatable/css/style.css' %}" rel="stylesheet" />
+<link href="//cdn.datatables.net/1.10.22/css/jquery.dataTables.min.css" />
+
+{% endblock extrastyle %}
+
+{% block extrahead %}
+
+<script type="text/javascript" src="{% static 'ajax_datatable/js/utils.js' %}"></script>
+<script src="//cdn.datatables.net/1.10.22/js/jquery.dataTables.min.js"></script>
+
+{% endblock %}

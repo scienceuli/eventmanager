@@ -1,0 +1,53 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link type="text/css" href="{% static 'jquery-ui-1.13.2.custom/jquery-ui.min.css' %}" rel="stylesheet" />
+    <!-- <link rel="stylesheet" type="text/css" href="{% static 'css/table.css' %}"> -->
+    <link rel="stylesheet" type="text/css" href="{% static 'css/reports_base.css' %}">
+
+    <!--<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.css"> -->
+    <link rel="stylesheet" type="text/css" href="{% static 'DataTables-1.13.8/css/jquery.dataTables.css' %}">
+    <link rel="stylesheet" href="{% static 'css/bootstrap4.min.css' %}">
+
+    <!-- further datatables stuff -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+
+    <title>
+        {% block title %}
+        {% endblock %}
+    </title>
+
+
+
+</head>
+
+<body>
+
+    {% block content %}
+    {% endblock %}
+
+    <script type="text/javascript" src="{% static 'js/jquery-3.6.0.js' %}"></script>
+    <script type="text/javascript" charset="utf8" src="{% static 'DataTables-1.13.8/js/jquery.dataTables.js' %}"></script>
+    <!-- For formatting dates -->
+    <script type="text/javascript" src="{% static 'js/moment.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/datetime-moment.js' %}"></script>
+    <script type="text/javascript" src="{% static 'jquery-ui-1.13.2.custom/jquery-ui.min.js' %}"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="{% static 'DataTables-1.13.8/plugins/date-de.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/datatable_script_02.js' %}"></script>
+
+
+
+</body>
+
+</html>

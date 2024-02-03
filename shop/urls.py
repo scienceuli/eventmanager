@@ -23,6 +23,11 @@ urlpatterns = [
         name="admin-order-pdf-and-mail",
     ),
     path(
+        "admin/order/list/",
+        views.invoice_report,
+        name="invoice-report",
+    ),
+    path(
         "admin/order/<int:order_id>/",
         views.admin_order_detail,
         name="admin-order-detail",

@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.urls import reverse
 from django.utils.html import mark_safe
 
+
 from shop.models import Order, OrderItem
 
 from .actions import export_to_csv, download_invoices_as_zipfile, reset_download_markers
@@ -41,7 +42,9 @@ def order_detail(obj):
 
 
 def order_events(obj):
-    order_events_string = ", ".join([item.event.name for item in obj.items.all()])
+    order_events_string = ", ".join(
+        [item.event.name for item in obj.items.filter(status="r")]
+    )
     return order_events_string
 
 
@@ -60,6 +63,8 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_type",
         "paid",
         "discounted",
+        "payment_date",
+        "mail_sent_date",
         "date_created",
         "date_modified",
         "download_marker",

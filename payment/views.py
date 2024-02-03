@@ -1,7 +1,9 @@
 import uuid
+from datetime import timedelta, datetime
 
 from decimal import Decimal
 from django.conf import settings
+from django.db.models import Min
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from paypal.standard.forms import PayPalPaymentsForm
@@ -68,19 +70,50 @@ def payment_failed(request):
     return render(request, "payment/payment_failed.html")
 
 
+def get_payment_date(order):
+    """returns the correct date for invoice
+    invoice can have more than one item (event)
+    correct invoice date is first_day of earliest event
+
+    if payment_type = p(aypal) or payment_type = 'r' and settings.SEND_INVOICE_AFTER_ORDER_CREATION is true
+    the invoice/payment date is date_created
+
+    if payment_type = r and not settings.SEND_INVOICE_AFTER_ORDER_CREATION:
+    invoice can have more than one item (event)
+    correct invoice date is now first_day of earliest event
+    """
+    if order.payment_type == "p":
+        return order.date_created
+    else:
+        if settings.SEND_INVOICE_AFTER_ORDER_CREATION:
+            return order.date_created
+        else:
+            earliest_event_date = order.items.aggregate(
+                earliest_event=Min("event__first_day")
+            )["earliest_event"]
+            if (
+                earliest_event_date < datetime.now().date()
+            ):  # earliest_event_date is date object
+                return datetime.now()
+            calculated_date = earliest_event_date - timedelta(
+                days=settings.ORDER_DATE_TIMEDELTA
+            )
+            if calculated_date < datetime.now().date():
+                return datetime.now()
+            return calculated_date
+
+
 # payment by invoice
-
-
 def payment_by_invoice(request, order_id):
     if request.method == "POST":
-        print("alles gut")
-
         order = Order.objects.get(id=order_id)
         order.payment_type = "r"
+        order.payment_date = get_payment_date(order)
         order.save()
 
         # payment_completed.delay(order_id)
-        payment_completed(order_id)
+        if settings.SEND_INVOICE_AFTER_ORDER_CREATION:
+            payment_completed(order_id)
         return redirect("payment:payment-by-invoice-success")
 
 
@@ -88,4 +121,9 @@ def payment_by_invoice(request, order_id):
 
 
 def payment_by_invoice_success(request):
-    return render(request, "payment/payment_by_invoice.html")
+    if settings.SEND_INVOICE_AFTER_ORDER_CREATION:
+        message = "Die Rechnung geht Ihnen per E-Mail zu."
+    else:
+        message = "Die Rechnung geht Ihnen wenige Tage vor Veranstaltungsbeginn per E-Mail zu."
+    context = {"message": message}
+    return render(request, "payment/payment_by_invoice.html", context)

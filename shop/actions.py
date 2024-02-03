@@ -5,7 +5,9 @@ from datetime import datetime, date
 from django.http import HttpResponse
 from django.core.files.base import ContentFile
 
-from payment.utils import render_to_pdf_directly, generate_zip
+from shop.models import OrderItem
+
+from payment.utils import render_to_pdf_directly, generate_zip, update_order
 
 
 def export_to_csv(modeladmin, request, queryset):
@@ -40,7 +42,15 @@ def download_invoices_as_zipfile(modeladmin, request, queryset):
     files = []
 
     for q in queryset.filter(download_marker=False):
+        update_order(q)
         context = {"order": q}
+        context["order_items"] = OrderItem.objects.filter(order=q, status="r")
+        context["contains_action_price"] = any(
+            [
+                item.is_action_price
+                for item in OrderItem.objects.filter(order=q, status="r")
+            ]
+        )
         pdf = render_to_pdf_directly(template_path, context)
         filename = "rechnung_%s" % (q.get_order_number)
         files.append((filename + ".pdf", pdf))

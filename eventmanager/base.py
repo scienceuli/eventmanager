@@ -40,6 +40,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 INSTALLED_APPS = [
     #'jet.dashboard',
     #'jet',
+    "grappelli.dashboard",
     "grappelli",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -67,6 +68,8 @@ INSTALLED_APPS = [
     "embed_video",
     "hitcount",
     "paypal.standard.ipn",  # django-paypal
+    "ajax_datatable",
+    "django_crontab",
     # tailwind theme app
     "fobi_theme",
     # lokale apps
@@ -77,6 +80,7 @@ INSTALLED_APPS = [
     "shop.apps.ShopConfig",
     "payment.apps.PaymentConfig",
     "faqs.apps.FaqsConfig",
+    "reports.apps.ReportsConfig",
 ]
 
 MIDDLEWARE = [
@@ -213,6 +217,7 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # GRAPPELLI setting
 GRAPPELLI_ADMIN_TITLE = "FOBI Eventmanager"
+GRAPPELLI_INDEX_DASHBOARD = "eventmanager.dashboard.CustomIndexDashboard"
 
 # REST FRAMEWORK
 REST_FRAMEWORK = {

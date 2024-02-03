@@ -277,7 +277,7 @@
         </div>
         <div class="invoice-data">
             Steuernummer: 204/111/20369<br />
-            Amorbach, {{order.date_created|date}}
+            Amorbach, {% if order.payment_date %}{{order.payment_date|date}}{% else %}{{order.date_created|date}}{% endif %}
         </div>
         <div class="invoice-label">
 
@@ -297,7 +297,7 @@
 
             </thead>
             <tbody>
-                {% for item in order.items.all %}
+                {% for item in order_items %}
                 <tr>
                     <td colspan="2">{{ item.event.name }} {% if item.is_action_price %}<span class="action-price">Aktionspreis!</span>{% endif %}<br />
                         {% with item.event as event %}

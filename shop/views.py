@@ -31,7 +31,7 @@ from shop.forms import CartAddEventForm
 from shop.models import Order, OrderItem
 from shop.tasks import order_created
 
-from payment.utils import render_to_pdf
+from payment.utils import render_to_pdf, update_order
 from payment.tasks import payment_completed
 
 
@@ -205,14 +205,14 @@ class OrderCreateView(FormView):
             )
             vfll = form.cleaned_data["vfll"]
             memberships = form.cleaned_data["memberships"]
-            print("vfll:", vfll)
-            print("ms:", memberships, len(memberships), vfll or (len(memberships) > 0))
+            # print("vfll:", vfll)
+            # print("ms:", memberships, len(memberships), vfll or (len(memberships) > 0))
             order.discounted = vfll or (len(memberships) > 0)
 
             # only cart items where payment is possible belong to order
 
             order.save()
-            print(order.payment_type)
+            # print(order.payment_type)
             order_saved = True
 
             duplicate_list = []  # list of events with already existing registration
@@ -246,7 +246,7 @@ class OrderCreateView(FormView):
             message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
             level = messages.SUCCESS
         elif payment_cart and order_item_counter > 0 and len(duplicate_list) > 0:
-            message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Für folgende Veranstaltungen waren Sie bereits angemeldet: {duplicate_string}. Diese werden aus Ihrer Bestellung entfernt. Für die anderen ist die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
+            message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Für folgende Veranstaltungen waren Sie bereits angemeldet: {duplicate_string}. Diese werden aus Ihrer Bestellung entfernt. Für die anderen ist die Bestellnummer {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
             level = messages.SUCCESS
         elif payment_cart and order_item_counter == 0:
             message = f"Für alle von Ihnen ausgewählten Veranstaltungen sind sie bereits angemeldet. Ihre Bestellung wird daher verworfen."
@@ -277,6 +277,7 @@ class OrderCreateView(FormView):
             order = self.order
             # send email to user if order was created
             # order_created.delay(order.id)
+
             order_created(order.id)
 
             # set the order in the session
@@ -288,206 +289,207 @@ class OrderCreateView(FormView):
             return reverse_lazy("event-filter")
 
 
-def order_create(request):
-    cart = Cart(request)
-    print("in view: ", cart.cart)
+# obsolete
+# def order_create(request):
+#     cart = Cart(request)
+#     print("in view: ", cart.cart)
 
-    payment_cart = split_cart(cart)[0]
+#     payment_cart = split_cart(cart)[0]
 
-    if payment_cart:
-        show_costs = True
-    else:
-        show_costs = False
+#     if payment_cart:
+#         show_costs = True
+#     else:
+#         show_costs = False
 
-    payment_button_text = ""
-    show_costs_string = "Kosten"
+#     payment_button_text = ""
+#     show_costs_string = "Kosten"
 
-    order_summary_html_string = "<br>".join(
-        [f"{item['event'].name}" for item in payment_cart]
-    )
+#     order_summary_html_string = "<br>".join(
+#         [f"{item['event'].name}" for item in payment_cart]
+#     )
 
-    order_price_html_string = "<br>".join(
-        [
-            f"{item['event'].name} – {locale.currency(item['premium_price'], grouping=False, symbol=False)} €*"
-            for item in payment_cart
-        ]
-    )
+#     order_price_html_string = "<br>".join(
+#         [
+#             f"{item['event'].name} – {locale.currency(item['premium_price'], grouping=False, symbol=False)} €*"
+#             for item in payment_cart
+#         ]
+#     )
 
-    order_discounted_price_html_string = "<br>".join(
-        [
-            f"{item['event'].name} – {locale.currency(item['price'], grouping=False, symbol=False)} €"
-            for item in payment_cart
-        ]
-    )
+#     order_discounted_price_html_string = "<br>".join(
+#         [
+#             f"{item['event'].name} – {locale.currency(item['price'], grouping=False, symbol=False)} €"
+#             for item in payment_cart
+#         ]
+#     )
 
-    order_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_total_price(), grouping=False,symbol=False)} €</span>"
-    order_totalprice_html_string += "<br><span class='italic'>*Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span>"
+#     order_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_total_price(), grouping=False,symbol=False)} €</span>"
+#     order_totalprice_html_string += "<br><span class='italic'>*Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span>"
 
-    order_discounted_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_discounted_total_price(), grouping=False, symbol=False)} €</span>"
+#     order_discounted_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_discounted_total_price(), grouping=False, symbol=False)} €</span>"
 
-    non_payment_cart = split_cart(cart)[1]
+#     non_payment_cart = split_cart(cart)[1]
 
-    order_summary_html_string += "<br>".join(
-        [f"{item['event'].name} (Warteliste)" for item in non_payment_cart]
-    )
+#     order_summary_html_string += "<br>".join(
+#         [f"{item['event'].name} (Warteliste)" for item in non_payment_cart]
+#     )
 
-    waiting_list_string = "<br>".join(
-        [f"{item['event'].name}" for item in non_payment_cart]
-    )
+#     waiting_list_string = "<br>".join(
+#         [f"{item['event'].name}" for item in non_payment_cart]
+#     )
 
-    # generate text of registration/pay button
-    if payment_cart:
-        payment_button_text = settings.PAY_NOW_TEXT
-    elif non_payment_cart:
-        payment_button_text = settings.REGISTER_NOW_TEXT_WAITING
+#     # generate text of registration/pay button
+#     if payment_cart:
+#         payment_button_text = settings.PAY_NOW_TEXT
+#     elif non_payment_cart:
+#         payment_button_text = settings.REGISTER_NOW_TEXT_WAITING
 
-    if request.method == "POST":
-        form = EventMemberForm(request.POST)
-        if form.is_valid():
-            order_saved = False
-            # Orders are created if there is something to pay
-            if len(split_cart(cart)[0]) > 0:
-                order = Order(
-                    academic=form.cleaned_data["academic"],
-                    firstname=form.cleaned_data["firstname"],
-                    lastname=form.cleaned_data["lastname"],
-                    address_line=form.cleaned_data["address_line"],
-                    company=form.cleaned_data["company"],
-                    street=form.cleaned_data["street"],
-                    city=form.cleaned_data["city"],
-                    state=form.cleaned_data["state"],
-                    postcode=form.cleaned_data["postcode"],
-                    email=form.cleaned_data["email"],
-                    phone=form.cleaned_data["phone"],
-                )
-                memberships = form.cleaned_data["memberships"]
-                print("memberships: ", memberships)
-                vfll = form.cleaned_data["vfll"]
-                order.discounted = vfll or (len(memberships) > 0)
+#     if request.method == "POST":
+#         form = EventMemberForm(request.POST)
+#         if form.is_valid():
+#             order_saved = False
+#             # Orders are created if there is something to pay
+#             if len(split_cart(cart)[0]) > 0:
+#                 order = Order(
+#                     academic=form.cleaned_data["academic"],
+#                     firstname=form.cleaned_data["firstname"],
+#                     lastname=form.cleaned_data["lastname"],
+#                     address_line=form.cleaned_data["address_line"],
+#                     company=form.cleaned_data["company"],
+#                     street=form.cleaned_data["street"],
+#                     city=form.cleaned_data["city"],
+#                     state=form.cleaned_data["state"],
+#                     postcode=form.cleaned_data["postcode"],
+#                     email=form.cleaned_data["email"],
+#                     phone=form.cleaned_data["phone"],
+#                 )
+#                 memberships = form.cleaned_data["memberships"]
+#                 print("memberships: ", memberships)
+#                 vfll = form.cleaned_data["vfll"]
+#                 order.discounted = vfll or (len(memberships) > 0)
 
-                # only cart items where payment is possible belong to order
+#                 # only cart items where payment is possible belong to order
 
-                order.save()
-                order_saved = True
-                for item in split_cart(cart)[0]:
-                    OrderItem.objects.create(
-                        order=order,
-                        event=item["event"],
-                        price=item["price"],
-                        premium_price=item["premium_price"],
-                        quantity=item["quantity"],
-                        is_action_price=item["action_price"],
-                    )
+#                 order.save()
+#                 order_saved = True
+#                 for item in split_cart(cart)[0]:
+#                     OrderItem.objects.create(
+#                         order=order,
+#                         event=item["event"],
+#                         price=item["price"],
+#                         premium_price=item["premium_price"],
+#                         quantity=item["quantity"],
+#                         is_action_price=item["action_price"],
+#                     )
 
-            # create EventMemberInstances for ALL cart items
+#             # create EventMemberInstances for ALL cart items
 
-            for item in cart:
-                new_member = handle_form_submission(request, form, item["event"])
-                # academic = form.cleaned_data["academic"]
-                # firstname = form.cleaned_data["firstname"]
-                # lastname = form.cleaned_data["lastname"]
+#             for item in cart:
+#                 new_member = handle_form_submission(request, form, item["event"])
+#                 # academic = form.cleaned_data["academic"]
+#                 # firstname = form.cleaned_data["firstname"]
+#                 # lastname = form.cleaned_data["lastname"]
 
-                # address_line = form.cleaned_data["address_line"]
-                # company = form.cleaned_data["company"]
-                # street = form.cleaned_data["street"]
-                # city = form.cleaned_data["city"]
-                # state = form.cleaned_data["state"]
-                # postcode = form.cleaned_data["postcode"]
+#                 # address_line = form.cleaned_data["address_line"]
+#                 # company = form.cleaned_data["company"]
+#                 # street = form.cleaned_data["street"]
+#                 # city = form.cleaned_data["city"]
+#                 # state = form.cleaned_data["state"]
+#                 # postcode = form.cleaned_data["postcode"]
 
-                # email = form.cleaned_data["email"]
-                # phone = form.cleaned_data["phone"]
-                # message = form.cleaned_data["message"]
-                # vfll = form.cleaned_data["vfll"]
-                # memberships = form.cleaned_data["memberships"]
-                # memberships_labels = form.selected_memberships_labels()
-                # attention = form.cleaned_data["attention"]
-                # attention_other = form.cleaned_data["attention_other"]
-                # education_bonus = form.cleaned_data["education_bonus"]
-                # free_text_field = form.cleaned_data["free_text_field"]
-                # check = form.cleaned_data["check"]
-                # if item["event"].is_full():
-                #     attend_status = "waiting"
-                # else:
-                #     attend_status = "registered"
+#                 # email = form.cleaned_data["email"]
+#                 # phone = form.cleaned_data["phone"]
+#                 # message = form.cleaned_data["message"]
+#                 # vfll = form.cleaned_data["vfll"]
+#                 # memberships = form.cleaned_data["memberships"]
+#                 # memberships_labels = form.selected_memberships_labels()
+#                 # attention = form.cleaned_data["attention"]
+#                 # attention_other = form.cleaned_data["attention_other"]
+#                 # education_bonus = form.cleaned_data["education_bonus"]
+#                 # free_text_field = form.cleaned_data["free_text_field"]
+#                 # check = form.cleaned_data["check"]
+#                 # if item["event"].is_full():
+#                 #     attend_status = "waiting"
+#                 # else:
+#                 #     attend_status = "registered"
 
-                # # make name of this registration from event label and date
+#                 # # make name of this registration from event label and date
 
-                # name = f"{item['event'].label} | {timezone.now()}"
+#                 # name = f"{item['event'].label} | {timezone.now()}"
 
-                # new_member = EventMember.objects.create(
-                #     name=name,
-                #     event=item["event"],
-                #     academic=academic,
-                #     firstname=firstname,
-                #     lastname=lastname,
-                #     company=company,
-                #     street=street,
-                #     address_line=address_line,
-                #     city=city,
-                #     postcode=postcode,
-                #     state=state,
-                #     email=email,
-                #     phone=phone,
-                #     message=message,
-                #     vfll=vfll,
-                #     memberships=memberships,
-                #     attention=attention,
-                #     attention_other=attention_other,
-                #     education_bonus=education_bonus,
-                #     free_text_field=free_text_field,
-                #     check=check,
-                #     attend_status=attend_status,
-                # )
+#                 # new_member = EventMember.objects.create(
+#                 #     name=name,
+#                 #     event=item["event"],
+#                 #     academic=academic,
+#                 #     firstname=firstname,
+#                 #     lastname=lastname,
+#                 #     company=company,
+#                 #     street=street,
+#                 #     address_line=address_line,
+#                 #     city=city,
+#                 #     postcode=postcode,
+#                 #     state=state,
+#                 #     email=email,
+#                 #     phone=phone,
+#                 #     message=message,
+#                 #     vfll=vfll,
+#                 #     memberships=memberships,
+#                 #     attention=attention,
+#                 #     attention_other=attention_other,
+#                 #     education_bonus=education_bonus,
+#                 #     free_text_field=free_text_field,
+#                 #     check=check,
+#                 #     attend_status=attend_status,
+#                 # )
 
-            # clear the cart
-            cart.clear()
+#             # clear the cart
+#             cart.clear()
 
-            if payment_cart:
-                message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
-            elif non_payment_cart:
-                message = f"Vielen Dank für Ihre Anmeldung."
-            else:
-                message = f"Sie haben noch keine Anmeldung vorgenommen."
+#             if payment_cart:
+#                 message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}. Bitte wähle im nächsten Schritt Deine bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
+#             elif non_payment_cart:
+#                 message = f"Vielen Dank für Ihre Anmeldung."
+#             else:
+#                 message = f"Sie haben noch keine Anmeldung vorgenommen."
 
-            messages.success(request, message, fail_silently=True)
+#             messages.success(request, message, fail_silently=True)
 
-            # send email to user if order was created
-            if order_saved:
-                # order_created.delay(order.id)
-                order_created(order.id)
+#             # send email to user if order was created
+#             if order_saved:
+#                 # order_created.delay(order.id)
+#                 order_created(order.id)
 
-                # set the order in the session
-                request.session["order_id"] = order.id
+#                 # set the order in the session
+#                 request.session["order_id"] = order.id
 
-                # redirect for payment
-                return redirect(reverse("payment:payment-process"))
-            else:
-                return redirect(reverse("event-filter"))
+#                 # redirect for payment
+#                 return redirect(reverse("payment:payment-process"))
+#             else:
+#                 return redirect(reverse("event-filter"))
 
-            # return redirect("event-list")
-            # return render(request,
-            #               'shop/order_created.html',
-            #               {'order': order})
-    else:
-        form = EventMemberForm(initial={"country": "DE"})
+#             # return redirect("event-list")
+#             # return render(request,
+#             #               'shop/order_created.html',
+#             #               {'order': order})
+#     else:
+#         form = EventMemberForm(initial={"country": "DE"})
 
-    return render(
-        request,
-        "events/add_event_member_tw.html",
-        {
-            "cart": cart,
-            "form": form,
-            "show_costs_string": show_costs_string,
-            "show_costs": show_costs,
-            "order_summary_html_string": order_summary_html_string,
-            "order_price_html_string": order_price_html_string,
-            "order_discounted_price_html_string": order_discounted_price_html_string,
-            "order_totalprice_html_string": order_totalprice_html_string,
-            "order_discounted_totalprice_html_string": order_discounted_totalprice_html_string,
-            "waiting_list_string": waiting_list_string,
-            "payment_button_text": payment_button_text,
-        },
-    )
+#     return render(
+#         request,
+#         "events/add_event_member_tw.html",
+#         {
+#             "cart": cart,
+#             "form": form,
+#             "show_costs_string": show_costs_string,
+#             "show_costs": show_costs,
+#             "order_summary_html_string": order_summary_html_string,
+#             "order_price_html_string": order_price_html_string,
+#             "order_discounted_price_html_string": order_discounted_price_html_string,
+#             "order_totalprice_html_string": order_totalprice_html_string,
+#             "order_discounted_totalprice_html_string": order_discounted_totalprice_html_string,
+#             "waiting_list_string": waiting_list_string,
+#             "payment_button_text": payment_button_text,
+#         },
+#     )
 
 
 @staff_member_required
@@ -495,7 +497,16 @@ def admin_order_pdf(request, order_id):
     context = {}
     order = get_object_or_404(Order, id=order_id)
     template_path = "shop/pdf_invoice.html"
+
+    update_order(order)
     context["order"] = order
+    context["order_items"] = OrderItem.objects.filter(order=order, status="r")
+    context["contains_action_price"] = any(
+        [
+            item.is_action_price
+            for item in OrderItem.objects.filter(order=order, status="r")
+        ]
+    )
     # if order.discounted:
     #     ust_footnote_counter = "2"
     # else:
@@ -533,3 +544,9 @@ def admin_order_pdf_and_mail(request, order_id):
 def admin_order_detail(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     return render(request, "admin/shop/orders/detail.html", {"order": order})
+
+
+@staff_member_required
+def invoice_report(request):
+    orders = Order.objects.all()
+    return render(request, "admin/shop/orders/list.html", {"orders": orders})

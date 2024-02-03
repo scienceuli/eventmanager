@@ -3,8 +3,6 @@
 {% load thumbnail embed_video_tags %}
 
 
-
-
 {% block title %}Veranstaltung Details{% endblock title %}
 {% block breadcrumb %}Veranstaltung Detail{% endblock breadcrumb %}
 
@@ -500,7 +498,6 @@
 
             <div class="flex relative  sm:items-center md:w-2/3 mx-auto">
 
-
                 <div class="flex-grow flex sm:items-center items-start flex-col sm:flex-row">
 
 
@@ -546,7 +543,7 @@
 
                             {% if show_button %}
 
-                            {% if event.direct_payment %}
+                            {% if event.direct_payment and event.is_open_for_registration %}
                             <div class="item">
                                 <div class="bg-gray-200 font-bold  text-vfllred ml-2 px-2">
                                     <form action="{% url 'shop:cart-add' event.id %}" method="post">
@@ -557,13 +554,22 @@
 
                                 </div>
                             </div>
-                            {% else %}
+                            {% elif event.is_open_for_registration %}
 
                             <div class="item">
                                 <div class="">
                                     <a class=' bg-gray-200 font-bold  text-vfllred ml-2 px-2 ' href="{% url 'event-add-member' event.slug %}">
                                         {{ registration_button  }}
                                     </a>
+                                </div>
+                            </div>
+                            {% elif not event.is_open_for_registration %}
+
+                            <div class="item">
+                                <div class="">
+                                    <span class='font-bold  text-vfllred ml-2 px-2 '>
+                                        Anmeldung möglich ab {{ event.open_date | date:'d.m.y'}}
+                                    </span>
                                 </div>
                             </div>
                             {% endif %}
@@ -590,6 +596,14 @@
             <!-- Beschreibung -->
 
             <div class="pt-8 flex-col w-2/3 mx-auto">{{ event.description|safe }}</div>
+            {% if pc_events or show_action_button or event.video and event.eventimage %}
+
+            <div>
+
+                <img alt='' class='w-2/3' src='{{ event.eventimage.image.url }}'>
+
+            </div>
+            {% endif %}
             <!-- Ende Beschreibung -->
 
             <!-- Voraussetzungen -->
@@ -775,6 +789,21 @@
 
             <!-- Ende Payless Modal -->
 
+            {% endif %}
+
+            <!-- show event image here if no video an no pc_events and no action_button -->
+            {% if not pc_events and not show_action_button and not event.video and event.eventimage %}
+            <div class="invisible md:visible absolute top-0 right-4 w-2/5 ">
+                <div class="aspect-w-16 aspect-h-9">
+                    <figure class="w-4/5 lg:w-2/3">
+                        <img class="h-auto max-w-full rounded-lg shadow-xl dark:shadow-gray-800" src="{{ event.eventimage.image.url }}" alt="{{ event.eventimage.description }}">
+                        {% if event.eventimage.caption %}
+                        <figcaption class="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">{{ event.eventimage.caption }}</figcaption>
+                        {% endif %}
+                    </figure>
+
+                </div>
+            </div>
             {% endif %}
 
 

@@ -1,0 +1,42 @@
+{% extends "reports/base.html" %}
+
+{% load static %}
+
+
+{% block title %}
+Bestellungen {{ block.super }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container">
+    <h1>Übersicht Bestellungen</h1>
+    <div class="col-md-12" style="margin-top:2em;">
+        <p id="date_filter">
+            <span id="date-label-from" class="date-label">Von: </span><input class="date_range_filter date" type="text" id="datepicker_from" />
+            <span id="date-label-to" class="date-label">bis:<input class="date_range_filter date" type="text" id="datepicker_to" />
+        </p>
+    </div>
+    <div class="col-md-12" style="margin-top:2em;">
+        <table id="datatable-orders" class="dataTable">
+            <thead class="thead-dark">
+                <tr>
+                    <th>id</th>
+                    <th>angelegt</th>
+                    <th>Name</th>
+                    <th>E-Mail</th>
+                </tr>
+            </thead>
+            <tfoot>
+                <tr>
+                    <th>id</th>
+                    <th>angelegt</th>
+                    <th>Name</th>
+                    <th>E-Mail</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

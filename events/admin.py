@@ -1,5 +1,5 @@
 import markdown
-from datetime import date
+from datetime import date, datetime
 
 from django.contrib import admin, messages
 from django.conf import settings
@@ -55,6 +55,7 @@ from .models import (
     EventLocation,
     EventAgenda,
     EventMember,
+    EventMemberChangeDate,
     EventMemberRole,
     MemberRole,
     EventHighlight,
@@ -63,6 +64,8 @@ from .models import (
 from events.filter import PeriodFilter, DateRangeFilter
 
 from shop.models import Order, OrderItem
+
+from payment.utils import update_order
 
 from .admin_views import hitcount_view
 
@@ -80,6 +83,27 @@ from moodle.management.commands.moodle import (
 from django.conf.locale.de import formats as de_formats
 
 de_formats.DATETIME_FORMAT = "d.m.y H:i"
+
+
+class MyAdminSite(admin.AdminSite):
+    def get_app_list(self, request):
+        app_list = super().get_app_list(request)
+        app_list += [
+            {
+                "name": "My Custom App",
+                "app_label": "my_test_app",
+                # "app_url": "/admin/test_view",
+                "models": [
+                    {
+                        "name": "tcptraceroute",
+                        "object_name": "tcptraceroute",
+                        "admin_url": "/admin/test_view",
+                        "view_only": True,
+                    }
+                ],
+            }
+        ]
+        return app_list
 
 
 class HomeAdmin(admin.ModelAdmin):
@@ -482,6 +506,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     def get_inline_actions(self, request, obj=None):
         actions = super(EventMemberInline, self).get_inline_actions(request, obj)
         if obj and obj.attend_status == "registered":
+            actions.append("change_attend_status_to_cancelled")
             actions.append("change_attend_status_to_waiting")
         elif obj and obj.attend_status == "waiting":
             actions.append("change_attend_status_to_registered")
@@ -551,16 +576,34 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
 
     change_attend_status_to_waiting.short_description = ">W"
 
+    def change_attend_status_to_cancelled(self, request, obj, parent_obj):
+        old_status = obj.attend_status
+        obj.attend_status = "cancelled"
+        action = f"Status von {old_status} zu cancelled geändert"
+        change_date = EventMemberChangeDate.objects.create(
+            change_date=datetime.now(), action=action, event_member=obj
+        )
+        obj.save()
+        event = obj.event
+        try:
+            order_item = OrderItem.objects.get(event=event, order__email=obj.email)
+            order = order_item.order
+            update_order(order)
+        except:
+            pass
+
+    change_attend_status_to_cancelled.short_description = ">S"
+
     def change_attend_status_to_registered(self, request, obj, parent_obj):
         obj.attend_status = "registered"
         obj.save()
         event = obj.event
-        print(
-            OrderItem.objects.filter(
-                event=event,
-                order__email=obj.email,
-            ).exists()
-        )
+        # print(
+        #     OrderItem.objects.filter(
+        #         event=event,
+        #         order__email=obj.email,
+        #     ).exists()
+        # )
         if not OrderItem.objects.filter(
             event=event,
             order__email=obj.email,

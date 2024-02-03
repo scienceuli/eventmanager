@@ -995,9 +995,17 @@ class EventAgenda(BaseModel):
         super(EventAgenda, self).save(*args, **kwargs)
 
 
+EVENT_IMAGE_CHOICES = (("d", "Beschreibung"),)
+
+
 class EventImage(BaseModel):
-    event = models.OneToOneField(Event, related_name="image", on_delete=models.CASCADE)
+    event = models.OneToOneField(
+        Event, related_name="eventimage", on_delete=models.CASCADE
+    )
     image = models.ImageField(upload_to="event_image/")
+    category = models.CharField(max_length=1, choices=EVENT_IMAGE_CHOICES, default="d")
+    description = models.CharField(max_length=255, blank=True, null=True)
+    caption = models.CharField(max_length=255, blank=True, null=True)
 
 
 MEMBER_ROLE_CHOICES = (
@@ -1131,6 +1139,14 @@ class EventMember(AddressModel):
         if not self.name:
             self.name = f"{self.event.label} | {timezone.now()}"
             super(EventMember, self).save(*args, **kwargs)
+
+
+class EventMemberChangeDate(BaseModel):
+    action = models.CharField(max_length=40, blank=True, null=True)
+    change_date = models.DateTimeField()
+    event_member = models.ForeignKey(
+        EventMember, related_name="change_dates", on_delete=models.CASCADE
+    )
 
 
 class EventMemberRole(BaseModel):
