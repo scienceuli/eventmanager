@@ -166,7 +166,9 @@ STATE_CHOICES = (
 
 
 class EventCategoryFilterForm(BSModalForm):
-    category = forms.ModelChoiceField(queryset=EventCategory.objects.all())
+    category = forms.ModelChoiceField(
+        queryset=EventCategory.shown_event_categories.all()
+    )
 
     class Meta:
         fields = ["category"]

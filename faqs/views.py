@@ -1,3 +1,4 @@
+from typing import Any
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import reverse
 from django.views import generic
@@ -31,6 +32,11 @@ class CategoryDetail(generic.DetailView):
 
     model = models.Category
     template_name = "faqs/category_detail.html"
+
+    def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
+        context = super().get_context_data(**kwargs)
+        context["questions"] = self.get_object().question_set.all().order_by("position")
+        return context
 
 
 class QuestionDetail(generic.DetailView):

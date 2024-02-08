@@ -2,6 +2,8 @@ import urllib
 import django_filters
 from django import forms
 
+from django.db.models import Count
+
 from django.contrib.admin.filters import FieldListFilter
 from django.utils import timezone
 from django.contrib.admin import SimpleListFilter
@@ -66,7 +68,11 @@ class PeriodFilter(SimpleListFilter):
 
 class EventFilter(django_filters.FilterSet):
     category = django_filters.ModelChoiceFilter(
-        queryset=EventCategory.objects.all(),
+        queryset=EventCategory.shown_event_categories.annotate(
+            events_count=Count("events")
+        )
+        .filter(events_count__gt=0)
+        .order_by("position"),
         empty_label="Alle",
     )
 

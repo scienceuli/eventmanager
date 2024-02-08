@@ -314,6 +314,7 @@ class FilteredEventListView(ListView):
     strict = False
 
     def get_queryset(self):
+        search = self.request.GET.get("search")
         # Get the queryset however you usually would.  For example:
         queryset = (
             super()
@@ -322,6 +323,11 @@ class FilteredEventListView(ListView):
             .exclude(event_days=None)
             .order_by("first_day")
         )
+
+        # search
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
         # Then use the query parameters and the queryset to
         # instantiate a filterset and save it as an attribute
         # on the view instance for later.
@@ -346,9 +352,24 @@ class FilteredEventListView(ListView):
             "first_day_min": "Datum von",
             "first_day_max": "Datum bis",
             "category": "Kategorie",
+            "search": search,  # without this there is a key error
         }
+
+        def get_value_in_readable_form(key, value):
+            if key == "first_day_min" or key == "first_day_max":
+                return (
+                    f"{value.split('-')[2]}.{value.split('-')[1]}.{value.split('-')[0]}"
+                )
+            if key == "category":
+                cat = EventCategory.objects.get(id=value)
+                return cat.name
+
         self.filter_string = ", ".join(
-            [filter_translate_dict[key] for key, value in filter_data.items() if value]
+            [
+                f"{filter_translate_dict[key]} {get_value_in_readable_form(key, value)}"
+                for key, value in filter_data.items()
+                if value
+            ]
         )
 
         # Return the filtered queryset
@@ -1369,9 +1390,9 @@ def export_mv_members_csv(request):
     query_vote_transfer_no = request.GET.get("member_vote_transfer_no")
 
     response = HttpResponse(content_type="text/csv")
-    response[
-        "Content-Disposition"
-    ] = f'attachment; filename="teilnehmer_mv_{date.today()}.csv"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="teilnehmer_mv_{date.today()}.csv"'
+    )
 
     writer = csv.writer(response)
     writer.writerow(

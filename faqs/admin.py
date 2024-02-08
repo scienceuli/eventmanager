@@ -23,6 +23,7 @@ class QuestionAdmin(admin.ModelAdmin):
     list_display = (
         "question",
         "category",
+        "position",
         "slug",
     )
     list_filter = ["category"]

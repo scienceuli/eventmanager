@@ -181,9 +181,11 @@ CKEDITOR_JQUERY_URL = "https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery
 CKEDITOR_UPLOAD_PATH = "event-details/"
 CKEDITOR_CONFIGS = {
     "default": {
+        "versionCheck": False,
         "toolbar": None,
     },
     "short": {
+        "versionCheck": False,
         "toolbar": "Short",
         "height": 100,
         "toolbar_Short": [

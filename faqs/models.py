@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models import F
 from django.utils.text import slugify
 from django.shortcuts import reverse
 
@@ -13,12 +14,22 @@ class Question(models.Model):
     )
     question = models.CharField(max_length=150, unique=True)
     slug = models.SlugField(max_length=150, unique=True, blank=True)
+    position = models.PositiveSmallIntegerField(
+        verbose_name="Reihenfolge",
+        null=True,
+        help_text="Reihenfolge der Programme in der Anezige",
+    )
 
     def __str__(self):
         return self.question
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.question)[:150]
+
+        Question.objects.filter(
+            position__gte=self.position, category=self.category
+        ).update(position=F("position") + 1)
+
         return super().save(*args, **kwargs)
 
     def get_absolute_url(self):
