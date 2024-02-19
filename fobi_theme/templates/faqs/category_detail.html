@@ -29,9 +29,9 @@
 
                 <p class="mb-4 font-bold">{{question.question}}</p>
                 <div class="mb-4">
-                    {% for answer in question.answer_set.all %}
+                    {% for answer in question.get_converted_answers %}
                     <p class="text-neutral-500 dark:text-neutral-300">
-                        {{answer.answer}}
+                        {{answer|safe}}
                     </p>
                     {% endfor %}
                 </div>

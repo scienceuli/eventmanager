@@ -1,3 +1,4 @@
+import markdown
 from typing import Any
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import reverse
@@ -48,3 +49,12 @@ class QuestionDetail(generic.DetailView):
         return self.model.objects.get(
             category__slug=self.kwargs["slug"], slug=self.kwargs["question"]
         )
+
+    def get_context_data(self, **kwargs: Any):
+        md = markdown.Markdown()
+        context = super().get_context_data(**kwargs)
+        answers_list = [
+            md.convert(answer.answer) for answer in self.get_object().answer_set.all()
+        ]
+        context["answers"] = answers_list
+        return context

@@ -1,3 +1,4 @@
+import markdown
 from django.conf import settings
 from django.db import models
 from django.db.models import F
@@ -12,12 +13,12 @@ class Question(models.Model):
     category = models.ForeignKey(
         "category", on_delete=models.SET_NULL, null=True, blank=True
     )
-    question = models.CharField(max_length=150, unique=True)
-    slug = models.SlugField(max_length=150, unique=True, blank=True)
+    question = models.CharField(max_length=255, unique=True)
+    slug = models.SlugField(max_length=255, unique=True, blank=True)
     position = models.PositiveSmallIntegerField(
         verbose_name="Reihenfolge",
         null=True,
-        help_text="Reihenfolge der Programme in der Anezige",
+        help_text="Reihenfolge der Programme in der Anzeige",
     )
 
     def __str__(self):
@@ -34,6 +35,12 @@ class Question(models.Model):
 
     def get_absolute_url(self):
         return reverse("faqs:question_detail", args=(self.category.slug, self.slug))
+
+    def get_converted_answers(self):
+        md = markdown.Markdown()
+
+        answers_list = [md.convert(answer.answer) for answer in self.answer_set.all()]
+        return answers_list
 
 
 class Answer(models.Model):
