@@ -10,14 +10,12 @@
     <div class="container max-w-6xl mx-auto">
         <!-- Container for demo purpose -->
 
-        <div class="grid gap-4 md:grid-cols-2">
+        <div class="grid gap-8 md:grid-cols-2">
             <div class="mb-6 md:mb-0">
                 <h2 class="mb-6 text-3xl font-bold">FAQs </a></h2>
 
-                <p class="text-neutral-500 dark:text-neutral-300">
-                    Weitere Fragen?
-                    <a href="#!" class="text-primary transition duration-300 hover:text-primary-600 focus:text-primary-600 active:text-primary-700 dark:text-primary-400 dark:hover:text-primary-500 dark:focus:text-primary-500 dark:active:text-primary-600">Kontaktiere das FOBI-Team</a>.
-                </p>
+                {% include 'faqs/includes/_further_questions.html' %}
+
 
             </div>
 
