@@ -109,7 +109,8 @@ item_status_dict = {
 
 def update_order(order):
     # only update if payment_date in the future
-    if order.payment_date > datetime.now().astimezone(pytz.timezone("UTC")):
+    order_date = order.payment_date if order.payment_date else order.date_created
+    if order_date > datetime.now().astimezone(pytz.timezone("UTC")):
         for item in order.items.all():
             try:
                 event_member = EventMember.objects.get(
