@@ -149,4 +149,7 @@ cython_debug/
 # ngrok
 ngrok
 
+# specific files
+orders_sent.csv
+
 
