@@ -166,11 +166,13 @@
           @apply list-disc list-inside;
       }
       a {
-        @apply text-vfllred hover:font-semibold;
+        @apply text-gray-800 hover:text-vfllred;
       }
   }
 
 
+
+  
 
 
 
