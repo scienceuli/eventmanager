@@ -29,10 +29,7 @@
                     <h4>
                         <button id="faqs-title-{{ forloop.counter }}" type="button" class="flex items-center justify-between w-full text-left font-semibold py-2" @click="expanded = !expanded" :aria-expanded="expanded" aria-controls="faqs-text-{{ forloop.counter }}">
                             <span>{{question.question}}</span>
-                            <svg class="fill-indigo-500 shrink-0 ml-8" width="16" height="16" xmlns="http://www.w3.org/2000/svg">
-                                <rect y="7" width="16" height="2" rx="1" class="transform origin-center transition duration-200 ease-out" :class="{'!rotate-180': expanded}" />
-                                <rect y="7" width="16" height="2" rx="1" class="transform origin-center rotate-90 transition duration-200 ease-out" :class="{'!rotate-180': expanded}" />
-                            </svg>
+                            <span x-html="expanded ? '&minus;' :'+'" />
                         </button>
                     </h4>
                     <div id="faqs-text-{{ forloop.counter }}" aria-labelledby="faqs-title-01" role="region" class="text-sm text-slate-600 overflow-hidden transition-all duration-300 ease-in-out" x-show="expanded">
