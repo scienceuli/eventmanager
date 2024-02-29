@@ -30,12 +30,17 @@ class Order(AddressModel):
     )
     discounted = models.BooleanField(verbose_name="reduziert", default=True)
     paid = models.BooleanField(verbose_name="bezahlt", default=False)
+    storno = models.BooleanField(verbose_name="Storno", default=False)
     payment_date = models.DateTimeField(
         verbose_name="Bezahldatum", null=True, blank=True
     )
     mail_sent_date = models.DateTimeField(
         verbose_name="Rechnungsversand", null=True, blank=True
     )
+    reminder_sent_date = models.DateTimeField(
+        verbose_name="Mahnungsversand", null=True, blank=True
+    )
+
     download_marker = models.BooleanField(default=False)
 
     class Meta:

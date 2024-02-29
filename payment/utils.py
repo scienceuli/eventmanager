@@ -110,6 +110,7 @@ item_status_dict = {
 def update_order(order):
     # only update if payment_date in the future
     order_date = order.payment_date if order.payment_date else order.date_created
+    order_updated = False
     if order_date > datetime.now().astimezone(pytz.timezone("UTC")):
         for item in order.items.all():
             try:
@@ -147,3 +148,17 @@ def update_order(order):
             item.premium_price = event_prices_dict[item.event.id]["premium_price"]
             item.is_action_price = event_prices_dict[item.event.id]["action_price"]
             item.save()
+
+        order_updated = True
+
+    return order_updated
+
+
+def check_order_complete(order):
+
+    # all these fields must have values
+    if any(
+        s is None or s == "" for s in (order.email, order.firstname, order.lastname)
+    ):
+        return False
+    return True

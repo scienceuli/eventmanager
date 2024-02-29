@@ -17,6 +17,8 @@ from django.contrib import messages
 from django.template.loader import get_template
 from django.views.generic.edit import CreateView, FormView
 
+from django.core.mail import send_mail
+
 from django.utils import timezone
 
 from xhtml2pdf import pisa
@@ -24,14 +26,14 @@ from xhtml2pdf import pisa
 from events.models import Event, EventCollection
 from events.forms import EventMemberForm
 from events.views import handle_form_submission
-from events.utils import no_duplicate_check
+from events.utils import no_duplicate_check, send_email
 
 from shop.cart import Cart
 from shop.forms import CartAddEventForm
 from shop.models import Order, OrderItem
 from shop.tasks import order_created
 
-from payment.utils import render_to_pdf, update_order
+from payment.utils import render_to_pdf, update_order, check_order_complete
 from payment.tasks import payment_completed
 
 
@@ -550,3 +552,47 @@ def admin_order_detail(request, order_id):
 def invoice_report(request):
     orders = Order.objects.all()
     return render(request, "admin/shop/orders/list.html", {"orders": orders})
+
+
+@staff_member_required
+def reminder_mail(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    template_name = "reminder"
+
+    order_complete = check_order_complete(order)
+    if not order_complete:
+        messages.error(
+            request, f"Bitte erst die Rechnung vervollständigen (Name, Email)"
+        )
+    else:
+        addresses_list = [order.email]
+        addresses = {"to": addresses_list}
+        subject = f"Mahnung Rechnung {order.get_order_number}"
+        formatting_dict = {
+            "firstname": order.firstname,
+            "lastname": order.lastname,
+            "order_number": order.get_order_number,
+            "payment_date": order.payment_date.date().strftime("%d.%m.%Y"),
+            "events": ", ".join(
+                [event.name for event in order.get_registered_items_events()]
+            ),
+            "total_costs": order.get_total_cost(),
+        }
+
+        send_reminder_mail = send_email(
+            addresses,
+            subject,
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.REPLY_TO_EMAIL],
+            template_name,
+            formatting_dict=formatting_dict,
+        )
+
+        if send_reminder_mail:
+            messages.success(request, f"Mahnung wurde verschickt")
+            order.reminder_sent_date = timezone.now()
+
+    list_view_url = reverse(
+        "admin:%s_%s_changelist" % (order._meta.app_label, order._meta.model_name)
+    )
+    return HttpResponseRedirect(list_view_url)

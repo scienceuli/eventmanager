@@ -32,4 +32,9 @@ urlpatterns = [
         views.admin_order_detail,
         name="admin-order-detail",
     ),
+    path(
+        "admin/order_reminder/<int:order_id>/",
+        views.reminder_mail,
+        name="reminder-mail",
+    ),
 ]

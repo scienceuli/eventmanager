@@ -4,7 +4,7 @@ from django.conf import settings
 
 from django_downloadview import ObjectDownloadView
 
-from events.models import Event
+from events.models import Event, EventDocument
 
 from .views import (
     EventListInternalView,
@@ -65,6 +65,7 @@ def trigger_error(request):
 
 
 download = ObjectDownloadView.as_view(model=Event, file_field="pdf_file")
+doc_download = ObjectDownloadView.as_view(model=EventDocument, file_field="upload")
 
 # todo: ordering the urls
 urlpatterns = [
@@ -212,6 +213,7 @@ urlpatterns = [
     ),
     # re_path(r"^download/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
     re_path(r"^download/(?P<slug>[A-Za-z0-9_-]+)/$", download, name="pdf-download"),
+    path("doc_download/<int:pk>/", doc_download, name="doc-download"),
     path(
         "export_participants/<int:event_id>/",
         export_participants,

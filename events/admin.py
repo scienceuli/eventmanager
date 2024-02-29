@@ -66,6 +66,8 @@ from events.filter import PeriodFilter, DateRangeFilter
 from shop.models import Order, OrderItem
 
 from payment.utils import update_order
+from payment.views import get_payment_date
+from events.utils import send_email
 
 from .admin_views import hitcount_view
 
@@ -579,6 +581,8 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     def change_attend_status_to_cancelled(self, request, obj, parent_obj):
         old_status = obj.attend_status
         obj.attend_status = "cancelled"
+        messages.success(request, f"Teilnahme wurde storniert")
+
         action = f"Status von {old_status} zu cancelled geändert"
         change_date = EventMemberChangeDate.objects.create(
             change_date=datetime.now(), action=action, event_member=obj
@@ -588,15 +592,33 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         try:
             order_item = OrderItem.objects.get(event=event, order__email=obj.email)
             order = order_item.order
-            update_order(order)
+            order_updated = update_order(order)
+            order.storno = True
+            order.save()
+            if order_updated:
+                messages.success(
+                    request, "Rechnung wurde geändert (da noch nicht verschickt)"
+                )
+            else:
+                messages.info(
+                    request,
+                    "Rechnung liegt in Vergangenheit und wurde nicht geändert, bitte individuell klären",
+                )
+            messages.success(
+                request,
+                f"Storno-Vermerk für Rechnung wurde hinzugefügt (Achtung: Evtl. bleiben andere Rechnungsposten weiterhin gültig)",
+            )
+
         except:
-            pass
+            messages.error(request, f"keine zugehörige Rechnung gefunden")
 
     change_attend_status_to_cancelled.short_description = ">S"
 
     def change_attend_status_to_registered(self, request, obj, parent_obj):
         obj.attend_status = "registered"
         obj.save()
+        messages.success(request, "Teilnahmestatus wurde auf angemeldet gesetzt")
+
         event = obj.event
         # print(
         #     OrderItem.objects.filter(
@@ -621,6 +643,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
                 email=obj.email,
                 phone=obj.phone,
                 discounted=obj.vfll or (len(obj.memberships) > 0),
+                payment_type="r",
             )
             order_item = OrderItem.objects.create(
                 order=order,
@@ -629,6 +652,10 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
                 premium_price=event.premium_price,
                 quantity=1,
             )
+
+            order.payment_date = get_payment_date(order)
+            order.save()
+            messages.success(request, "Rechnung wurde angelegt")
 
     change_attend_status_to_registered.short_description = ">A"
 

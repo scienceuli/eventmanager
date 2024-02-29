@@ -28,12 +28,23 @@ order_pdf.short_description = "Rechnung"
 def order_pdf_and_mail(obj):
     url = reverse("shop:admin-order-pdf-and-mail", args=[obj.id])
     if obj.payment_type == "n":
-        return mark_safe(f'<a href="{url}">PDF+Mail</a>')
+        return mark_safe(f'<a href="{url}">Pdf+✉</a>')
     else:
         return ""
 
 
 order_pdf_and_mail.short_description = "R+M"
+
+
+def reminder_mail(obj):
+    url = reverse("shop:reminder-mail", args=[obj.id])
+    if not obj.paid:
+        return mark_safe(f'<a href="{url}">✉</a>')
+    else:
+        return ""
+
+
+reminder_mail.short_description = "Mahn"
 
 
 def order_detail(obj):
@@ -42,7 +53,7 @@ def order_detail(obj):
 
 
 def order_events(obj):
-    order_events_string = ", ".join(
+    order_events_string = " | ".join(
         [item.event.name for item in obj.items.filter(status="r")]
     )
     return order_events_string
@@ -62,6 +73,7 @@ class OrderAdmin(admin.ModelAdmin):
         "get_total_cost",
         "payment_type",
         "paid",
+        "storno",
         "discounted",
         "payment_date",
         "mail_sent_date",
@@ -71,6 +83,7 @@ class OrderAdmin(admin.ModelAdmin):
         order_detail,
         order_pdf,
         order_pdf_and_mail,
+        reminder_mail,
         order_events,
     ]
 

@@ -625,6 +625,7 @@ class EventDetailView(HitCountDetailView):
         context["cart_event_form"] = cart_event_form
         context["pc_events"] = pc_events
         context["payless_collection"] = payless_collection
+        context["event_documents"] = event.event_documents.all()
         # context["show_action_button"] = show_action_button
         return context
 
