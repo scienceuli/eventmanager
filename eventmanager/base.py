@@ -52,6 +52,9 @@ INSTALLED_APPS = [
     "django_tables2",
     "django_countries",
     "rest_framework",
+    # 2FA
+    "django_otp",
+    "django_otp.plugins.otp_totp",
     # third party
     "crispy_forms",
     "crispy_tailwind",
@@ -89,6 +92,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "events.middleware.MaintenanceModeMiddleware",
@@ -122,6 +126,7 @@ WSGI_APPLICATION = "eventmanager.wsgi.application"
 
 AUTHENTICATION_BACKENDS = ("users.backend.EmailOrUsernameBackend",)
 
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
@@ -152,7 +157,8 @@ USE_L10N = True
 USE_TZ = True
 
 # login
-LOGIN_URL = "/login/"
+LOGIN_URL = "login"
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/

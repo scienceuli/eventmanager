@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html>
-  {% load static %}
-  {% load crispy_forms_tags %}
+{% load static %}
+{% load crispy_forms_tags %}
+
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,47 +19,44 @@
   <!-- Google Font: Source Sans Pro -->
   <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
 </head>
+
 <body class="hold-transition login-page">
-    {%if messages%}
-    {%for message in messages%}
-        {{message}}
-    {%endfor%}
-{%endif%}
-<div class="login-box">
-  <div class="login-logo">
-    <a href="#"><b>FOBI</b> Registrieren</a>
-  </div>
-  <!-- /.login-logo -->
-  <div class="card">
-    <div class="card-body login-card-body">
-      <p class="login-box-msg">Bitte registrieren</p>
-
-      <form method='POST'>
-        {%csrf_token%}
-        {{form|crispy}}
-    <button type='submit'>Submit</button>
-   
-</form>
-
-      
-      <!-- /.social-auth-links -->
-
-      <p class="mb-1">Schon registriert?
-        <a href="{% url 'login' %}">Login</a>
-      </p>
-      
+  {%if messages%}
+  {%for message in messages%}
+  {{message}}
+  {%endfor%}
+  {%endif%}
+  <div class="login-box">
+    <div class="login-logo">
+      <a href="#"><b>FOBI</b> Registrieren</a>
     </div>
-    <!-- /.login-card-body -->
-  </div>
-</div>
-<!-- /.login-box -->
+    <!-- /.login-logo -->
+    <div class="card">
+      <div class="card-body login-card-body">
+        <p class="login-box-msg">Bitte registrieren</p>
 
-{% include 'base/js.html' %}
+        <form method='POST'>
+          {%csrf_token%}
+          {{form|crispy}}
+          <button type='submit'>Submit</button>
+
+        </form>
+
+
+        <!-- /.social-auth-links -->
+
+        <p class="mb-1">Schon registriert?
+          <a href="{% url 'users:login' %}">Login</a>
+        </p>
+
+      </div>
+      <!-- /.login-card-body -->
+    </div>
+  </div>
+  <!-- /.login-box -->
+
+  {% include 'base/js.html' %}
 
 </body>
+
 </html>
-
-
-
-
-

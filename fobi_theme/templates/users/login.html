@@ -13,7 +13,7 @@
       <form action="" method="post">
         {% csrf_token %}
         <div class="input-group mb-3">
-          {{ form.username }}
+          {{ form.username.errors }}{{ form.username.label_tag }}{{ form.username }}
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fas fa-envelope"></span>
@@ -21,13 +21,26 @@
           </div>
         </div>
         <div class="input-group mb-3">
-          {{ form.password }}
+          {{ form.password.errors }}{{ form.password.label_tag }} {{ form.password }}
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fas fa-lock"></span>
             </div>
           </div>
         </div>
+        {% if form.get_user %}
+
+        <div class="input-group mb-3">
+          {{ form.otp_device.errors }}{{ form.otp_device.label_tag }}{{ form.otp_device }}
+          <div class="input-group-append">
+            <div class="input-group-text">
+              <span class="fas fa-lock"></span>
+            </div>
+          </div>
+        </div>
+
+        {% endif %}
+
         <div class="row">
           <div class="col-8">
             <div class="icheck-primary">
@@ -45,12 +58,16 @@
         </div>
       </form>
 
+      <p class="mb-1">
+        <a href="{% url 'users:password_reset' %}">Passwort vergessen?</a>
+      </p>
+
+
+
 
       <!-- /.social-auth-links -->
 
-      <p class="mb-1">
-        <a href="{% url 'password_reset' %}">Passwort vergessen?</a>
-      </p>
+
       {% comment %}
       <p class="mb-0">
         <a href="{% url 'register' %}" class="text-center">Registrieren</a>
