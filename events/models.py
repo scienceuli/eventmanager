@@ -892,6 +892,7 @@ class EventDocument(BaseModel):
     )
     title = models.CharField("Titel", max_length=255)
     description = models.TextField("Beschreibung", null=True, blank=True)
+    emphasize = models.BooleanField(verbose_name="hervorheben", default=False)
     upload = models.FileField(upload_to="documents/")
 
     class Meta:
