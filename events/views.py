@@ -3,6 +3,7 @@ import csv
 import json
 import ast
 import pandas as pd
+from decimal import Decimal
 from itertools import chain
 from events.actions import convert_boolean_field
 from openpyxl import Workbook
@@ -940,7 +941,10 @@ def event_add_member(request, slug):
     if event.direct_payment:
         payment_button_text = settings.PAY_NOW_TEXT
     else:
-        payment_button_text = settings.REGISTER_NOW_TEXT
+        if event.price == Decimal("0.00"):
+            payment_button_text = settings.REGISTER_NOW_FREE_TEXT
+        else:
+            payment_button_text = settings.REGISTER_NOW_TEXT
 
     # if event is full both texts are overwritten
     if event.is_full():
