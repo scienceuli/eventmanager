@@ -73,6 +73,7 @@ INSTALLED_APPS = [
     "paypal.standard.ipn",  # django-paypal
     "ajax_datatable",
     "django_crontab",
+    "markdownify.apps.MarkdownifyConfig",
     # tailwind theme app
     "fobi_theme",
     # lokale apps
