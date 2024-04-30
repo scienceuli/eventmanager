@@ -113,6 +113,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "events.custom_context_processor.category_renderer",
+                "events.custom_context_processor.event_in_frontend_context",
                 "shop.context_processors.cart",
             ],
         },

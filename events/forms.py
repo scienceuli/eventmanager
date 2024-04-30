@@ -327,6 +327,12 @@ from .choices import (
 )
 
 
+class MemberForm(forms.ModelForm):
+    class Meta:
+        model = EventMember
+        fields = ["lastname", "firstname", "email", "attend_status"]
+
+
 class EventMemberForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

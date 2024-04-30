@@ -81,7 +81,7 @@
 			{% if user.is_authenticated %}
 			<a class='px-3 py-3' href="{% url 'event-list-internal' %}">E</a>
 			{% if user|has_group:"mv_orga" %}
-			<a class='px-3 py-3' href="{% url 'members' 'Digitale-Mitgliederversammlung-2023' %}">TN</a>
+			<a class='px-3 py-3' href="{% url 'members' event=event_in_frontend %}">TN</a>
 			{% endif %}
 			<a href="{% url 'users:logout' %}" class="block md:inline-block text-red  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
 				Logout</a>

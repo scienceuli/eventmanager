@@ -668,6 +668,12 @@ class Event(BaseModel, HitCountMixin):
         )
 
     def is_past(self):
+        if not self.first_day:
+            if self.pub_status == "UNPUB" or self.pub_status == "ARCH":
+                return True
+            else:
+                return False
+
         if date.today() > self.first_day:
             return True
         return False

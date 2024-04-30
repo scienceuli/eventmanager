@@ -39,6 +39,10 @@ from .views import (
     get_moodle_data,
     EventApi,
     EventMembersListView,
+    get_members_list,
+    search_members_list,
+    edit_member,
+    edit_member_submit,
     FTEventMembersListView,
     MVEventMembersListView,
     EventMemberDetailView,
@@ -160,7 +164,12 @@ urlpatterns = [
     path("moodle_list/", moodle, name="moodle-list"),
     path("get_moodle_data/", get_moodle_data, name="get-moodle-data"),
     path("events-api/", EventApi.as_view(), name="Event"),
-    path("members/<event>/", EventMembersListView.as_view(), name="members"),
+    path("members/<event>/", get_members_list, name="members"),
+    path(
+        "search_members_list/<event>/", search_members_list, name="search-members-list"
+    ),
+    path("members/edit/<member_pk>/", edit_member, name="edit-member"),
+    path("members/submit/<member_pk>/", edit_member_submit, name="edit-member-submit"),
     path(
         "members/detail/<int:pk>/",
         EventMemberDetailView.as_view(),
@@ -200,7 +209,11 @@ urlpatterns = [
         "members/create/<event>", EventMemberCreateView.as_view(), name="member-create"
     ),
     path("members/export/csv/", export_members_csv, name="export-members-csv"),
-    path("members_mv/export/csv/", export_mv_members_csv, name="export-members-mv-csv"),
+    path(
+        "members_mv/export/csv/<event>/",
+        export_mv_members_csv,
+        name="export-members-mv-csv",
+    ),
     path("members_dashboard/", members_dashboard_view, name="members-dashboard"),
     path(
         "ft_members_dashboard/", ft_members_dashboard_view, name="ft-members-dashboard"

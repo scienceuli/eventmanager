@@ -1,0 +1,16 @@
+<table class="table table-striped w-100 d-block d-md-table">
+    <thead>
+        <th></th>
+        <th>Vorname</th>
+        <th>Nachname</th>
+        <th>E-Mail</th>
+        <th>Status</th>
+        <th>angelegt am</th>
+        <th></th>
+    </thead>
+    <tbody>
+        {% for member in event_members %}
+        {% include 'events/includes/member_row.html' %}
+        {% endfor %}
+    </tbody>
+</table>

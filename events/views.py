@@ -124,6 +124,7 @@ from .forms import (
     SymposiumForm,
     MV2023Form,
     AddMemberForm,
+    MemberForm,
     EventUpdateCapacityForm,
     EventCategoryFilterForm,
     FTEventMemberForm,
@@ -183,7 +184,10 @@ def home(request):
     else:
         event_highlight = None
 
-    context = {"event_highlight": event_highlight, "home": home}
+    context = {
+        "event_highlight": event_highlight,
+        "home": home,
+    }
 
     return render(request, "events/home.html", context)
 
@@ -1067,18 +1071,35 @@ class EventApi(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class EventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
+class EventMembersListView(MVOrgaGroupTestMixin, ListView):
+    """
+    View to see Members of Event
+    Permission: request.user has zo be in group mv_orga
+    Event is given by event_label
+    """
+
     model = EventMember
-    table_class = EventMembersTable
     template_name = "events/members_list.html"
+    context_object_name = "event_members"
+    # template_name = "events/test.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        from .parameters import has_vote_transfer
+
+        self.event_label = self.kwargs["event"]
+        self.show_vote_transfer = has_vote_transfer.get(self.event_label, None)
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        event_members = EventMember.objects.filter(event__label=self.kwargs["event"])
+        event_members = EventMember.objects.filter(event__label=self.event_label)
         query_ln = self.request.GET.get("member_lastname")
         query_fn = self.request.GET.get("member_firstname")
         query_email = self.request.GET.get("member_email")
-        query_vote_transfer_yes = self.request.GET.get("member_vote_transfer_yes")
-        query_vote_transfer_no = self.request.GET.get("member_vote_transfer_no")
+
+        if self.show_vote_transfer:
+            query_vote_transfer_yes = self.request.GET.get("member_vote_transfer_yes")
+            query_vote_transfer_no = self.request.GET.get("member_vote_transfer_no")
 
         flag = self.request.GET.get("flag")
         # print(f"flag: {flag}")
@@ -1090,10 +1111,12 @@ class EventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
             event_members = event_members.filter(lastname__icontains=query_ln)
         if query_email:
             event_members = event_members.filter(email__icontains=query_email)
-        if query_vote_transfer_yes:
-            event_members = event_members.exclude(vote_transfer__exact="")
-        if query_vote_transfer_no:
-            event_members = event_members.filter(vote_transfer__exact="")
+
+        if self.show_vote_transfer:
+            if query_vote_transfer_yes:
+                event_members = event_members.exclude(vote_transfer__exact="")
+            if query_vote_transfer_no:
+                event_members = event_members.filter(vote_transfer__exact="")
         if flag == "duplicates":
             duplicate_email_list = Event.objects.get(
                 label=self.kwargs["event"]
@@ -1106,11 +1129,62 @@ class EventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
         # Call the base implementation first to get a context
         context = super().get_context_data(**kwargs)
         # Add a context
-        event_label = self.kwargs["event"]
-        context["event_label"] = event_label
-        context["event"] = Event.objects.get(label=event_label)
+        context["event"] = Event.objects.get(label=self.event_label)
+        context["show_vote_transfer"] = self.show_vote_transfer
         # print(context)
         return context
+
+
+def get_members_list(request, event):
+    event_members = EventMember.objects.filter(event__label=event)
+    context = {}
+    context["event_members"] = event_members
+    return render(request, "events/members_list.html", context)
+
+
+def search_members_list(request, event):
+    query = request.GET.get("search", "")
+    event_members = EventMember.objects.filter(event__label=event)
+
+    if query:
+        event_members = event_members.filter(
+            Q(lastname__icontains=query)
+            | Q(firstname__icontains=query)
+            | Q(email__icontains=query)
+        )
+
+    context = {}
+    context["event_members"] = event_members
+
+    return render(request, "events/includes/member_list.html", context)
+
+
+def edit_member(request, member_pk):
+    member = EventMember.objects.get(pk=member_pk)
+    context = {}
+    context["member"] = member
+    context["form"] = MemberForm(
+        initial={
+            "firstname": member.firstname,
+            "lastname": member.lastname,
+            "email": member.email,
+            "attend_status": member.attend_status,
+        }
+    )
+    return render(request, "events/includes/edit_member.html", context)
+
+
+def edit_member_submit(request, member_pk):
+    context = {}
+    member = EventMember.objects.get(pk=member_pk)
+    context["member"] = member
+    if request.method == "POST":
+        form = MemberForm(request.POST, instance=member)
+        if form.is_valid():
+            form.save()
+        else:
+            return render(request, "events/includes/edit_member.html", context)
+    return render(request, "events/includes/member_row.html", context)
 
 
 class FTEventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
@@ -1386,36 +1460,31 @@ def export_members_csv(request):
 
 @login_required
 @user_passes_test(is_member_of_mv_orga)
-def export_mv_members_csv(request):
+def export_mv_members_csv(request, event):
     # print(f"request: {request.GET}")
     query_ln = request.GET.get("member_lastname")
     query_fn = request.GET.get("member_firstname")
     query_email = request.GET.get("member_email")
+
     query_vote_transfer_yes = request.GET.get("member_vote_transfer_yes")
     query_vote_transfer_no = request.GET.get("member_vote_transfer_no")
 
     response = HttpResponse(content_type="text/csv")
     response["Content-Disposition"] = (
-        f'attachment; filename="teilnehmer_mv_{date.today()}.csv"'
+        f'attachment; filename="teilnehmer_{date.today()}.csv"'
     )
 
     writer = csv.writer(response)
-    writer.writerow(
-        [
-            "Vorname",
-            "Nachname",
-            "E-Mail",
-            "Datum",
-            "Mitgliedschaft",
-            "Stimmübertragung",
-            "Check Stimmübertragung",
-            "Einverständnis MV",
-        ]
-    )
+    writer_list = ["Vorname", "Nachname", "E-Mail", "Status", "Datum", "Mitgliedschaft"]
+    from .parameters import has_vote_transfer
 
-    members_mv = EventMember.objects.filter(
-        event__label="Digitale-Mitgliederversammlung-2023"
-    )
+    if has_vote_transfer.get(event, None):
+        writer_list.extend(
+            ["Stimmübertragung", "Check Stimmübertragung", "Einverständnis MV"]
+        )
+    writer.writerow(writer_list)
+
+    members_mv = EventMember.objects.filter(event__label=event)
     if query_fn:
         members_mv = members_mv.filter(firstname__icontains=query_fn)
     if query_ln:
@@ -1431,16 +1500,22 @@ def export_mv_members_csv(request):
         "firstname",
         "lastname",
         "email",
+        "attend_status",
         "date_created",
         "member_type",
-        "vote_transfer",
-        "vote_transfer_check",
-        "check",
     )
+    if has_vote_transfer.get(event, None):
+        members_mv.extend(
+            members_mv.values_list(
+                "vote_transfer",
+                "vote_transfer_check",
+                "check",
+            )
+        )
 
     for member in members_mv:
         member = list(member)
-        member[3] = member[3].strftime("%d.%m.%y %H:%M")
+        member[4] = member[4].strftime("%d.%m.%y %H:%M")
 
         writer.writerow(member)
 

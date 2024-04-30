@@ -1,0 +1,14 @@
+<tr>
+    <td>{{ forloop.counter }}</td>
+    <td>{{ member.firstname }}</td>
+    <td>{{ member.lastname }}</td>
+    <td>{{ member.email }}</td>
+    <td>{{ member.attend_status }}</td>
+    <td>{{ member.date_created }}</td>
+    <td>
+        <button class='btn' hx-get="{% url 'edit-member' member.pk %}" hx-target="closest tr" hx-swap="outerHTML">
+            <svg class="bi bi-pencil" width="12" height="12">
+                <use xlink:href="#pencil">
+            </svg></button>
+    </td>
+</tr>
