@@ -958,8 +958,17 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     )
     fieldsets = (
         (
-            "Name, Kurztitel, Format",
-            {"fields": ("name", "label", "category", "eventformat", "pub_status")},
+            "Name, Kurztitel, Format, Status, Editierbarkeit",
+            {
+                "fields": (
+                    "name",
+                    "label",
+                    "category",
+                    "eventformat",
+                    "pub_status",
+                    "edit_in_frontend",
+                )
+            },
         ),
         (
             "Übergeordnete Veranstaltung, Bezahlung",
@@ -1279,6 +1288,9 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             event.pk = None
             event.slug = None
             event.label = None
+            # set collections to none
+            event.event_collection = None
+            event.payless_collection = None
             event.moodle_id = 0
             event.moodle_course_created = False
             event.moodle_new_user_flag = False

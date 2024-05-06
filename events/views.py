@@ -2,10 +2,11 @@ import os
 import csv
 import json
 import ast
+from datetime import date, datetime
 import pandas as pd
 from decimal import Decimal
 from itertools import chain
-from events.actions import convert_boolean_field
+
 from openpyxl import Workbook
 from .export_excel import ExportExcelAction
 from openpyxl.styles import Font
@@ -57,8 +58,6 @@ from bootstrap_modal_forms.generic import (
 
 from django_tables2 import SingleTableView
 
-from datetime import date, datetime
-
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework import permissions, status
@@ -70,9 +69,10 @@ from rest_framework.decorators import (
 from rest_framework.response import Response
 
 from events.filter import EventFilter
-from events.actions import style_output_file
+from events.actions import style_output_file, convert_boolean_field
+from events.decorators import check_user_able_to_see_page
 
-from .utils import (
+from events.utils import (
     send_email_after_registration,
     boolean_translate,
     yes_no_to_boolean,
@@ -84,15 +84,13 @@ from .utils import (
     no_duplicate_check,
 )
 
-# import the logging library
+# logging
 import logging
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(filename="kolltool.log", encoding="utf-8", level=logging.ERROR)
-
-#
 
 from .models import (
     Home,
@@ -1074,7 +1072,7 @@ class EventApi(APIView):
 class EventMembersListView(MVOrgaGroupTestMixin, ListView):
     """
     View to see Members of Event
-    Permission: request.user has zo be in group mv_orga
+    Permission: request.user has to be in group mv_orga
     Event is given by event_label
     """
 
@@ -1092,7 +1090,9 @@ class EventMembersListView(MVOrgaGroupTestMixin, ListView):
         return super().dispatch(request, *args, **kwargs)
 
     def get_queryset(self):
-        event_members = EventMember.objects.filter(event__label=self.event_label)
+        event_members = EventMember.objects.filter(
+            event__label=self.event_label
+        ).order_by("lastname")
         query_ln = self.request.GET.get("member_lastname")
         query_fn = self.request.GET.get("member_firstname")
         query_email = self.request.GET.get("member_email")
@@ -1135,16 +1135,18 @@ class EventMembersListView(MVOrgaGroupTestMixin, ListView):
         return context
 
 
+@check_user_able_to_see_page("mv_orga")
 def get_members_list(request, event):
-    event_members = EventMember.objects.filter(event__label=event)
+    event_members = EventMember.objects.filter(event__label=event).order_by("lastname")
     context = {}
+    context["event"] = Event.objects.get(label=event)
     context["event_members"] = event_members
     return render(request, "events/members_list.html", context)
 
 
 def search_members_list(request, event):
     query = request.GET.get("search", "")
-    event_members = EventMember.objects.filter(event__label=event)
+    event_members = EventMember.objects.filter(event__label=event).order_by("lastname")
 
     if query:
         event_members = event_members.filter(
