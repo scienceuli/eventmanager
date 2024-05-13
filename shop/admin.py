@@ -116,9 +116,9 @@ class OrderAdmin(admin.ModelAdmin):
     amount.short_description = "Betrag"
 
     def payment_date_html(self, instance):
-        if instance.get_total_cost() == 0:
+        if instance.payment_date and instance.get_total_cost() == 0:
             return mark_safe(f"<s>{instance.payment_date.strftime('%d.%m.%Y')}</s>")
-        return mark_safe(f"{instance.payment_date.strftime('%d.%m.%Y')}")
+        return instance.payment_date
 
     payment_date_html.short_description = "Rechnungsdatum"
 
