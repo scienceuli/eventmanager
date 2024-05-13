@@ -75,7 +75,7 @@ class OrderAdmin(admin.ModelAdmin):
         "paid",
         "storno",
         "discounted",
-        "payment_date",
+        "payment_date_html",
         "mail_sent_date",
         "date_created",
         "date_modified",
@@ -114,6 +114,13 @@ class OrderAdmin(admin.ModelAdmin):
         return instance.get_total_cost()
 
     amount.short_description = "Betrag"
+
+    def payment_date_html(self, instance):
+        if instance.get_total_cost() == 0:
+            return mark_safe(f"<s>{instance.payment_date.strftime('%d.%m.%Y')}</s>")
+        return mark_safe(f"{instance.payment_date.strftime('%d.%m.%Y')}")
+
+    payment_date_html.short_description = "Rechnungsdatum"
 
     change_list_template = "admin/daterange/change_list.html"
 

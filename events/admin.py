@@ -519,8 +519,8 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
             elif obj.enroled == True:
                 actions.append("unenrol_from_moodle_course")
                 actions.append("update_role_to_moodle_course")
-        if obj and obj.enroled == False:
-            actions.append("delete_user")
+        # if obj and obj.enroled == False:
+        #    actions.append("delete_user")
         return actions
 
     def enrol_to_moodle_course(self, request, obj, parent_obj=None):

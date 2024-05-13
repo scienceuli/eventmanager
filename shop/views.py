@@ -560,7 +560,10 @@ def reminder_mail(request, order_id):
     template_name = "reminder"
 
     order_complete = check_order_complete(order)
-    if not order_complete:
+
+    if order.paid:
+        messages.error(request, f"Rechnung wurde bereits bezahlt")
+    elif not order_complete:
         messages.error(
             request, f"Bitte erst die Rechnung vervollständigen (Name, Email)"
         )
