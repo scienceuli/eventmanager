@@ -1152,7 +1152,7 @@ class EventMember(AddressModel):
 
 
 class EventMemberChangeDate(BaseModel):
-    action = models.CharField(max_length=40, blank=True, null=True)
+    action = models.CharField(max_length=255, blank=True, null=True)
     change_date = models.DateTimeField()
     event_member = models.ForeignKey(
         EventMember, related_name="change_dates", on_delete=models.CASCADE

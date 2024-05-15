@@ -33,6 +33,7 @@ MEMBERSHIP_CHOICES = (
     ("jv", "Junge Verlags- und Medienmenschen"),
     ("sp", "Selfpublisher-Verband"),
     ("tt", "texttreff.de"),
+    ("bd", "BDÜ"),
 )
 
 
