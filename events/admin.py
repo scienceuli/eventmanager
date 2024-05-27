@@ -953,6 +953,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     ordering = ("name",)
     search_fields = ("name",)
     readonly_fields = (
+        "status",
         "full_price",
         "uuid",
         "slug",
