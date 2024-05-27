@@ -252,11 +252,12 @@ class EventListView(ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        # only upcoming events
+        # only upcoming and not cancelled events
         queryset = (
             Event.objects.all()
             .filter(first_day__gte=date.today())
             .filter(pub_status="PUB")
+            .exclude(status="cancel")
             .exclude(event_days=None)
         )  # unsorted
 
@@ -318,12 +319,13 @@ class FilteredEventListView(ListView):
 
     def get_queryset(self):
         search = self.request.GET.get("search")
-        # Get the queryset however you usually would.  For example:
+        # qs of published events without cancelled events
         queryset = (
             super()
             .get_queryset()
             .filter(pub_status="PUB")
             .exclude(event_days=None)
+            .exclude(status="cancel")
             .order_by("first_day")
         )
 

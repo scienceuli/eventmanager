@@ -1,0 +1,7 @@
+input.grp-button.grp-cancel-link  {
+    background: red; 
+}
+
+input.grp-button.grp-reactivate-link  {
+    background-image: green; 
+}

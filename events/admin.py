@@ -4,6 +4,7 @@ from datetime import date, datetime
 from django.contrib import admin, messages
 from django.conf import settings
 from django.http import HttpResponseRedirect
+from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
 from django.utils.http import urlencode
 from django.utils.html import format_html
@@ -905,7 +906,17 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                 "<object_id>/hitcount/",
                 self.admin_site.admin_view(self.schema),
                 name="event_hitcount",
-            )
+            ),
+            path(
+                "confirm_test_intermediate/<int:pk>/",
+                self.admin_site.admin_view(self.confirm_test_intermediate_action_view),
+                name="confirm-test-intermediate",
+            ),
+            path(
+                "confirm_cancel_event/<int:pk>/",
+                self.admin_site.admin_view(self.confirm_cancel_event),
+                name="confirm-cancel-event",
+            ),
         ]
         return my_urls + urls
 
@@ -917,7 +928,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     change_form_template = "admin/event_change_form.html"
 
     list_display = (
-        "name",
+        "name_with_status",
         "label",
         "registration_over",
         "get_start_date",
@@ -965,6 +976,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "label",
                     "category",
                     "eventformat",
+                    "status",
                     "pub_status",
                     "edit_in_frontend",
                 )
@@ -1030,7 +1042,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "registration_recipient",
                     "open_date",
                     "close_date",
-                    "status",
                     "free_text_field_intro",
                     "notes",
                 )
@@ -1070,6 +1081,11 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
     )
+
+    def name_with_status(self, obj):
+        if obj.status == "cancel":
+            return f"{obj.name} ABGESAGT"
+        return obj.name
 
     def full_price(self, obj):
         if obj.price:
@@ -1162,6 +1178,11 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     def get_inline_actions(self, request, obj=None):
         actions = super(EventAdmin, self).get_inline_actions(request, obj)
+        # actions.append("test_intermediate")
+        if obj and obj.status != "cancel" and not obj.is_past():
+            actions.append("cancel_event")
+        if obj and obj.status == "cancel" and not obj.is_past():
+            actions.append("reactivate_event")
         if obj.moodle_id == 0 and obj.eventformat.moodle:
             actions.append("create_course_in_moodle")
         if (
@@ -1171,6 +1192,126 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         ):
             actions.append("delete_course_in_moodle")
         return actions
+
+    def test_intermediate(self, request, obj, parent_obj=None):
+        return redirect("admin:confirm-test-intermediate", obj.pk)
+
+    test_intermediate.short_description = "T"
+
+    def confirm_test_intermediate_action_view(self, request, pk):
+        event = Event.objects.get(pk=pk)
+        event_list_url = reverse(
+            "admin:%s_%s_changelist" % (event._meta.app_label, event._meta.model_name),
+        )
+        if request.method == "POST":
+            self.message_user(request, "Intermediate Test successfully")
+            return HttpResponseRedirect(event_list_url)
+
+        context = {"event": Event.objects.get(pk=pk), "cancel_url": event_list_url}
+        return TemplateResponse(
+            request, "admin/confirm_test_intermediate.html", context
+        )
+
+    def cancel_event(self, request, obj, parent_obj=None):
+        return redirect("admin:confirm-cancel-event", obj.pk)
+
+    def get_cancel_event_label(self, obj):
+        return ">C"
+
+    def get_cancel_event_css(self, obj):
+        return "grp-button grp-cancel-link"
+
+    def confirm_cancel_event(self, request, pk):
+        obj = Event.objects.get(pk=pk)
+        event_list_url = reverse(
+            "admin:%s_%s_changelist" % (obj._meta.app_label, obj._meta.model_name),
+        )
+
+        if request.method == "POST":
+            obj.status = "cancel"
+            obj.save()
+            for member in obj.members.all():
+                old_status = member.attend_status
+                member.attend_status = "cancelled"
+
+                action = f"Status von {old_status} zu cancelled geändert"
+                EventMemberChangeDate.objects.create(
+                    change_date=datetime.now(), action=action, event_member=member
+                )
+                member.save()
+                order_items = OrderItem.objects.filter(
+                    event=obj, order__email=member.email
+                ).exclude(status="s")
+                counter = 0
+                for order_item in order_items:
+                    order = order_item.order
+                    order_updated = update_order(order)
+                    order.storno = True
+                    order.save()
+                    counter += 1
+                if counter == 0:
+                    self.message_user(
+                        request,
+                        f"keine Rechnung für {member} gefunden",
+                        messages.ERROR,
+                    )
+                elif counter > 1:
+                    self.message_user(
+                        request,
+                        f"mehrere Rechnungen für {member} gefunden",
+                        messages.ERROR,
+                    )
+            self.message_user(
+                request,
+                f"Veranstaltung {obj.name} wurde storniert",
+                messages.SUCCESS,
+            )
+            return HttpResponseRedirect(event_list_url)
+
+        member_list = []
+        for member in obj.members.all():
+            member_dict = {}
+            member_dict["name"] = f"{member.lastname}, {member.firstname}"
+            member_dict["email"] = member.email
+            order_item = OrderItem.objects.filter(
+                event=obj, order__email=member.email
+            ).exclude(status="s")
+
+            if len(order_item) == 0:
+                self.message_user(
+                    request,
+                    f"Die Veranstaltung {obj.name} taucht auf keiner Rechnung von {member.lastname}, {member.firstname} auf, bitte bereinigen.",
+                    messages.ERROR,
+                )
+            elif len(order_item) > 1:
+                self.message_user(
+                    request,
+                    f"Die Veranstaltung {obj.name} taucht auf mehreren Rechnungen von {member.lastname}, {member.firstname} auf, bitte bereinigen.",
+                    messages.ERROR,
+                )
+            else:
+                order = order_item[0].order
+                member_dict["order"] = order
+                member_list.append(member_dict)
+
+        context = {"event": obj, "members": member_list, "cancel_url": event_list_url}
+        return TemplateResponse(request, "admin/confirm_cancel_event.html", context)
+
+    # cancel_event.short_description = "C"
+
+    def reactivate_event(self, request, obj, parent_obj=None):
+        obj.status = "active"
+        obj.save()
+        event_list_url = reverse(
+            "admin:%s_%s_changelist" % (obj._meta.app_label, obj._meta.model_name),
+        )
+        return HttpResponseRedirect(event_list_url)
+
+    def get_reactivate_event_label(self, obj):
+        return ">A"
+
+    def get_reactivate_event_css(self, obj):
+        return "grp-button grp-reactivate-link"
 
     def create_course_in_moodle(self, request, obj, parent_obj=None):
         # obj.save()

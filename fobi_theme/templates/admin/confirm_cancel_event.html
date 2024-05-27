@@ -1,0 +1,52 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="'grp-content-container">
+    <header id="grp-content-header">
+
+        <h1>{{event.name}} löschen?</h1>
+    </header>
+    <div class="g-d-c">
+
+
+        <div class="grp-group">
+            <h2>Sind Sie sicher, dass Sie den ausgewählten Kurs löschen wollen? <br>Der Status der Veranstaltung wird auf <i>cancelled</i> gesetzt.<br>
+                Für folgende Teilnehmer wird der Status auf <i>cancelled</i> gesetzt. In den zugehörigen Rechnungen wird
+                die Veranstaltung herausgenommen.</h2>
+
+
+
+
+            <table class="grp-table" cellspacing="5">
+                <tbody>
+                    {% for member in members %}
+                    <tr>
+                        <td>{{member.name}} </td>
+                        <td>{{member.email}} </td>
+                        <td> Rechnung {{member.order.id}}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+        </div>
+
+        <form method="post">{% csrf_token %}
+            <input type="hidden" name="object_id" value="{{ object.pk }}">
+            <div id="submit" class="grp-module grp-submit-row grp-fixed-footer">
+
+
+                <ul>
+                    <li class="grp-float-left"><a href="{{cancel_url}}" class="grp-button grp-cancel-link">Cancel</a></li>
+                    <li><input type="submit" value="Ja" class="grp-button grp-default"></li>
+                </ul>
+            </div>
+        </form>
+
+
+
+
+
+    </div>
+</div>
+{% endblock %}

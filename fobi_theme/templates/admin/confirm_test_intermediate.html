@@ -1,0 +1,13 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>{{event.name}}Bestätigen?</h1>
+<p>Kann nicht rückgängig gemacht werden</p>
+<div class="grp-module">
+    <form method="post">{% csrf_token %}
+        <input type="hidden" name="object_id" value="{{ object.pk }}">
+        <input type="submit" class="grp-button" value="Best&auml;tigen"><br />
+        <a href="{{cancel_url}}" class="grp-button">Abbrechen</a>
+    </form>
+</div>
+{% endblock %}
