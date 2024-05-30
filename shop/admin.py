@@ -131,3 +131,4 @@ class OrderItemAdmin(admin.ModelAdmin):
         "order",
         "event",
     ]
+    search_fields = ["event__name"]
