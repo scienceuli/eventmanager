@@ -252,9 +252,10 @@ class EventListView(ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
 
-        # only upcoming and not cancelled events
+        # only upcoming and not cancelled events and only events with show_date flag
         queryset = (
             Event.objects.all()
+            .filter(show_date=True)
             .filter(first_day__gte=date.today())
             .filter(pub_status="PUB")
             .exclude(status="cancel")
@@ -324,6 +325,7 @@ class FilteredEventListView(ListView):
             super()
             .get_queryset()
             .filter(pub_status="PUB")
+            .filter(show_date=True)
             .exclude(event_days=None)
             .exclude(status="cancel")
             .order_by("first_day")

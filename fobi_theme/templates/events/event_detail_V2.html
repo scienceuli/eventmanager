@@ -137,6 +137,7 @@
                     <div class="flex-grow sm:pl-6 mt-6 sm:mt-0">
                         <h2 class="font-medium title-font text-gray-900 mb-1 text-xl">Termine</h2>
                         <div class="flex w-1/2 flex-wrap">
+                            {% if event.show_date %}
                             {% for day in event.event_days.all %}
                             <div class="w-1/2">{{ day.start_date|date:"D, j. F Y"}}</div>
                             <div class="w-1/2">
@@ -148,6 +149,10 @@
                             </div>
 
                             {% endfor %}
+                            {% else %}
+                            <div>Nach Vereinbarung mit den Teilnehmenden</div>
+
+                            {% endif %}
                         </div>
                     </div>
                 </div>

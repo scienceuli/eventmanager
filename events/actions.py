@@ -1,13 +1,18 @@
 from openpyxl import Workbook
+from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Q
 from datetime import datetime, date
 from .export_excel import ExportExcelAction
 from openpyxl.styles import Font
 from unidecode import unidecode
+from django.contrib import messages
+
 
 from .utils import convert_data_date, convert_boolean_field
+
+from .models import Event, EventMember
 
 
 def style_output_file(file):
@@ -82,3 +87,52 @@ export_as_xls.short_description = "Export > Excel"
 
 def import_from_csv(self, request, queryset):
     print(queryset)
+
+
+def copy_member_instances(modeladmin, request, queryset):
+    print("request.post:", request.POST)
+    if "apply" in request.POST:
+
+        event_id = request.POST.get("event")
+        new_event = Event.objects.get(id=event_id)
+        for obj in queryset:
+            print(
+                list(
+                    EventMember.objects.filter(event=new_event).values_list(
+                        "email", flat=True
+                    )
+                )
+            )
+            if obj.email not in list(
+                EventMember.objects.filter(event=new_event).values_list(
+                    "email", flat=True
+                )
+            ):
+                obj.pk = None  # This will create a new instance
+                obj.name = None
+                obj.event = new_event  # Set the new event instance
+                obj.save()
+                modeladmin.message_user(
+                    request, f"TN mit E-Mail {obj.email} wurde kopiert"
+                )
+            else:
+                modeladmin.message_user(
+                    request,
+                    f"TN mit E-Mail {obj.email} gibt es bereits in {new_event}",
+                )
+
+        return HttpResponseRedirect(request.get_full_path())
+
+    return render(
+        request,
+        "admin/copy_member_instances.html",
+        context={
+            "objects": queryset,
+            "events": Event.objects.all(),
+        },
+    )
+
+
+copy_member_instances.short_description = (
+    "Ausgewählte TN kopieren und anderem Event zuordnen"
+)

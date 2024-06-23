@@ -30,7 +30,7 @@ from inline_actions.admin import InlineActionsModelAdminMixin
 
 from fieldsets_with_inlines import FieldsetsInlineMixin
 
-from .actions import export_as_xls, import_from_csv
+from .actions import export_as_xls, import_from_csv, copy_member_instances
 
 from .validators import csv_content_validator
 
@@ -353,7 +353,7 @@ class EventMemberAdmin(admin.ModelAdmin):
         "event",
     ]
     search_fields = ("lastname", "firstname", "email", "event__name")
-    readonly_fields = ["name", "mail_to_admin", "via_form"]
+    readonly_fields = ["name", "label", "mail_to_admin", "via_form"]
     inlines = [
         EventMemberRoleInline,
     ]
@@ -385,11 +385,11 @@ class EventMemberAdmin(admin.ModelAdmin):
             "intern",
             {
                 "classes": ("collapse",),
-                "fields": ("mail_to_admin", "via_form"),
+                "fields": ("mail_to_admin", "via_form", "label"),
             },
         ),
     )
-    actions = [export_as_xls, import_from_csv]
+    actions = [export_as_xls, import_from_csv, copy_member_instances]
 
     def get_urls(self):
         urls = super().get_urls()
@@ -980,6 +980,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "status",
                     "pub_status",
                     "edit_in_frontend",
+                    "show_date",
                 )
             },
         ),

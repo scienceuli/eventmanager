@@ -1,0 +1,27 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<div id="grp-content-container">
+    <header id="grp-content-header">
+        <h1>Ausgewählte TN kopieren und anderem Event zuordnen</h1>
+    </header>
+    <div class="g-d-c">
+        <form method="post">{% csrf_token %}
+            <p>
+                Veranstaltung auswählen, der die TN zugeordnet werden sollen:
+            </p>
+            {% for obj in objects %}
+            <input type="hidden" name="_selected_action" value="{{ obj.pk }}">
+            {% endfor %}
+            <label for="event">Neue Veranstaltung auswählen:</label>
+            <select name="event" id="event">
+                {% for event in events %}
+                <option value="{{ event.id }}">{{ event.name }}</option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="action" value="copy_member_instances" />
+            <input type="submit" name="apply" value="Anwenden" />
+        </form>
+    </div>
+</div>
+{% endblock %}

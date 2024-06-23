@@ -589,6 +589,7 @@ class Event(BaseModel, HitCountMixin):
     )
     first_day = models.DateField(null=True, blank=True)
     last_day = models.DateField(null=True, blank=True)
+    show_date = models.BooleanField("Datum anzeigen", default=True)
     capacity = models.PositiveIntegerField(verbose_name="Kapazität", default=15)
     STATUS_CHOICES = (
         ("active", "findet statt"),
@@ -1142,8 +1143,8 @@ class EventMember(AddressModel):
         add = not self.pk
         super(EventMember, self).save(*args, **kwargs)
         if add:
-            if not self.label:
-                self.label = f"{self.event.label}-A{str(self.id)}"
+            # if not self.label:
+            self.label = f"{self.event.label}-A{str(self.id)}"
             kwargs["force_insert"] = False  # create() uses this, which causes error.
             super(EventMember, self).save(*args, **kwargs)
         if not self.name:
