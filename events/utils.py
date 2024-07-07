@@ -131,6 +131,9 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
     elif event.registration_form == "m":
         subject = f"Anmeldung zur Digitalen Mitgliederversammlung"
         reply_to = [settings.MV_REPLY_TO_EMAIL]
+    elif event.registration_form == "f24":
+        subject = f"Anmeldung zur Fachtagung 2024 / Mitgliederversammlung"
+        reply_to = [settings.FT_REPLY_TO_EMAIL]
     # mails to vfll
     addresses_list = []
     if to == "vfll":
@@ -187,8 +190,18 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
                 "memberships_labels": form.selected_memberships_labels(),
             }
         )
+    elif event.registration_form == "f24":
+        formatting_dict.update(
+            {
+                "start": event.get_first_day_start_date(),
+            }
+        )
 
-    if event.registration_form == "s" or event.registration_form == "m":
+    if (
+        event.registration_form == "s"
+        or event.registration_form == "m"
+        or event.registration_form == "f24"
+    ):
         try:
             send_email(
                 addresses,

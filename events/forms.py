@@ -318,10 +318,13 @@ from .choices import (
     MEMBERSHIP_CHOICES,
     ATTENTION_CHOICES,
     MEMBER_TYPE_CHOICES,
+    MEMBERSHIP_CHOICES_24_FULL,
     TAKES_PART_CHOICES,
     WS2022_CHOICES,
     TOUR_CHOICES,
     FOOD_PREFERENCE_CHOICES,
+    BOOKING_CHOICES_27,
+    BOOKING_CHOICES_28,
     BOOLEAN_CHOICES,
     YES_NO_CHOICES,
 )
@@ -902,6 +905,482 @@ class EventUpdateCapacityForm(forms.ModelForm):
         fields = ["capacity"]
 
 
+class Symposium2024Form(forms.Form):
+    def member_type_label(self):
+        return [
+            label
+            for value, label in self.fields["member_type"].choices
+            if value in self["member_type"].value()
+        ]
+
+    firstname = forms.CharField(
+        label="Vorname", widget=forms.TextInput(attrs={"placeholder": "Vorname"})
+    )
+    lastname = forms.CharField(
+        label="Nachname", widget=forms.TextInput(attrs={"placeholder": "Nachname"})
+    )
+    address_line = forms.CharField(
+        label="Adresszusatz",
+        widget=forms.TextInput(attrs={"placeholder": "Adresszusatz"}),
+        required=False,
+    )
+    street = forms.CharField(
+        label="Straße, Hausnummer",
+        widget=forms.TextInput(attrs={"placeholder": "Straße, Hausnummer"}),
+    )
+    postcode = forms.CharField(
+        label="PLZ", widget=forms.TextInput(attrs={"placeholder": "PLZ"})
+    )
+    city = forms.CharField(
+        label="Ort", widget=forms.TextInput(attrs={"placeholder": "Ort"})
+    )
+    email = forms.EmailField(
+        label="E-Mail",
+        widget=forms.TextInput(attrs={"placeholder": "E-Mail"}),
+    )
+    phone = forms.CharField(
+        label="Telefonnummer",
+        widget=forms.TextInput(attrs={"placeholder": "Telefonnummer"}),
+        required=False,
+    )
+
+    takes_part_in_ft = forms.BooleanField(
+        label="Ich nehme an der Fachtagung teil.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    takes_part_in_mv = forms.BooleanField(
+        label="Ich nehme an der MV teil.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    having_lunch = forms.BooleanField(
+        label="Ich möchte am anschließenden Mittagessen teilnehmen.",
+        # widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    networking = forms.BooleanField(
+        label="Netzwerkabend im Tagungshaus BBZ am Freitag, 27.09.2024, ab 19 Uhr<br>(Kosten inkl. Buffet: 20 €**, Getränke: Selbstzahlung vor Ort)",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    yoga = forms.BooleanField(
+        label="Führung im Haus der Wannsee-Konferenz am Freitag, 27.09.2024, ab 15:00 Uhr<br/>(Kosten: Eintritt frei, Spenden erwünscht, Treffpunkt BBZ Anmeldebereich)",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    celebration = forms.BooleanField(
+        label="Festabend mit Tanz im Tagungshaus BBZ am Samstag, 28.09.2024, ab 19 Uhr<br>(Kosten inkl. Abendessen: 25 €**, Getränke: Selbstzahlung vor Ort)",
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-radio", "style": "white-space: pre-wrap;"}
+        ),
+        required=False,
+    )
+
+    # Zimmerbuchung
+    booking27 = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label="Für 27.09.&ndash;28.09. buche ich:",
+        choices=BOOKING_CHOICES_27,
+        required=False,
+    )
+    booking28 = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label="Für 28.09.&ndash;29.09. buche ich:",
+        choices=BOOKING_CHOICES_28,
+        required=False,
+    )
+
+    food_preferences = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label="Ich möchte",
+        choices=FOOD_PREFERENCE_CHOICES,
+        required=False,
+    )
+
+    food_remarks = forms.CharField(
+        label="andere wichtige Informationen (Allergien, Unverträglichkeiten etc.):",
+        widget=forms.Textarea(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=False,
+    )
+
+    remarks = forms.CharField(
+        label="",
+        widget=forms.Textarea(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=False,
+    )
+
+    memberships_full = forms.MultipleChoiceField(
+        label="Ich bin Mitglied folgender Organisation(en):",
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "text-xs  text-gray-600"}),
+        choices=MEMBERSHIP_CHOICES_24_FULL,
+        required=False,
+    )
+
+    nomember = forms.BooleanField(
+        label="Ich bin nicht Mitglied einer dieser Organisationen.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.event_label = kwargs.pop("event_label", "")
+        super(Symposium2024Form, self).__init__(*args, **kwargs)
+        # print("ws in form:", self.ws_utilisations)
+
+        self.helper = FormHelper()
+        # self.helper.form_class = "form-horizontal"
+        self.helper.form_error_title = "Fehler im Formular"
+        self.error_text_inline = True
+        self.helper.layout = Layout(
+            Fieldset(
+                "1. Anmeldedaten",
+                Row(
+                    Column("firstname", css_class="form-group col-md-6 mb-0"),
+                    Column("lastname", css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
+                # "firstname",
+                # "lastname",
+                "address_line",
+                "street",
+                Row(
+                    Column("postcode", css_class="form-group col-md-2 mb-0"),
+                    Column("city", css_class="form-group col-md-10 mb-0"),
+                    css_class="form-row",
+                ),
+                HTML(
+                    """
+                    <p class='mb-2'>Für die steuerliche Abzugsfähigkeit bitte Geschäftsadresse angeben!</p>
+                    """
+                ),
+                "email",
+                "phone",
+                HTML(
+                    """
+                    <p class='mb-2'>Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, Telefon, E-Mail-Adresse) auf der Teilnahmeliste stehen und an die anderen Teilnehmenden weitergegeben werden.</p>
+                    """
+                ),
+                css_class="border-b-2 border-gray-900 pb-2 mb-4",
+            ),
+            Fieldset(
+                "2. Fachtagung am Samstag, 28.09.2024 ",
+                CustomCheckbox("takes_part_in_ft"),
+                HTML(
+                    """
+                    <p class='mb-2'>(Kosten für Mitglieder des VFLL oder 
+                    eines Partnerverbands: 130&nbsp;€, Kosten für sonstige Teilnehmende: 180&nbsp;€, 
+                    bitte unter Punkt&nbsp;7 die Mitgliedschaft/Nicht-Mitgliedschaft angeben)</p>
+                    <p>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht. 
+                    Ausgewählte Aufnahmen können in den digitalen und den gedruckten Medien des Verbands 
+                    veröffentlicht werden (z.&nbsp;B. Website, Facebook, X, Leitfaden Freies Lektorat, Broschüre „Gemeinsam für Textqualität“). 
+                    <br/>Mit deren Verwendung bin ich einverstanden.</p>
+                    """
+                ),
+                css_class="mt-4",
+            ),
+            Fieldset(
+                "3. Mitgliederversammlung (MV) am Sonntag, 29.09.2024",
+                CustomCheckbox(
+                    "takes_part_in_mv",
+                ),
+                HTML(
+                    """
+                    <p class='mb-2'>(Kostenfrei)</p>
+                    """
+                ),
+                CustomCheckbox("having_lunch"),
+                HTML(
+                    """
+                    <p class='mb-2'>(Kostenfrei; nur für MV-Teilnehmende)</p>
+                    """
+                ),
+                HTML(
+                    """
+                    <p>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht. 
+                    Ausgewählte Aufnahmen können in den digitalen und den gedruckten Medien des Verbands 
+                    veröffentlicht werden (z.&nbsp;B. Website, Facebook, X, Leitfaden Freies Lektorat, Broschüre „Gemeinsam für Textqualität“). 
+                    <br/>Mit deren Verwendung bin ich einverstanden.</p>
+                    """
+                ),
+                css_class="mt-4",
+            ),
+            Fieldset(
+                "4. Rahmenprogramm",
+                HTML(
+                    """
+                    <p>An den folgenden Rahmenprogrammpunkten nehme ich teil:</p>
+                    """
+                ),
+                CustomCheckbox("yoga"),
+                CustomCheckbox("networking"),
+                CustomCheckbox("celebration"),
+                css_class="mt-4",
+            ),
+            Fieldset(
+                "5. Zimmerbuchung",
+                HTML(
+                    """
+                    <p>Die Übernachtungen im Tagungshaus BBZ sind hier verbindlich zu buchen 
+                    (alle Preise inkl. MwSt.). </p>
+                    <p class='mb-2'>Die Bestätigung und Rechnungsabwicklung erfolgt nach Anmeldeschluss durch das BBZ, 
+                    die Übernachtungskosten sind somit nicht mit dem Tagungsbeitrag zu überweisen.</p>
+
+                    """
+                ),
+                "booking27",
+                "booking28",
+                HTML(
+                    """
+                    <p>Bis zum Anmeldeschluss am 18.08.2024 kann diese Buchung kostenfrei storniert werden. Zu den weiteren Stornobedingungen s. Punkt 8. </p>
+                    <p>Alternative Unterkünfte (s. Einladung) sind bitte in Eigenregie zu buchen.</p>
+
+                    """
+                ),
+                css_class="mt-4",
+            ),
+            Fieldset(
+                "6. Essenswünsche",
+                # InlineCheckboxes(
+                #    "food_preferences",
+                #    required=False,
+                # ),
+                HTML(
+                    """
+                <p>Bitte gebt hier eure Wünsche für die Mahlzeiten im BBZ an.</p>
+                    """
+                ),
+                "food_preferences",
+                "food_remarks",
+                css_class="mt-4",
+            ),
+            Fieldset(
+                "7. Teilnahmekosten",
+                HTML(
+                    """
+                    <p>Der Tagungsbeitrag für die Fachtagung beträgt
+                    <ul style='list-style-position: outside; padding-left: 20px;'>
+                    <li>130 € für Mitglieder des VFLL oder eines Partnerverbands (bitte nachfolgend die Mitgliedschaft angeben)</li>
+                    <li>180 € für sonstige Teilnehmende (bitte nachfolgend die Nicht-Mitgliedschaft angeben)</li>
+                    </ul>
+                    </p>
+                    <p class='mt-2 mb-2'>
+                    Darin enthalten sind die Kosten für die Fachtagung inklusive Mittagessen und Pausenverpflegung am Samstag. 
+                    Nicht enthalten sind Rahmenprogramm, Netzwerkabend und Festabend, Unterkunft, Anreise.</p>
+                    <p>Die Teilnahme an der MV ist kostenfrei.</p>
+                    """
+                ),
+                css_class="mt-4",
+            ),
+            Fieldset(
+                "Mitgliedschaft",
+                "memberships_full",
+                CustomCheckbox("nomember"),
+                css_class="mt-4",
+            ),
+            Fieldset(
+                "8. Zahlung, Stornierungsmodalitäten, Rechnung",
+                HTML(
+                    """
+                    <p>Den Gesamtbetrag aus Tagungsbeitrag und ggf. den Kostenbeiträgen
+                    für weitere von mir gewählte Angebote (**) überweise ich umgehend, <b>spätestens bis 18.08.2024</b> (erfolgter Zahlungseingang), an</br>
+                    VFLL e. V., IBAN: DE24 4306 0967 6032 5237 00,<br/>
+                    BIC: GENODEM1GLS – Stichwort: FFL 2024
+                    </p>
+                    <p class="mb-2">
+                    <hr>
+                    </p>
+                    <p class="mt-2" style="border:top;">
+                    <b>Für den Fall einer Absage bitte beachten:</b>
+                    <ul style='list-style-position: outside; padding-left: 20px;'>
+                    <li>Absagen bis 11.08.2024: kostenfrei möglich. </li>
+                    <li>Absagen 12.08.–25.08.2024: 80 % der gezahlten Beträge für die Tagung und das Rahmenprogramm werden rückerstattet.</li>
+                    <li>Absagen 26.08.–08.09.2024: 50 % der gezahlten Beträge für die Tagung und das Rahmenprogramm werden rückerstattet.</li>
+                    <li>Absagen ab 09.09.2024: Eine Erstattung der gezahlten Beträge ist leider nicht mehr möglich.</li>
+                    </ul>
+                    </p>
+                    <p class='mt-2 mb-2'>
+                    Die Rechnungen werden in der Regel erst nach Anmeldeschluss (also auch nach der erfolgten Überweisung) verschickt. 
+                    Wer dies anders benötigt, kann das gern über das nachfolgende Anmerkungsfeld mitteilen.
+                    </p>
+                    """
+                ),
+                css_class="mt-4",
+            ),
+            Fieldset(
+                "Anmerkungen und Wünsche:",
+                "remarks",
+                css_class="mt-4",
+            ),
+            ButtonHolder(
+                Submit(
+                    "submit",
+                    "Ich melde mich hiermit verbindlich an.",
+                    css_class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full",
+                )
+            ),
+        )
+        # self.helper.add_input(Submit("submit", "Anmelden"))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        takes_part_in_mv = cleaned_data.get("takes_part_in_mv")
+        having_lunch = cleaned_data.get("having_lunch")
+        networking = cleaned_data.get("networking")
+        yoga = cleaned_data.get("yoga")
+        celebration = cleaned_data.get("celebration")
+        food_preferences = cleaned_data.get("food_preferences")
+        booking27 = cleaned_data.get("booking27")
+        booking28 = cleaned_data.get("booking28")
+        remarks = cleaned_data.get("remarks")
+        food_remarks = cleaned_data.get("food_remarks")
+        memberships_full = cleaned_data.get("memberships_full")
+        return cleaned_data
+
+    def clean_takes_part_in_ft(self):
+        takes_part_in_ft = self.cleaned_data.get("takes_part_in_ft")
+        takes_part_in_mv = self.cleaned_data.get("takes_part_in_mv")
+        if not takes_part_in_ft and not takes_part_in_mv:
+            self.add_error(
+                "takes_part_in_ft",
+                "Bitte mind. eine der beiden Teilnahmen (FT oder MV) anklicken.",
+            )
+        return takes_part_in_ft
+
+    # def clean_takes_part_in_ft(self):
+    #     takes_part_in_ft = self.cleaned_data.get("takes_part_in_ft")
+    #     ws2022 = self.cleaned_data.get("ws2022")
+    #     if not takes_part_in_ft and ws2022 != "":
+    #         self.add_error(
+    #             "takes_part_in_ft",
+    #             "Bitte dieses Feld anklicken, wenn Sie an der Fachtagung teilnehmen.",
+    #         )
+    #     return takes_part_in_ft
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if (
+            EventMember.objects.filter(
+                email=email, event__label=self.event_label
+            ).count()
+            > 0
+        ):
+            raise forms.ValidationError(
+                "Es gibt bereits eine Anmeldung mit dieser E-Mail-Adresse."
+            )
+        return email
+
+    def clean_memberships_full(self):
+        memberships_full = self.cleaned_data.get("memberships_full")
+        if memberships_full and "vv" in memberships_full and "vk" in memberships_full:
+            self.add_error(
+                "memberships_full",
+                "Bitte nur eine der beiden VFLL-Mitgliedsvarianten ankreuzen",
+            )
+            # raise forms.ValidationError(
+            #     "Bitte nur eine der beiden VFLL-Mitgliedsvarianten ankreuzen"
+            # )
+        return memberships_full
+
+    def clean_nomember(self):
+        nomember = self.cleaned_data.get("nomember")
+        if nomember and len(self.cleaned_data.get("memberships_full")) > 0:
+            self.add_error(
+                "memberships_full",
+                "Wenn Mitgliedschaft vorhanden, bitte 'Ich bin nicht Mitglied...' nicht anklicken.",
+            )
+
+        if not nomember and len(self.cleaned_data.get("memberships_full")) == 0:
+            self.add_error(
+                "memberships_full",
+                "Wenn keine Mitgliedschaft, bitte 'Ich bin nicht Mitglied...' bestätigen.",
+            )
+
+        return nomember
+
+
+############## form for edit json data of member (FT 2022) ######
+
+
+# ref: https://github.com/jrief/django-entangled
+class FTEventMemberForm(EntangledModelForm):
+    YES_NO_CHOICES = (("ja", "ja"), ("nein", "nein"))
+    firstname = forms.CharField(label="Vorname")
+    lastname = forms.CharField(label="Nachname")
+    email = forms.EmailField(label="Email")
+    address_line = forms.CharField(label="Adresszusatz", required=False)
+    street = forms.CharField(label="Straße", required=False)
+    postcode = forms.CharField(label="PLZ", required=False)
+    city = forms.CharField(label="Stadt", required=False)
+    ws2022 = forms.CharField(label="WS", required=False)
+    ws_alter = forms.CharField(label="WS Altern.", required=False)
+    takes_part_in_mv = forms.ChoiceField(label="Teilnahme MV", choices=YES_NO_CHOICES)
+    having_lunch = forms.ChoiceField(label="Mittagessen", choices=YES_NO_CHOICES)
+    tour = forms.CharField(label="Führung", required=False)
+    networking = forms.ChoiceField(label="Teilnahme Networking", choices=YES_NO_CHOICES)
+    yoga = forms.ChoiceField(label="Teilnahme Yoga", choices=YES_NO_CHOICES)
+    celebration = forms.ChoiceField(label="Teilnahme Feier", choices=YES_NO_CHOICES)
+    food_preferences = forms.CharField(label="Essenswünsche", required=False)
+    remark = forms.CharField(label="Bemerkungen", required=False)
+
+    class Meta:
+        model = EventMember
+        entangled_fields = {
+            "data": [
+                "firstname",
+                "lastname",
+                "email",
+                "address_line",
+                "street",
+                "postcode",
+                "city",
+                "ws2022",
+                "ws_alter",
+                "takes_part_in_mv",
+                "having_lunch",
+                "tour",
+                "networking",
+                "yoga",
+                "celebration",
+                "food_preferences",
+                "remark",
+            ]
+        }  # fields provided by this form
+
+
+class DateRangeForm(forms.Form):
+    start = forms.DateField(
+        required=False,
+        label="von (Datum)",
+        widget=AdminDateWidget,
+    )
+    until = forms.DateField(
+        required=False,
+        label="bis (Datum)",
+        widget=AdminDateWidget,
+    )
+
+    def clean(self):
+        start = self.cleaned_data.get("start")
+        until = self.cleaned_data.get("until")
+
+        if start and until and start >= until:
+            self.add_error("start", "Von-Datum muss vor dem Bis-Datum liegen")
+
+
 class Symposium2022Form(forms.Form):
     def member_type_label(self):
         return [
@@ -980,22 +1459,30 @@ class Symposium2022Form(forms.Form):
     )
 
     networking = forms.BooleanField(
-        label="Ich nehme am Netzwerkabend im Keno’s am Fr., 16.09.2022, ab 18 Uhr teil<br>(Buffet-Kosten: 20 €**, Getränke: Selbstzahlung vor Ort).",
+        label="Netzwerkabend im Tagungshaus BBZ am Freitag, 27.09.2024, ab 19 Uhr<br>(Kosten inkl. Buffet: 20 €**, Getränke: Selbstzahlung vor Ort)",
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
         required=False,
     )
 
     yoga = forms.BooleanField(
-        label="Ich habe Interesse, am Sa., 17.09.2022, am Yoga teilzunehmen.",
+        label="Führung im Haus der Wannsee-Konferenz am Freitag, 27.09.2024, ab 15:00 Uhr<br/>(Kosten: Eintritt frei, Spenden erwünscht, Treffpunkt BBZ Anmeldebereich)",
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
         required=False,
     )
 
     celebration = forms.BooleanField(
-        label="Ich nehme am Sa., 17.09.2022, ab 19 Uhr im „Krug zum grünen Kranze“ an der Feier<br>„22 Jahre VFLL“ mit Abendessen und Tanz teil<br>(Buffet-Kosten: 25 €**, Getränke: Selbstzahlung vor Ort).",
+        label="Festabend mit Tanz im Tagungshaus BBZ am Samstag, 28.09.2024, ab 19 Uhr<br>(Kosten inkl. Abendessen: 25 €**, Getränke: Selbstzahlung vor Ort)",
         widget=forms.CheckboxInput(
             attrs={"class": "form-radio", "style": "white-space: pre-wrap;"}
         ),
+        required=False,
+    )
+
+    # Zimmerbuchung
+    booking = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label="Die Übernachtungen im Tagungshaus BBZ sind hier verbindlich zu buchen (alle Preise inkl. MwSt.). ",
+        choices=FOOD_PREFERENCE_CHOICES,
         required=False,
     )
 
@@ -1149,6 +1636,12 @@ class Symposium2022Form(forms.Form):
                 CustomCheckbox("celebration"),
             ),
             Fieldset(
+                "5. Zimmerbuchung",
+                CustomCheckbox("networking"),
+                CustomCheckbox("yoga"),
+                CustomCheckbox("celebration"),
+            ),
+            Fieldset(
                 "5. Essenswünsche",
                 # InlineCheckboxes(
                 #    "food_preferences",
@@ -1292,72 +1785,3 @@ class Symposium2022Form(forms.Form):
     #         )
 
     #     return nomember
-
-
-############## form for edit json data of member (FT 2022) ######
-
-
-# ref: https://github.com/jrief/django-entangled
-class FTEventMemberForm(EntangledModelForm):
-    YES_NO_CHOICES = (("ja", "ja"), ("nein", "nein"))
-    firstname = forms.CharField(label="Vorname")
-    lastname = forms.CharField(label="Nachname")
-    email = forms.EmailField(label="Email")
-    address_line = forms.CharField(label="Adresszusatz", required=False)
-    street = forms.CharField(label="Straße", required=False)
-    postcode = forms.CharField(label="PLZ", required=False)
-    city = forms.CharField(label="Stadt", required=False)
-    ws2022 = forms.CharField(label="WS", required=False)
-    ws_alter = forms.CharField(label="WS Altern.", required=False)
-    takes_part_in_mv = forms.ChoiceField(label="Teilnahme MV", choices=YES_NO_CHOICES)
-    having_lunch = forms.ChoiceField(label="Mittagessen", choices=YES_NO_CHOICES)
-    tour = forms.CharField(label="Führung", required=False)
-    networking = forms.ChoiceField(label="Teilnahme Networking", choices=YES_NO_CHOICES)
-    yoga = forms.ChoiceField(label="Teilnahme Yoga", choices=YES_NO_CHOICES)
-    celebration = forms.ChoiceField(label="Teilnahme Feier", choices=YES_NO_CHOICES)
-    food_preferences = forms.CharField(label="Essenswünsche", required=False)
-    remark = forms.CharField(label="Bemerkungen", required=False)
-
-    class Meta:
-        model = EventMember
-        entangled_fields = {
-            "data": [
-                "firstname",
-                "lastname",
-                "email",
-                "address_line",
-                "street",
-                "postcode",
-                "city",
-                "ws2022",
-                "ws_alter",
-                "takes_part_in_mv",
-                "having_lunch",
-                "tour",
-                "networking",
-                "yoga",
-                "celebration",
-                "food_preferences",
-                "remark",
-            ]
-        }  # fields provided by this form
-
-
-class DateRangeForm(forms.Form):
-    start = forms.DateField(
-        required=False,
-        label="von (Datum)",
-        widget=AdminDateWidget,
-    )
-    until = forms.DateField(
-        required=False,
-        label="bis (Datum)",
-        widget=AdminDateWidget,
-    )
-
-    def clean(self):
-        start = self.cleaned_data.get("start")
-        until = self.cleaned_data.get("until")
-
-        if start and until and start >= until:
-            self.add_error("start", "Von-Datum muss vor dem Bis-Datum liegen")

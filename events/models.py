@@ -532,11 +532,12 @@ class Event(BaseModel, HitCountMixin):
         ("s", "Standard"),
         ("m", "MV/ZW"),
         ("f", "Fachtagung 2022/MV"),
+        ("f24", "Fachtagung 2024/MV"),
     )
 
     registration_form = models.CharField(
         "Anmeldeformular",
-        max_length=1,
+        max_length=3,
         choices=REGISTRATION_FORM_CHOICES,
         default="s",
     )

@@ -3,22 +3,22 @@
 {% load tz %}
 
 {% block content %}
-{% with event_label='ffl_mv_2022' %}
+{% with event_label='ffl_mv_2024' %}
 
 <div class="max-w-2xl mx-auto py-8">
-    <h3 class="font-bold">Fachtagung 2022 mit MV (Halle)</h3>
-    <p class="my-4"><a href="{% url 'ft-members' event_label %}" class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">Übersicht Teilnehmer</a></p>
-    <p>{{ count_members_of_mv }} Anmeldungen {% timezone "Europe/Berlin" %}(Stand {% now "j. F Y H:i" %}) {% endtimezone %}</p>
-    <p class="my-4"><b>Übersicht Workshops:</b></p>
-    {% for key, value in ws_dict.items %}
-    <p>Workshop {{ key }}: {{ value }}</p>   
-    {% endfor %} 
-    <p class="my-4"><b>Übersicht Führungen:</b></p>
-    {% for key, value in tour_dict.items %}
-    <p>Führung {{ key }}: {{ value }}</p>   
-    {% endfor %}
+  <h3 class="font-bold">Fachtagung 2022 mit MV (Halle)</h3>
+  <p class="my-4"><a href="{% url 'ft-members' event_label %}" class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">Übersicht Teilnehmer</a></p>
+  <p>{{ count_members_of_mv }} Anmeldungen {% timezone "Europe/Berlin" %}(Stand {% now "j. F Y H:i" %}) {% endtimezone %}</p>
+  <p class="my-4"><b>Übersicht Workshops:</b></p>
+  {% for key, value in ws_dict.items %}
+  <p>Workshop {{ key }}: {{ value }}</p>
+  {% endfor %}
+  <p class="my-4"><b>Übersicht Führungen:</b></p>
+  {% for key, value in tour_dict.items %}
+  <p>Führung {{ key }}: {{ value }}</p>
+  {% endfor %}
 
-    {% autoescape off %}
+  {% autoescape off %}
   {{ ws_plot_div }}
 
   {{ tour_plot_div }}
@@ -29,7 +29,7 @@
 </div>
 
 <div class="max-w-2xl mx-auto py-8">
-    <a class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded" href="{% url 'export-members-ft-xls' %}">Excel-Export: alle Teilnehmer*innen der Fachtagung</a>
+  <a class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded" href="{% url 'export-members-ft-xls' %}">Excel-Export: alle Teilnehmer*innen der Fachtagung</a>
 
 </div>
 {% endwith %}

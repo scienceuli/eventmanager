@@ -119,6 +119,7 @@ from .forms import (
     EventMemberForm,
     EventDocumentFormSet,
     Symposium2022Form,
+    Symposium2024Form,
     SymposiumForm,
     MV2023Form,
     AddMemberForm,
@@ -137,7 +138,14 @@ from .api import call
 
 from .serializers import EventSerializer
 
-from .choices import MEMBERSHIP_CHOICES, FOOD_PREFERENCE_CHOICES
+from .choices import (
+    MEMBERSHIP_CHOICES,
+    MEMBERSHIP_CHOICES_24_FULL,
+    MEMBER_TYPE_CHOICES,
+    FOOD_PREFERENCE_CHOICES,
+    BOOKING_CHOICES_27,
+    BOOKING_CHOICES_28,
+)
 
 import itertools
 
@@ -170,6 +178,16 @@ def choices_to_display(choice, choices):
 class MVOrgaGroupTestMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.groups.filter(name="mv_orga").exists()
+
+
+def user_in_testing_group(user):
+    if not user.is_authenticated:
+        return False
+
+    testing_group = getattr(settings, "TESTING_GROUP", None)
+    if testing_group and user.groups.filter(name=testing_group).exists():
+        return True
+    return False
 
 
 def home(request):
@@ -562,6 +580,12 @@ class EventDetailView(HitCountDetailView):
         show_button = False
         show_registration = True
         additional_text = ""
+
+        show = user_in_testing_group(self.request.user)
+
+        if show:
+            event.registration_possible = True
+
         if event.category.registration == False:
             if event.registration:
                 registration_text = event.registration
@@ -754,6 +778,8 @@ def get_mail_to_admin_template_name(registration_form):
         mail_to_admin_template_name = "mv_anmeldung"
     elif registration_form == "f":
         mail_to_admin_template_name = "ft_anmeldung"
+    elif registration_form == "f24":
+        mail_to_admin_template_name = "ft_24_anmeldung"
     return mail_to_admin_template_name
 
 
@@ -767,6 +793,8 @@ def get_mail_to_member_template_name(registration_form, attend_status):
         mail_to_member_template_name = "mv_bestaetigung"
     elif registration_form == "f":
         mail_to_member_template_name = "ft_bestaetigung"
+    elif registration_form == "f24":
+        mail_to_member_template_name = "ft_24_bestaetigung"
     return mail_to_member_template_name
 
 
@@ -777,6 +805,8 @@ def get_form_template(registration_form):
         form_template = "events/add_event_member_mv.html"
     elif registration_form == "f":
         form_template = "events/add_event_member_ft.html"
+    elif registration_form == "f24":
+        form_template = "events/add_event_member_ft_2024.html"
     return form_template
 
 
@@ -813,6 +843,26 @@ def get_additional_form_data(form, event, form_type):
             data_dict["attend_status"] = "waiting"
         else:
             data_dict["attend_status"] = "registered"
+    elif form_type == "f24":
+        data_dict["address_line"] = form.cleaned_data["address_line"]
+        data_dict["street"] = form.cleaned_data["street"]
+        data_dict["city"] = form.cleaned_data["city"]
+        data_dict["postcode"] = form.cleaned_data["postcode"]
+        data_dict["phone"] = form.cleaned_data["phone"]
+        data_dict["member_type"] = (
+            "o"
+            if "vv" in form.cleaned_data["memberships_full"]
+            else "k" if "vk" in form.cleaned_data["memberships_full"] else None
+        )
+        if data_dict["member_type"]:
+            data_dict["vfll"] = True
+        data_dict["memberships"] = [
+            item
+            for item in form.cleaned_data["memberships_full"]
+            if item not in ["vv", "vk"]
+        ]
+        # make name of this registration from event label and date
+        data_dict["name"] = f"{event.label} | {timezone.now()}"
 
     return data_dict
 
@@ -828,6 +878,38 @@ def get_mv_form_data(form):
     return data_dict
 
 
+def get_f24_form_data(form):
+    food_pref_list = []
+    food_pref_list.append(form.cleaned_data.get("food_preferences"))
+    booking27_list = []
+    booking27_list.append(form.cleaned_data.get("booking27"))
+    booking28_list = []
+    booking28_list.append(form.cleaned_data.get("booking28"))
+
+    data_dict = {}
+    data_dict["nomember"] = form.cleaned_data.get("nomember")
+    data_dict["takes_part_in_mv"] = boolean_translate(
+        form.cleaned_data.get("takes_part_in_mv")
+    )
+    data_dict["takes_part_in_ft"] = boolean_translate(
+        form.cleaned_data.get("takes_part_in_ft")
+    )
+    data_dict["having_lunch"] = boolean_translate(form.cleaned_data.get("having_lunch"))
+    data_dict["networking"] = boolean_translate(form.cleaned_data.get("networking"))
+    data_dict["yoga"] = boolean_translate(form.cleaned_data.get("yoga"))
+    data_dict["celebration"] = boolean_translate(form.cleaned_data.get("celebration"))
+    data_dict["food_preferences"] = choices_to_string(
+        food_pref_list, FOOD_PREFERENCE_CHOICES
+    )
+    data_dict["food_remarks"] = form.cleaned_data.get("food_remarks")
+    data_dict["booking27"] = choices_to_string(booking27_list, BOOKING_CHOICES_27)
+    data_dict["booking28"] = choices_to_string(booking28_list, BOOKING_CHOICES_28)
+
+    data_dict["remarks"] = form.cleaned_data.get("remarks")
+
+    return data_dict
+
+
 def make_event_registration(request, form, event):
     personal_data_dict = get_personal_form_data(form)
     if event.registration_form == "s":
@@ -839,6 +921,17 @@ def make_event_registration(request, form, event):
         m_data_dict = get_mv_form_data(form)
         new_member = EventMember.objects.create(
             event=event, **personal_data_dict, **m_data_dict
+        )
+    elif event.registration_form == "f24":
+        f24_additional_data = get_additional_form_data(form, event, "f24")
+        f24_data_dict = get_f24_form_data(form)
+        new_member = EventMember.objects.create(
+            check=True,
+            data=f24_data_dict,
+            attend_status="registered",
+            event=event,
+            **personal_data_dict,
+            **f24_additional_data,
         )
 
     """
@@ -853,6 +946,8 @@ def make_event_registration(request, form, event):
         # attend_status = get_additional_form_data(form, event, "s")["attend_status"]
         attend_status = new_member.attend_status
     elif event.registration_form == "m":
+        attend_status = "registered"
+    elif event.registration_form == "f24":
         attend_status = "registered"
 
     mail_to_admin_template_name = get_mail_to_admin_template_name(
@@ -872,12 +967,22 @@ def make_event_registration(request, form, event):
         else:
             transfer_string = ""
         formatting_dict.update({"transfer_string": transfer_string})
+    elif event.registration_form == "f24":
+        formatting_dict.update(get_additional_form_data(form, event, "f24"))
+        formatting_dict.update(get_f24_form_data(form))
 
     update_boolean_values(formatting_dict)
     if event.registration_form == "m":
         formatting_dict["member_type"] = dict(form.fields["member_type"].choices).get(
             formatting_dict["member_type"]
         )
+    if event.registration_form == "f24":
+        memberships_list = []
+        for item in form.cleaned_data["memberships_full"]:
+            memberships_list.append(
+                dict(form.fields["memberships_full"].choices).get(item)
+            )
+        formatting_dict["memberships"] = ", ".join(memberships_list)
 
     # set the right attend status in the formatting_dict
     formatting_dict["attend_status"] = attend_status
@@ -900,6 +1005,7 @@ def make_event_registration(request, form, event):
         )[attend_status == "waiting"],
         "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
         "f": "Vielen Dank für deine Anmeldung. Weitere Informationen werden nach dem Anmeldeschluss versandt.",
+        "f24": "Vielen Dank für deine Anmeldung. Weitere Informationen werden nach dem Anmeldeschluss versandt.",
     }
     # only for registrations with non direct payment events
     if not event.direct_payment:
@@ -938,6 +1044,11 @@ def handle_form_submission(request, form, event):
 # @login_required(login_url="login")
 def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
+
+    show = user_in_testing_group(request.user)
+    if show:
+        event.registration_possible = True
+
     if not event.registration_possible:
         messages.add_message(
             request, messages.ERROR, "keine Anmeldung möglich", fail_silently=True
@@ -977,6 +1088,11 @@ def event_add_member(request, slug):
                 ws_utilisations=ws_utilisations,
                 tour_utilisations=tour_utilisations,
             )
+        elif event.registration_form == "f24":
+            # print("ws to form:", ws_utilisations)
+            form = Symposium2024Form(
+                event_label=event.label,
+            )
 
     if request.method == "POST":
         if event.registration_form == "s":
@@ -989,6 +1105,11 @@ def event_add_member(request, slug):
                 event_label=event.label,
                 ws_utilisations=ws_utilisations,
                 tour_utilisations=tour_utilisations,
+            )
+        elif event.registration_form == "f24":
+            form = Symposium2024Form(
+                request.POST,
+                event_label=event.label,
             )
 
         form_is_valid = handle_form_submission(request, form, event)
@@ -1583,7 +1704,7 @@ def ft_members_dashboard_view(request):
     tour_dict = {}
     tour_utilisation = {"I": 0, "II": 0}
 
-    for member in EventMember.objects.filter(event__label="ffl_mv_2022"):
+    for member in EventMember.objects.filter(event__label="ffl_mv_2024"):
         if member.data.get("ws2022"):
             if member.data["ws2022"] in settings.WS_LIMITS.keys():
                 ws_utilisation[member.data["ws2022"]] = (
@@ -1605,7 +1726,7 @@ def ft_members_dashboard_view(request):
 
     del ws_combined["VI"]
 
-    for member in EventMember.objects.filter(event__label="ffl_mv_2022"):
+    for member in EventMember.objects.filter(event__label="ffl_mv_2024"):
         if member.data.get("tour"):
             if member.data["tour"] in settings.TOUR_LIMITS.keys():
                 tour_utilisation[member.data["tour"]] = (
@@ -1630,7 +1751,7 @@ def ft_members_dashboard_view(request):
     tour_plot_div = make_bar_plot_from_dict(tour_combined, "Teilnehmer")
     context = {
         "count_members_of_mv": EventMember.objects.filter(
-            event__label="ffl_mv_2022"
+            event__label="ffl_mv_2024"
         ).count(),
         "ws_dict": ws_dict,
         "tour_dict": tour_dict,
@@ -1643,7 +1764,7 @@ def ft_members_dashboard_view(request):
 
 @staff_member_required
 def ft_report(request):
-    qs = EventMember.objects.filter(event__label="ffl_mv_2022")
+    qs = EventMember.objects.filter(event__label="ffl_mv_2024")
     template_name = "admin/events/ft_report.html"
     return render(request, template_name, {"members": qs, "number_members": len(qs)})
 
@@ -1681,7 +1802,7 @@ def export_ft_members_csv(request):
         ]
     )
 
-    members_ft = EventMember.objects.filter(event__label="ffl_mv_2022")
+    members_ft = EventMember.objects.filter(event__label="ffl_mv_2024")
 
     data_list = members_ft.values_list(
         "data",
@@ -1709,7 +1830,7 @@ def export_ft_members_xls(request):
     response["Content-Disposition"] = f"attachment; filename={output_name}"
 
     # get the members
-    ftm = EventMember.objects.filter(event__label="ffl_mv_2022").values_list(
+    ftm = EventMember.objects.filter(event__label="ffl_mv_2024").values_list(
         "data", flat=True
     )
 

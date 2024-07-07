@@ -181,7 +181,7 @@ def old_event_add_member(request, slug):
     form_template = get_form_template(event.registration_form)
 
     # get the workshop and tour capacity utilisations for fachtagung
-    if event.label == "ffl_mv_2022":
+    if event.label == "ffl_mv_2024":
         ws_utilisations, tour_utilisations = get_utilisations(event)
 
     if request.method == "GET":

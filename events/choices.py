@@ -36,6 +36,19 @@ MEMBERSHIP_CHOICES = (
     ("bd", "BDÜ"),
 )
 
+MEMBERSHIP_CHOICES_24_FULL = (
+    ("vv", "VFLL – Vollmitglied"),
+    ("vk", "VFLL – Kandidat*in"),
+    ("bd", "BdÜ"),
+    ("bf", "BücherFrauen"),
+    ("il", "Illustratoren-Organisation"),
+    ("tv", "Berufsverband Text und Konzept e.V."),
+    ("jv", "Junge Verlags- und Medienmenschen e.V."),
+    ("sp", "Selfpublisher-Verband"),
+    ("tt", "texttreff.de"),
+    ("vdu", "VDÜ"),
+)
+
 
 ATTENTION_CHOICES = (
     ("vfll", "VFLL-Website oder -Blog"),
@@ -65,6 +78,13 @@ MEMBER_TYPE_CHOICES = (
     ("e", "Ehrenmitglied"),
 )
 
+MEMBER_TYPE_CHOICES_VFLL = (
+    ("o", "ordentliches Mitglied"),
+    ("k", "Kandidat/Kandidatin"),
+    ("f", "Fördermitglied"),
+    ("e", "Ehrenmitglied"),
+)
+
 WS2022_CHOICES = (
     ("I", "I Wertschätzender Sprachgebrauch mit gendersensibler Sprache"),
     ("II", "II Konfliktgestaltung in belletristischen Texten"),
@@ -85,6 +105,22 @@ FOOD_PREFERENCE_CHOICES = (
     ("vt", "vegetarisch essen"),
     ("vn", "vegan essen"),
     ("-", "keine Präferenz"),
+)
+
+BOOKING_CHOICES_27 = (
+    ("emf27", "ein Einzelzimmer mit Frühstück (101,90 € pro Person/Nacht)"),
+    ("dmf27", "ein Doppelzimmer mit Frühstück (80 € pro Person/Nacht)"),
+    ("eof27", "ein Einzelzimmer ohne Frühstück (87,50 € pro Person/Nacht)"),
+    ("dof27", "ein Doppelzimmer ohne Frühstück (65,60 € pro Person/Nacht)"),
+    ("fou28", "am Sa., 28.09. ein Frühstück ohne Übernachtung (14,40 € pro Person)"),
+)
+
+BOOKING_CHOICES_28 = (
+    ("emf28", "ein Einzelzimmer mit Frühstück (101,90 € pro Person/Nacht)"),
+    ("dmf28", "ein Doppelzimmer mit Frühstück (80 € pro Person/Nacht)"),
+    ("eof28", "ein Einzelzimmer ohne Frühstück (87,50 € pro Person/Nacht)"),
+    ("dof28", "ein Doppelzimmer ohne Frühstück (65,60 € pro Person/Nacht)"),
+    ("fou29", "am So., 29.09. ein Frühstück ohne Übernachtung (14,40 € pro Person)"),
 )
 
 COUNTRIES = (
