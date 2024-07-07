@@ -587,7 +587,7 @@ class EventDetailView(HitCountDetailView):
 
         if show:
             event.registration_possible = True
-            # event.category.registration = True
+            event.category.registration = True
 
         if event.category.registration == False:
             if event.registration:
