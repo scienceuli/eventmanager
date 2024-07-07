@@ -581,10 +581,13 @@ class EventDetailView(HitCountDetailView):
         show_registration = True
         additional_text = ""
 
+        # exception if user is authenticated and belongs to testing group
+        # in this case registration possible is set to true
         show = user_in_testing_group(self.request.user)
 
         if show:
             event.registration_possible = True
+            # event.category.registration = True
 
         if event.category.registration == False:
             if event.registration:
