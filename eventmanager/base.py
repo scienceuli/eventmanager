@@ -160,7 +160,8 @@ USE_L10N = True
 USE_TZ = True
 
 # login
-LOGIN_URL = "login"
+# LOGIN_URL = "login"
+LOGIN_URL = "users:login"
 
 
 # Static files (CSS, JavaScript, Images)

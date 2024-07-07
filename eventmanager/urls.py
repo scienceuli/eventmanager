@@ -1,5 +1,8 @@
 from django.contrib import admin
 from django.urls import path, include, re_path
+from django.contrib.auth import views as auth_views
+from users.forms import EmailValidationOnForgotPassword
+
 from django.contrib.staticfiles.urls import static, staticfiles_urlpatterns
 
 from django_otp.admin import AdminSite
@@ -30,6 +33,37 @@ urlpatterns = [
     #     name="login",
     # ),
     # path('register/',user_views.register,name='register'),
+    path(
+        "password_reset/",
+        auth_views.PasswordResetView.as_view(
+            form_class=EmailValidationOnForgotPassword,
+            from_email="password-reset@vfll.de",
+            template_name="users/password_reset.html",
+            email_template_name="users/password_reset_email.html",
+        ),
+        name="password_reset",
+    ),
+    path(
+        "password_reset_done/",
+        auth_views.PasswordResetDoneView.as_view(
+            template_name="users/password_reset_done.html"
+        ),
+        name="password_reset_done",
+    ),
+    path(
+        "reset/<uidb64>/<token>/",
+        auth_views.PasswordResetConfirmView.as_view(
+            template_name="users/password_reset_confirm.html"
+        ),
+        name="password_reset_confirm",
+    ),
+    path(
+        "reset/done/",
+        auth_views.PasswordResetCompleteView.as_view(
+            template_name="users/password_reset_complete.html"
+        ),
+        name="password_reset_complete",
+    ),
     path("", include("events.urls")),
     path("private-media/", include(private_storage.urls)),
     path("faqs/", include("faqs.urls")),
