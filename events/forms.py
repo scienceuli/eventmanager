@@ -1238,6 +1238,7 @@ class Symposium2024Form(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         takes_part_in_mv = cleaned_data.get("takes_part_in_mv")
+        takes_part_in_ft = cleaned_data.get("takes_part_in_ft")
         having_lunch = cleaned_data.get("having_lunch")
         networking = cleaned_data.get("networking")
         yoga = cleaned_data.get("yoga")
@@ -1248,17 +1249,12 @@ class Symposium2024Form(forms.Form):
         remarks = cleaned_data.get("remarks")
         food_remarks = cleaned_data.get("food_remarks")
         memberships_full = cleaned_data.get("memberships_full")
-        return cleaned_data
 
-    def clean_takes_part_in_ft(self):
-        takes_part_in_ft = self.cleaned_data.get("takes_part_in_ft")
-        takes_part_in_mv = self.cleaned_data.get("takes_part_in_mv")
-        if not takes_part_in_ft and not takes_part_in_mv:
-            self.add_error(
-                "takes_part_in_ft",
-                "Bitte mind. eine der beiden Teilnahmen (FT oder MV) anklicken.",
+        if not takes_part_in_mv and not takes_part_in_ft:
+            raise forms.ValidationError(
+                "Bitte mind. eine der beiden Teilnahmen (FT oder MV) anklicken."
             )
-        return takes_part_in_ft
+        return cleaned_data
 
     # def clean_takes_part_in_ft(self):
     #     takes_part_in_ft = self.cleaned_data.get("takes_part_in_ft")
@@ -1269,6 +1265,19 @@ class Symposium2024Form(forms.Form):
     #             "Bitte dieses Feld anklicken, wenn Sie an der Fachtagung teilnehmen.",
     #         )
     #     return takes_part_in_ft
+
+    def clean_having_lunch(self):
+        having_lunch = self.cleaned_data["having_lunch"]
+        takes_part_in_mv = self.cleaned_data["takes_part_in_mv"]
+        if having_lunch and not takes_part_in_mv:
+            self.add_error(
+                "having_lunch",
+                "Du hast dich für das Mittagessen am Sonntag, aber nicht für die MV angemeldet. Bitte korrigieren.",
+            )
+        # raise forms.ValidationError(
+        #     "Du hast dich für das Mittagessen am Sonntag, aber nicht für die MV angemeldet, bitte korrigieren."
+        # )
+        return having_lunch
 
     def clean_email(self):
         email = self.cleaned_data["email"]
