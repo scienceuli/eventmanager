@@ -108,6 +108,7 @@ FOOD_PREFERENCE_CHOICES = (
 )
 
 BOOKING_CHOICES_27 = (
+    ("", "keine Buchung"),
     ("emf27", "ein Einzelzimmer mit Frühstück (101,90 € pro Person/Nacht)"),
     ("dmf27", "ein Doppelzimmer mit Frühstück (80 € pro Person/Nacht)"),
     ("eof27", "ein Einzelzimmer ohne Frühstück (87,50 € pro Person/Nacht)"),
@@ -116,6 +117,7 @@ BOOKING_CHOICES_27 = (
 )
 
 BOOKING_CHOICES_28 = (
+    ("", "keine Buchung"),
     ("emf28", "ein Einzelzimmer mit Frühstück (101,90 € pro Person/Nacht)"),
     ("dmf28", "ein Doppelzimmer mit Frühstück (80 € pro Person/Nacht)"),
     ("eof28", "ein Einzelzimmer ohne Frühstück (87,50 € pro Person/Nacht)"),

@@ -1,13 +1,14 @@
 {% load crispy_forms_field %}
 
 <div class="form-group">
-  <div class="custom-control custom-checkbox">
+  <div class="custom-control custom-checkbox mb-0">
     {% crispy_field field 'class' 'custom-control-input' %}
     <label class="custom-control-label text-gray-700 text-sm font-bold" for="{{ field.id_for_label }}">{{ field.label|safe }}</label>
+    {% if field.help_text %}<p><small>{{field.help_text|safe}}</small></p>{% endif %}
     {% for error in field.errors %}
-           <div class="row">
-             <div class="alert alert-danger">{{error}}</div>
-           </div>
-          {% endfor %}
+    <div class="row">
+      <div class="alert alert-danger">{{error}}</div>
+    </div>
+    {% endfor %}
   </div>
 </div>

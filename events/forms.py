@@ -946,20 +946,23 @@ class Symposium2024Form(forms.Form):
 
     takes_part_in_ft = forms.BooleanField(
         label="Ich nehme an der Fachtagung teil.",
-        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        widget=forms.CheckboxInput(attrs={"class": "form-radio mb-0"}),
         required=False,
+        help_text="(Kosten für Mitglieder des VFLL oder einiger Partnerverbände: 140&nbsp;€, Kosten für sonstige Teilnehmende: 190&nbsp;€, bitte unter Punkt&nbsp;7 die Mitgliedschaft/Nicht-Mitgliedschaft angeben)",
     )
 
     takes_part_in_mv = forms.BooleanField(
         label="Ich nehme an der MV teil.",
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
         required=False,
+        help_text="(Kostenfrei; nur für VFLL-Mitglieder)",
     )
 
     having_lunch = forms.BooleanField(
-        label="Ich möchte am anschließenden Mittagessen teilnehmen.",
+        label="Ich möchte am anschließenden Mittagsimbiss teilnehmen.",
         # widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
         required=False,
+        help_text="(Kostenfrei; nur für MV-Teilnehmende)",
     )
 
     networking = forms.BooleanField(
@@ -982,29 +985,39 @@ class Symposium2024Form(forms.Form):
         required=False,
     )
 
+    ideas = forms.BooleanField(
+        label="Erfahrungsaustausch und Ideenschmiede mit der AG Sprachwandel: <i>Menschenwürde schützen im Lektorat</i> am Freitag, 27.09.2024, ab 16:30 Uhr<br>(Kostenfrei; Treffpunkt BBZ Anmeldebereich)",
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-radio", "style": "white-space: pre-wrap;"}
+        ),
+        required=False,
+    )
+
     # Zimmerbuchung
     booking27 = forms.ChoiceField(
         widget=forms.RadioSelect,
         label="Für 27.09.&ndash;28.09. buche ich:",
         choices=BOOKING_CHOICES_27,
         required=False,
+        initial="",
     )
     booking28 = forms.ChoiceField(
         widget=forms.RadioSelect,
         label="Für 28.09.&ndash;29.09. buche ich:",
         choices=BOOKING_CHOICES_28,
         required=False,
+        initial="",
     )
 
     food_preferences = forms.ChoiceField(
         widget=forms.RadioSelect,
-        label="Ich möchte",
+        label="Ich möchte:",
         choices=FOOD_PREFERENCE_CHOICES,
         required=False,
     )
 
     food_remarks = forms.CharField(
-        label="andere wichtige Informationen (Allergien, Unverträglichkeiten etc.):",
+        label="Andere wichtige Informationen (Allergien, Unverträglichkeiten etc.):",
         widget=forms.Textarea(
             attrs={
                 "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
@@ -1081,10 +1094,7 @@ class Symposium2024Form(forms.Form):
                 CustomCheckbox("takes_part_in_ft"),
                 HTML(
                     """
-                    <p class='mb-2'>(Kosten für Mitglieder des VFLL oder 
-                    eines Partnerverbands: 130&nbsp;€, Kosten für sonstige Teilnehmende: 180&nbsp;€, 
-                    bitte unter Punkt&nbsp;7 die Mitgliedschaft/Nicht-Mitgliedschaft angeben)</p>
-                    <p>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht. 
+                    <p class='ml-4'>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht. 
                     Ausgewählte Aufnahmen können in den digitalen und den gedruckten Medien des Verbands 
                     veröffentlicht werden (z.&nbsp;B. Website, Facebook, X, Leitfaden Freies Lektorat, Broschüre „Gemeinsam für Textqualität“). 
                     <br/>Mit deren Verwendung bin ich einverstanden.</p>
@@ -1097,20 +1107,10 @@ class Symposium2024Form(forms.Form):
                 CustomCheckbox(
                     "takes_part_in_mv",
                 ),
-                HTML(
-                    """
-                    <p class='mb-2'>(Kostenfrei)</p>
-                    """
-                ),
                 CustomCheckbox("having_lunch"),
                 HTML(
                     """
-                    <p class='mb-2'>(Kostenfrei; nur für MV-Teilnehmende)</p>
-                    """
-                ),
-                HTML(
-                    """
-                    <p>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht. 
+                    <p class='ml-4'>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht. 
                     Ausgewählte Aufnahmen können in den digitalen und den gedruckten Medien des Verbands 
                     veröffentlicht werden (z.&nbsp;B. Website, Facebook, X, Leitfaden Freies Lektorat, Broschüre „Gemeinsam für Textqualität“). 
                     <br/>Mit deren Verwendung bin ich einverstanden.</p>
@@ -1122,10 +1122,11 @@ class Symposium2024Form(forms.Form):
                 "4. Rahmenprogramm",
                 HTML(
                     """
-                    <p>An den folgenden Rahmenprogrammpunkten nehme ich teil:</p>
+                    <p class='mb-2'>An den folgenden Rahmenprogrammpunkten nehme ich teil:</p>
                     """
                 ),
                 CustomCheckbox("yoga"),
+                CustomCheckbox("ideas"),
                 CustomCheckbox("networking"),
                 CustomCheckbox("celebration"),
                 css_class="mt-4",
@@ -1134,9 +1135,8 @@ class Symposium2024Form(forms.Form):
                 "5. Zimmerbuchung",
                 HTML(
                     """
-                    <p>Die Übernachtungen im Tagungshaus BBZ sind hier verbindlich zu buchen 
-                    (alle Preise inkl. MwSt.). </p>
-                    <p class='mb-2'>Die Bestätigung und Rechnungsabwicklung erfolgt nach Anmeldeschluss durch das BBZ, 
+                    <p class='mb-2'>Die Übernachtungen im Tagungshaus BBZ sind hier verbindlich zu buchen 
+                    (alle Preise inkl. MwSt.). Die Bestätigung und Rechnungsabwicklung erfolgt nach Anmeldeschluss durch das BBZ, 
                     die Übernachtungskosten sind somit nicht mit dem Tagungsbeitrag zu überweisen.</p>
 
                     """
@@ -1145,7 +1145,7 @@ class Symposium2024Form(forms.Form):
                 "booking28",
                 HTML(
                     """
-                    <p>Bis zum Anmeldeschluss am 18.08.2024 kann diese Buchung kostenfrei storniert werden. Zu den weiteren Stornobedingungen s. Punkt 8. </p>
+                    <p>Bis zum 11.08.2024 kann diese Buchung kostenfrei storniert werden. Zu den weiteren Stornobedingungen s. Punkt 8. </p>
                     <p>Alternative Unterkünfte (s. Einladung) sind bitte in Eigenregie zu buchen.</p>
 
                     """
@@ -1160,7 +1160,7 @@ class Symposium2024Form(forms.Form):
                 # ),
                 HTML(
                     """
-                <p>Bitte gebt hier eure Wünsche für die Mahlzeiten im BBZ an.</p>
+                <p class='mb-2'>Bitte gebt hier eure Wünsche für die Mahlzeiten im BBZ an.</p>
                     """
                 ),
                 "food_preferences",
@@ -1171,15 +1171,15 @@ class Symposium2024Form(forms.Form):
                 "7. Teilnahmekosten",
                 HTML(
                     """
-                    <p>Der Tagungsbeitrag für die Fachtagung beträgt
+                    <p>Der Tagungsbeitrag für die Fachtagung beträgt:
                     <ul style='list-style-position: outside; padding-left: 20px;'>
-                    <li>130 € für Mitglieder des VFLL oder eines Partnerverbands (bitte nachfolgend die Mitgliedschaft angeben)</li>
-                    <li>180 € für sonstige Teilnehmende (bitte nachfolgend die Nicht-Mitgliedschaft angeben)</li>
+                    <li>140 € für Mitglieder des VFLL oder einiger Partnerverbände (bitte nachfolgend die Mitgliedschaft angeben)</li>
+                    <li>190 € für sonstige Teilnehmende (bitte nachfolgend die Nicht-Mitgliedschaft angeben)</li>
                     </ul>
                     </p>
                     <p class='mt-2 mb-2'>
                     Darin enthalten sind die Kosten für die Fachtagung inklusive Mittagessen und Pausenverpflegung am Samstag. 
-                    Nicht enthalten sind Rahmenprogramm, Netzwerkabend und Festabend, Unterkunft, Anreise.</p>
+                    <b>Nicht enthalten</b> sind Rahmenprogramm, Netzwerkabend und Festabend, Unterkunft, Anreise.</p>
                     <p>Die Teilnahme an der MV ist kostenfrei.</p>
                     """
                 ),
@@ -1192,7 +1192,7 @@ class Symposium2024Form(forms.Form):
                 css_class="mt-4",
             ),
             Fieldset(
-                "8. Zahlung, Stornierungsmodalitäten, Rechnung",
+                "8. Zahlung, Rechnung, Stornierungsmodalitäten",
                 HTML(
                     """
                     <p>Den Gesamtbetrag aus Tagungsbeitrag und ggf. den Kostenbeiträgen
@@ -1200,21 +1200,20 @@ class Symposium2024Form(forms.Form):
                     VFLL e. V., IBAN: DE24 4306 0967 6032 5237 00,<br/>
                     BIC: GENODEM1GLS – Stichwort: FFL 2024
                     </p>
+                    <p class='mt-2 mb-2'>
+                    Die Rechnungen werden in der Regel erst nach Anmeldeschluss (also auch nach der erfolgten Überweisung) verschickt. 
+                    Wer dies anders benötigt, kann das gern über das nachfolgende Anmerkungsfeld mitteilen.
+                    </p>
                     <p class="mb-2">
                     <hr>
                     </p>
                     <p class="mt-2" style="border:top;">
                     <b>Für den Fall einer Absage bitte beachten:</b>
                     <ul style='list-style-position: outside; padding-left: 20px;'>
-                    <li>Absagen bis 11.08.2024: kostenfrei möglich. </li>
-                    <li>Absagen 12.08.–25.08.2024: 80 % der gezahlten Beträge für die Tagung und das Rahmenprogramm werden rückerstattet.</li>
-                    <li>Absagen 26.08.–08.09.2024: 50 % der gezahlten Beträge für die Tagung und das Rahmenprogramm werden rückerstattet.</li>
-                    <li>Absagen ab 09.09.2024: Eine Erstattung der gezahlten Beträge ist leider nicht mehr möglich.</li>
+                    <li>Absagen bis 18.08.2024: Bearbeitungsgebühr 10 €.</li>
+                    <li>Absagen 19.08.–30.08.2024: 80 % der gezahlten Beträge für die Tagung und das Rahmenprogramm werden rückerstattet (abzgl. 10 € Bearbeitungsgebühr).</li>
+                    <li>Absagen ab 31.08.2024: 50 % der gezahlten Beträge für die Tagung und das Rahmenprogramm werden rückerstattet (abzgl. 10 € Bearbeitungsgebühr).</li>
                     </ul>
-                    </p>
-                    <p class='mt-2 mb-2'>
-                    Die Rechnungen werden in der Regel erst nach Anmeldeschluss (also auch nach der erfolgten Überweisung) verschickt. 
-                    Wer dies anders benötigt, kann das gern über das nachfolgende Anmerkungsfeld mitteilen.
                     </p>
                     """
                 ),
@@ -1241,6 +1240,7 @@ class Symposium2024Form(forms.Form):
         takes_part_in_ft = cleaned_data.get("takes_part_in_ft")
         having_lunch = cleaned_data.get("having_lunch")
         networking = cleaned_data.get("networking")
+        ideas = cleaned_data.get("ideas")
         yoga = cleaned_data.get("yoga")
         celebration = cleaned_data.get("celebration")
         food_preferences = cleaned_data.get("food_preferences")
@@ -1250,10 +1250,16 @@ class Symposium2024Form(forms.Form):
         food_remarks = cleaned_data.get("food_remarks")
         memberships_full = cleaned_data.get("memberships_full")
 
-        if not takes_part_in_mv and not takes_part_in_ft:
+        if not takes_part_in_mv and not takes_part_in_ft and not celebration:
             raise forms.ValidationError(
-                "Bitte mind. eine der beiden Teilnahmen (FT oder MV) anklicken."
+                "Bitte mind. eine der beiden Teilnahmen (FT oder MV) anklicken. Oder willst du nur am Festabend teilnehmen? Dann bitte anklicken."
             )
+
+        if (booking27 or booking28) and not (takes_part_in_ft or takes_part_in_mv):
+            raise forms.ValidationError(
+                "Du hast eine Übernachtung gewählt, nimmst aber weder an der FT noch an der MV teil. Bitte korrigieren."
+            )
+
         return cleaned_data
 
     # def clean_takes_part_in_ft(self):
@@ -1271,7 +1277,7 @@ class Symposium2024Form(forms.Form):
         takes_part_in_mv = self.cleaned_data["takes_part_in_mv"]
         if having_lunch and not takes_part_in_mv:
             self.add_error(
-                "having_lunch",
+                None,
                 "Du hast dich für das Mittagessen am Sonntag, aber nicht für die MV angemeldet. Bitte korrigieren.",
             )
         # raise forms.ValidationError(
@@ -1287,8 +1293,9 @@ class Symposium2024Form(forms.Form):
             ).count()
             > 0
         ):
-            raise forms.ValidationError(
-                "Es gibt bereits eine Anmeldung mit dieser E-Mail-Adresse."
+            self.add_error(
+                None,
+                "Es gibt bereits eine Anmeldung mit dieser E-Mail-Adresse.",
             )
         return email
 
@@ -1296,7 +1303,7 @@ class Symposium2024Form(forms.Form):
         memberships_full = self.cleaned_data.get("memberships_full")
         if memberships_full and "vv" in memberships_full and "vk" in memberships_full:
             self.add_error(
-                "memberships_full",
+                None,
                 "Bitte nur eine der beiden VFLL-Mitgliedsvarianten ankreuzen",
             )
             # raise forms.ValidationError(
@@ -1308,14 +1315,14 @@ class Symposium2024Form(forms.Form):
         nomember = self.cleaned_data.get("nomember")
         if nomember and len(self.cleaned_data.get("memberships_full")) > 0:
             self.add_error(
-                "memberships_full",
-                "Wenn Mitgliedschaft vorhanden, bitte 'Ich bin nicht Mitglied...' nicht anklicken.",
+                None,
+                "Wenn Mitgliedschaft in einem der Partnerverbände oder dem VFLL vorhanden, bitte 'Ich bin nicht Mitglied...' NICHT anklicken.",
             )
 
         if not nomember and len(self.cleaned_data.get("memberships_full")) == 0:
             self.add_error(
-                "memberships_full",
-                "Wenn keine Mitgliedschaft, bitte 'Ich bin nicht Mitglied...' bestätigen.",
+                None,
+                "Wenn keine Mitgliedschaft in einem der Partnerverbände oder dem VFLL vorhanden, bitte 'Ich bin nicht Mitglied...' bestätigen.",
             )
 
         return nomember

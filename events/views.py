@@ -900,6 +900,7 @@ def get_f24_form_data(form):
     data_dict["having_lunch"] = boolean_translate(form.cleaned_data.get("having_lunch"))
     data_dict["networking"] = boolean_translate(form.cleaned_data.get("networking"))
     data_dict["yoga"] = boolean_translate(form.cleaned_data.get("yoga"))
+    data_dict["ideas"] = boolean_translate(form.cleaned_data.get("ideas"))
     data_dict["celebration"] = boolean_translate(form.cleaned_data.get("celebration"))
     data_dict["food_preferences"] = choices_to_string(
         food_pref_list, FOOD_PREFERENCE_CHOICES
