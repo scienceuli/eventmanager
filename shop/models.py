@@ -43,6 +43,27 @@ class Order(AddressModel):
 
     download_marker = models.BooleanField(default=False)
 
+    # these fields are for overwriting event name and event date
+    replacement_event = models.CharField(
+        "Ersatzangabe Event Name",
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Zum Überschreiben des automatisch erzeugten Veranstaltungstitels. Funktioniert nur, wenn die Rechnung nur 1 NICHT STORNIERTE Veranstaltung enthält.",
+    )
+    replacement_date = models.CharField(
+        "Ersatzangabe Event Datum",
+        max_length=40,
+        null=True,
+        blank=True,
+        help_text="Zum Überschreiben des automatisch erzeugten Veranstaltungsdatums. Funktioniert nur, wenn die Rechnung nur 1 NICHT STORNIERTE Veranstaltung enthält.",
+    )
+    use_replacements = models.BooleanField(
+        "Ersatzangaben benutzen",
+        default=False,
+        help_text="Anklicken, um Ersatzangaben zu benutzen",
+    )
+
     class Meta:
         ordering = ["-date_created"]
         indexes = [

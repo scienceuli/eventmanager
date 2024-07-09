@@ -299,9 +299,13 @@
             <tbody>
                 {% for item in order_items %}
                 <tr>
-                    <td colspan="2">{{ item.event.name }} {% if item.is_action_price %}<span class="action-price">Aktionspreis!</span>{% endif %}<br />
+                    <td colspan="2">{% if order_items|length == 1 and order.use_replacements and order.replacement_event %}{{ order.replacement_event }}{% else %}{{ item.event.name }}{% endif %} {% if item.is_action_price %}<span class="action-price">Aktionspreis!</span>{% endif %}<br />
                         {% with item.event as event %}
+                        {% if order_items|length == 1 and order.use_replacements and order.replacement_date %}
+                        {{ order.replacement_date }}
+                        {% else %}
                         {% with event.event_days.all|first as first %}{{ first.start_date|date:"j. F Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"j. F Y" }}{% endif %}
+                        {% endif %}
                         {% if event.category.name != "Onlineseminare" and event.location %}
                         | {{ event.location.title }}
                         {% endif %}
