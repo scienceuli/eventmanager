@@ -99,6 +99,7 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
     search_fields = [
+        "id",
         "lastname",
         "items__event__name",
     ]
