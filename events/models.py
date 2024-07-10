@@ -949,6 +949,13 @@ class EventDay(BaseModel):
     start_time = models.TimeField(verbose_name="Beginn", help_text="hh:mm")
     end_time = models.TimeField(verbose_name="Ende", help_text="hh:mm")
 
+    start_time_remark = models.CharField(
+        verbose_name="Ergänzung Startzeit", max_length=60, null=True, blank=True
+    )
+    end_time_remark = models.CharField(
+        verbose_name="Ergänzung Endzeit", max_length=60, null=True, blank=True
+    )
+
     class Meta:
         ordering = ("start_date",)
         verbose_name = "Veranstaltungstag"

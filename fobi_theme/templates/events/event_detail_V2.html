@@ -142,7 +142,7 @@
                             <div class="w-1/2">{{ day.start_date|date:"D, j. F Y"}}</div>
                             <div class="w-1/2">
                                 {% if day.start_time %}
-                                {{day.start_time|date:"H:i"}}&ndash;{{day.end_time|date:"H:i"}}
+                                {{day.start_time|date:"H:i"}}{% if day.start_time_remark %} {{day.start_time_remark}}{% endif %}&ndash;{{day.end_time|date:"H:i"}}{% if day.end_time_remark %} {{day.end_time_remark}}{% endif %}
                                 {% else %}
                                 &nbsp;
                                 {% endif %}
