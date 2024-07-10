@@ -1201,8 +1201,9 @@ class Symposium2024Form(forms.Form):
                     BIC: GENODEM1GLS – Stichwort: FFL 2024
                     </p>
                     <p class='mt-2 mb-2'>
-                    Die Rechnungen werden in der Regel erst nach Anmeldeschluss (also auch nach der erfolgten Überweisung) verschickt. 
-                    Wer dies anders benötigt, kann das gern über das nachfolgende Anmerkungsfeld mitteilen.
+                    Die Rechnungen werden mit dem Vermerk <i>Zahlung erhalten</i> im Anschluss an die Tagung verschickt.
+
+
                     </p>
                     <p class="mb-2">
                     <hr>
