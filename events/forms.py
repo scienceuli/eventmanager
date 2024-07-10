@@ -978,7 +978,7 @@ class Symposium2024Form(forms.Form):
     )
 
     celebration = forms.BooleanField(
-        label="Festabend mit Tanz im Tagungshaus BBZ am Samstag, 28.09.2024, ab 19 Uhr<br>(Kosten inkl. Abendessen: 25 €**, Getränke: Selbstzahlung vor Ort)",
+        label="Festabend mit Tanz im Tagungshaus BBZ am Samstag, 28.09.2024, ab 19 Uhr<br>(Kosten inkl. Buffet: 25 €**, Getränke: Selbstzahlung vor Ort)",
         widget=forms.CheckboxInput(
             attrs={"class": "form-radio", "style": "white-space: pre-wrap;"}
         ),
@@ -1145,7 +1145,7 @@ class Symposium2024Form(forms.Form):
                 "booking28",
                 HTML(
                     """
-                    <p>Bis zum 11.08.2024 kann diese Buchung kostenfrei storniert werden. Zu den weiteren Stornobedingungen s. Punkt 8. </p>
+                    <p>Bis zum 18.08.2024 kann diese Buchung kostenfrei storniert werden. Zu den weiteren Stornobedingungen s. Punkt 8. </p>
                     <p>Alternative Unterkünfte (s. Einladung) sind bitte in Eigenregie zu buchen.</p>
 
                     """
@@ -1375,6 +1375,17 @@ class FTEventMemberForm(EntangledModelForm):
                 "remark",
             ]
         }  # fields provided by this form
+
+
+class FT24EventMemberForm(EntangledModelForm):
+    def __init__(self, *args, **kwargs):
+        # Pop the 'instance' kwarg to access the Member instance
+        instance = kwargs.pop("instance", None)
+        super(FT24EventMemberForm, self).__init__(*args, **kwargs)
+
+        if instance and instance.data:
+            for key, value in instance.data.items():
+                self.fields[key] = forms.CharField(initial=value, required=False)
 
 
 class DateRangeForm(forms.Form):
