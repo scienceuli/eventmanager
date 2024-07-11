@@ -1084,7 +1084,11 @@ class Symposium2024Form(forms.Form):
                 "phone",
                 HTML(
                     """
-                    <p class='mb-2'>Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, Telefon, E-Mail-Adresse) auf der Teilnahmeliste stehen und an die anderen Teilnehmenden weitergegeben werden.</p>
+                    <p class='mb-2'>Ich bin damit einverstanden, dass meine Kontakt- und Anmeldedaten zur Durchführung der Anmeldung verarbeitet werden und vor Ort auf nicht frei 
+                    zugänglichen Anmeldelisten aufgeführt sind. 
+                    Weiterhin bin ich damit einverstanden, dass ausschließlich mein Vor- und Nachname mit Wohnort auf einer eventuell vor Ort aushängenden 
+                    Teilnahmeliste aufgeführt ist.</p>
+                    <p><span class='font-bold'>Datenschutzhinweis:</span> Wir verwenden Ihre Angaben ausschließlich zur Durchführung der Veranstaltungen des Verbands der freien Lektorinnen und Lektoren e. V. Ihre Daten werden nicht an unbefugte Dritte weitergegeben. Verantwortlich im Sinne der DSGVO ist der Vorstand des Verbands der Freien Lektorinnen und Lektoren e. V., Geschäftsstelle, Büro Seehausen + Sandberg, Merseburger Straße 5, 10823 Berlin.</p>
                     """
                 ),
                 css_class="border-b-2 border-gray-900 pb-2 mb-4",
