@@ -127,6 +127,7 @@ from .forms import (
     EventUpdateCapacityForm,
     EventCategoryFilterForm,
     FTEventMemberForm,
+    FT24EventMemberForm,
 )
 
 from events.admin import EventMemberAdmin
@@ -178,6 +179,11 @@ def choices_to_display(choice, choices):
 class MVOrgaGroupTestMixin(UserPassesTestMixin):
     def test_func(self):
         return self.request.user.groups.filter(name="mv_orga").exists()
+
+
+class FTOrgaGroupTestMixin(UserPassesTestMixin):
+    def test_func(self):
+        return self.request.user.groups.filter(name="ft_orga").exists()
 
 
 def user_in_testing_group(user):
@@ -273,7 +279,6 @@ class EventListView(ListView):
         # only upcoming and not cancelled events and only events with show_date flag
         queryset = (
             Event.objects.all()
-            .filter(show_date=True)
             .filter(first_day__gte=date.today())
             .filter(pub_status="PUB")
             .exclude(status="cancel")
@@ -290,11 +295,12 @@ class EventListView(ListView):
         # get moodle courses
         # fname = 'core_course_get_courses'
         # courses_list = call(fname)
+        print("called")
 
         # events from database
         context = super().get_context_data(**kwargs)
 
-        events = self.get_queryset()
+        events_with_date = self.get_queryset().filter(show_date=True)
 
         # eventcollections from database
         event_collections = EventCollection.objects.all().filter(
@@ -304,7 +310,8 @@ class EventListView(ListView):
         # sorting events and event_collections
 
         events_sorted = sorted(
-            chain(events, event_collections), key=lambda t: t.get_first_day_start_date()
+            chain(events_with_date, event_collections),
+            key=lambda t: t.get_first_day_start_date(),
         )
 
         # Version 1
@@ -323,6 +330,11 @@ class EventListView(ListView):
 
         # context['events_grouped_list'] = events_grouped_list
         context["events_dict"] = events_dict
+
+        # events without date
+        events_without_date = self.get_queryset().filter(show_date=False)
+        context["events_without_date"] = events_without_date
+        print("events_without_date:", events_without_date)
         return context
 
 
@@ -343,7 +355,6 @@ class FilteredEventListView(ListView):
             super()
             .get_queryset()
             .filter(pub_status="PUB")
-            .filter(show_date=True)
             .exclude(event_days=None)
             .exclude(status="cancel")
             .order_by("first_day")
@@ -405,8 +416,10 @@ class FilteredEventListView(ListView):
         context = super().get_context_data(**kwargs)
         # filtered_queryset = self.filterset.qs.distinct()
 
+        events_with_date = self.filterset.qs.filter(show_date=True)
+
         filterset_sorted = sorted(
-            self.filterset.qs, key=lambda t: t.get_first_day_start_date()
+            events_with_date, key=lambda t: t.get_first_day_start_date()
         )
 
         events_dict = {}
@@ -425,6 +438,9 @@ class FilteredEventListView(ListView):
         context["events_dict"] = events_dict
         context["has_filter"] = self.has_filter
         context["filter_string"] = self.filter_string
+
+        events_without_date = self.filterset.qs.filter(show_date=False)
+        context["events_without_date"] = events_without_date
 
         return context
 
@@ -890,6 +906,7 @@ def get_f24_form_data(form):
     booking28_list.append(form.cleaned_data.get("booking28"))
 
     data_dict = {}
+    data_dict["memberships_full"] = form.cleaned_data.get("memberships_full")
     data_dict["nomember"] = form.cleaned_data.get("nomember")
     data_dict["takes_part_in_mv"] = boolean_translate(
         form.cleaned_data.get("takes_part_in_mv")
@@ -1318,7 +1335,7 @@ def edit_member_submit(request, member_pk):
     return render(request, "events/includes/member_row.html", context)
 
 
-class FTEventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
+class FTEventMembersListView(FTOrgaGroupTestMixin, SingleTableView):
     model = EventMember
     table_class = FTEventMembersTable
     template_name = "events/ft_members_list.html"
@@ -1391,9 +1408,9 @@ class EventMemberDetailView(MVOrgaGroupTestMixin, DetailView):
     template_name = "events/member_detail.html"
 
 
-class FTEventMemberDetailView(MVOrgaGroupTestMixin, DetailView):
+class FTEventMemberDetailView(FTOrgaGroupTestMixin, DetailView):
     model = EventMember
-    template_name = "events/ft_member_detail.html"
+    template_name = "events/ft24_member_detail.html"
 
     def get_context_data(self, *args, **kwargs):
         context = super(FTEventMemberDetailView, self).get_context_data(*args, **kwargs)
@@ -1432,7 +1449,7 @@ class EventMemberUpdateView(MVOrgaGroupTestMixin, UpdateView):
 class FTEventMemberUpdateView(MVOrgaGroupTestMixin, UpdateView):
     model = EventMember
 
-    form_class = FTEventMemberForm
+    form_class = FT24EventMemberForm
 
     template_name = "events/ft_member_update.html"
 

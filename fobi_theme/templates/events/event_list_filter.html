@@ -153,7 +153,62 @@
     {% if has_filter %}
     <p class="mt-2"><a href="{% url 'event-filter' %}">Alle aktuellen Seminare und Veranstaltungen</a></p>
     {% endif %}
+
+    <h3 class="text-xl md:text-3xl py-3 font-semibold tracking-tight text-left">Datum offen</h3>
+
+
+    <div class="flex flex-wrap mb-4 border-b-2 py-1">
+      {% for event in events_without_date %}
+      <div class="w-full  md:w-1/3 mb-4">
+      </div>
+      <div class="w-full md:w-2/3">
+
+        <p>
+          {% if class_name_value == 'EventCollection' %}
+          <span class="text-left text-base text-vfllred font-bold">Bildungsangebot</span>
+          {% else %}
+          <span class="text-left text-base text-vfllred font-bold">{% if event.category.singular %}{{ event.category.singular }}{% else %}{{ event.category }}{% endif %}</span>
+          {% if event.eventformat %}
+          <span class="text-left text-base font-semibold">|&nbsp;{{ event.eventformat }}</span>
+          {% endif %}
+          <span class="text-left pl-1 text-base">Datum noch offen</span>
+
+          {% endif %}
+          {% if event.video and event.show_video %}
+          <span class="text-left ml-4 text-base"><i class="fa fa-video-camera" aria-hidden="true"></i></span>
+          {% endif %}
+
+        </p>
+        <p class="text-left">
+          <span class="text-xl font-bold">
+
+            {% if class_name_value == 'EventCollection' %}
+            <a href="{% url 'event-collection-detail' event.slug %}">
+              {{ event.name }}
+            </a>
+            {% else %}
+            <a href="{% url 'event-detail' event.slug %}">
+              {{ event.name }}
+            </a>
+            {% endif %}
+          </span>
+
+
+          {% if event.event_collection %}
+          <br />
+          <span class="text-sm">Teil des Bildungsangebots</span>
+          <span class="text-sm italic"><a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{ event.event_collection.name }}</a></span>
+          {% endif %}
+        </p>
+
+
+      </div>
+      {% endfor %}
+    </div>
+
   </div>
+
+
 
 </section>
 

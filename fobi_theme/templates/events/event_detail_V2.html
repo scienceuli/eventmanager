@@ -82,11 +82,15 @@
             </div>
             <div class="flex">
                 <span class="text-left text-xl">
+                    {% if event.show_date %}
 
                     {% with event.event_days.all|first as first %}
                     {{ first.start_date|date:"l, j. F Y"}}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"l, j. F Y" }}
                     {% endif %}
                     {% endwith %}
+                    {% else %}
+                    Datum noch offen
+                    {% endif %}
 
                 </span>
             </div>
