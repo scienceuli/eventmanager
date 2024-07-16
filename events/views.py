@@ -90,7 +90,7 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-logging.basicConfig(filename="kolltool.log", encoding="utf-8", level=logging.ERROR)
+logging.basicConfig(filename="eventmanager.log", encoding="utf-8", level=logging.ERROR)
 
 from .models import (
     Home,
@@ -192,6 +192,12 @@ def user_in_testing_group(user):
 
     testing_group = getattr(settings, "TESTING_GROUP", None)
     if testing_group and user.groups.filter(name=testing_group).exists():
+        return True
+    return False
+
+
+def registration_possible_for_this_event(label):
+    if label in settings.EVENTS_WITH_REGISTRATION_POSSIBLE:
         return True
     return False
 
@@ -599,7 +605,9 @@ class EventDetailView(HitCountDetailView):
 
         # exception if user is authenticated and belongs to testing group
         # in this case registration possible is set to true
-        show = user_in_testing_group(self.request.user)
+        show = user_in_testing_group(
+            self.request.user
+        ) or registration_possible_for_this_event(event.label)
 
         if show:
             event.registration_possible = True
