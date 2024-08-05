@@ -84,13 +84,13 @@ class FTEventMembersTable(tables.Table):
         empty_values=(),
     )
 
-    update = MemberUpdateLinkColumn(
-        "ft-member-update",
-        args=[A("pk")],
-        orderable=False,
-        text="Update",
-        empty_values=(),
-    )
+    # update = MemberUpdateLinkColumn(
+    #     "ft-member-update",
+    #     args=[A("pk")],
+    #     orderable=False,
+    #     text="Update",
+    #     empty_values=(),
+    # )
 
     class Meta:
         model = EventMember

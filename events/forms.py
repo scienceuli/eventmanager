@@ -1383,14 +1383,84 @@ class FTEventMemberForm(EntangledModelForm):
 
 
 class FT24EventMemberForm(EntangledModelForm):
+
+    # def __init__(self, *args, **kwargs):
+    #     # Pop the 'instance' kwarg to access the Member instance
+    #     instance = kwargs.pop("instance", None)
+    #     super(FT24EventMemberForm, self).__init__(*args, **kwargs)
+
+    #     if instance and instance.data:
+    #         for key, value in instance.data.items():
+    #             self.fields[key] = forms.CharField(initial=value, required=False)
+
+    class Meta:
+        model = EventMember
+        # entangled_fields = {
+        #     "data": [
+        #         "takes_part_in_mv",
+        #         "takes_part_in_ft",
+        #         "having_lunch",
+        #         "networking",
+        #         "yoga",
+        #         "ideas",
+        #         "celebration",
+        #         "food_preferences",
+        #         "food_remarks",
+        #         "booking27",
+        #         "booking28",
+        #         "memberships_full",
+        #         "nomember",
+        #         "remarks",
+        #     ]
+        # }  # fields provided by this form
+        # untangled_fields = [
+        fields = [
+            "lastname",
+            "firstname",
+            "email",
+            "address_line",
+            "street",
+            "postcode",
+            "city",
+        ]  # these fields are provided by the Product model
+
     def __init__(self, *args, **kwargs):
         # Pop the 'instance' kwarg to access the Member instance
-        instance = kwargs.pop("instance", None)
         super(FT24EventMemberForm, self).__init__(*args, **kwargs)
-
-        if instance and instance.data:
-            for key, value in instance.data.items():
-                self.fields[key] = forms.CharField(initial=value, required=False)
+        instance = kwargs.pop("instance", None)
+        data = instance.data
+        self.fields["takes_part_in_mv"] = forms.BooleanField(
+            required=False, initial=data["takes_part_in_mv"]
+        )
+        self.fields["takes_part_in_ft"] = forms.BooleanField(
+            required=False, initial=data["takes_part_in_ft"]
+        )
+        self.fields["having_lunch"] = forms.BooleanField(
+            required=False, initial=data["having_lunch"]
+        )
+        self.fields["networking"] = forms.BooleanField(
+            required=False, initial=data["networking"]
+        )
+        self.fields["yoga"] = forms.BooleanField(required=False, initial=data["yoga"])
+        self.fields["ideas"] = forms.BooleanField(required=False)
+        self.fields["celebration"] = forms.BooleanField(required=False)
+        self.fields["food_preferences"] = forms.ChoiceField(
+            choices=FOOD_PREFERENCE_CHOICES, required=False
+        )
+        self.fields["food_remarks"] = forms.CharField(
+            widget=forms.Textarea, required=False
+        )
+        self.fields["booking27"] = forms.ChoiceField(
+            choices=BOOKING_CHOICES_27, required=False
+        )
+        self.fields["booking28"] = forms.ChoiceField(
+            choices=BOOKING_CHOICES_28, required=False
+        )
+        self.fields["memberships_full"] = forms.MultipleChoiceField(
+            choices=MEMBERSHIP_CHOICES_24_FULL
+        )
+        self.fields["nomember"] = forms.BooleanField(required=False)
+        self.fields["remarks"] = forms.CharField(widget=forms.Textarea, required=False)
 
 
 class DateRangeForm(forms.Form):

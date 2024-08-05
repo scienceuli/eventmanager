@@ -167,6 +167,10 @@ def is_member_of_mv_orga(user):
     return user.groups.filter(name="mv_orga").exists()
 
 
+def is_member_of_ft_orga(user):
+    return user.groups.filter(name="ft_orga").exists()
+
+
 def choices_to_string(choices_list, choices):
     label_list = [label for value, label in choices if value in choices_list]
     return ", ".join(label_list)
@@ -1846,6 +1850,7 @@ def export_ft_members_csv(request):
 
 
 @login_required
+@user_passes_test(is_member_of_ft_orga)
 def export_ft_members_xls(request):
     # content type
     # response = HttpResponse(content_type="application/ms-excel")
@@ -1859,17 +1864,90 @@ def export_ft_members_xls(request):
     response["Content-Disposition"] = f"attachment; filename={output_name}"
 
     # get the members
-    ftm = EventMember.objects.filter(event__label="ffl_mv_2024").values_list(
-        "data", flat=True
+    ftm = EventMember.objects.filter(event__label="ffl_mv_2024").values(
+        "lastname",
+        "firstname",
+        "email",
+        "address_line",
+        "street",
+        "postcode",
+        "city",
+        "data",
     )
 
     # the data json objects are returned as strings, so convert to list of dicts
     # with json.loads
     # ftm_list = [json.loads(j) for j in list(ftm)] # no more needed
-    ftm_list = list(ftm)
+
+    # make dict from values
+    result = [
+        {
+            **{
+                "lastname": item["lastname"],
+                "firstname": item["firstname"],
+                "email": item["email"],
+                "address_line": item["address_line"],
+                "street": item["street"],
+                "postcode": item["postcode"],
+                "city": item["city"],
+            },
+            **item["data"],
+        }
+        for item in ftm
+    ]
 
     # creating pandas Data Frame
-    df = pd.DataFrame(ftm_list)
+    df = pd.DataFrame(result)
+    # reordering
+    df = df[
+        [
+            "lastname",
+            "firstname",
+            "email",
+            "address_line",
+            "street",
+            "postcode",
+            "city",
+            "takes_part_in_mv",
+            "takes_part_in_ft",
+            "having_lunch",
+            "networking",
+            "yoga",
+            "ideas",
+            "celebration",
+            "food_preferences",
+            "food_remarks",
+            "booking27",
+            "booking28",
+            "memberships_full",
+            "nomember",
+            "remarks",
+        ]
+    ]
+    # renaming
+    df.columns = [
+        "Nachname",
+        "Vorname",
+        "E-Mail",
+        "Adresszusatz",
+        "Strasse",
+        "PLZ",
+        "Stadt",
+        "Teilnahme MV",
+        "Teilname FT",
+        "Mittagessen",
+        "TN Networking",
+        "TN Fuehrung",
+        "TN Erfahrungsaustausch",
+        "TN Feier",
+        "Essenswuensche",
+        "Essen Bem.",
+        "Buchung 27./28.9.",
+        "Buchung 28./29.9.",
+        "Mitgliedschaften",
+        "kein Mitglied",
+        "Bem.",
+    ]
     df.to_excel(response)
 
     return response

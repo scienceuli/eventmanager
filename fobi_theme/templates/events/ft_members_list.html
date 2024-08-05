@@ -8,9 +8,11 @@
 
 {% block content %}
 <div class="mx-4 px-4 my-4 py-4">
+    {% comment %}
     <div class="mb-4">
         <a class="bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded" href="{% url 'ft-members-dashboard' %}">Zur Übersicht</a>
     </div>
+    {% endcomment %}
     <div class="flex flex-col pt-4">
         <div class="item font-bold pb-2">Suche:</div>
         <div class="item">
@@ -30,7 +32,16 @@
     <div class="my-4">
         <hr />
     </div>
-    
+    <div>
+        {% comment %}
+        <!-- Export -->
+        <a href="{% url 'export-members-ft-csv' event=event_in_frontend %}?{{ request.GET.urlencode }}" class="ml-4 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">Export &rarr; CSV</a>
+        <!-- ./Export -->
+        {% endcomment %}
+        <a href="{% url 'export-members-ft-xls' %}" class="ml-4 bg-transparent hover:bg-blue-500 text-blue-700 font-semibold hover:text-white py-2 px-4 border border-blue-500 hover:border-transparent rounded">Export</a>
+
+    </div>
+
     <div class="pt-4">
         {% render_table table %}
     </div>

@@ -1,0 +1,117 @@
+{% extends 'base/base.html' %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto pt-8">
+
+    <h1>{{ object.firstname }} {{ object.lastname }}</h1>
+    <p class="mb-4">{{ object.email }}</p>
+    <div>
+        <table class="table-auto border-separate">
+            <tbody>
+
+                <tr>
+                    <td class="pr-4"><b>Nachname:</b></td>
+                    <td>{{ object.lastname }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Vorname:</b></td>
+                    <td>{{ object.firstname }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>E-Mail:</b></td>
+                    <td>{{ object.email }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Adresszusatz:</b></td>
+                    <td>{{ object.address_line }}</td>
+                </tr>
+
+                <tr>
+                    <td class="pr-4"><b>Straße:</b></td>
+                    <td>{{ object.street }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>PLZ, Ort:</b></td>
+                    <td>{{ object.postcode }} {{ object.city }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Tel.:</b></td>
+                    <td>{{ object.phone }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Teilnahme FT:</b></td>
+                    <td>{{ object.data.takes_part_in_ft }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Teilnahme MV:</b></td>
+                    <td>{{ object.data.takes_part_in_mv }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Mittagessen:</b></td>
+                    <td>{{ object.data.having_lunch }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Führung:</b></td>
+                    <td>{{ object.data.yoga }}</td>
+                </tr>
+
+                <tr>
+                    <td class="pr-4"><b>Erfahrungsaustausch:</b></td>
+                    <td>{{ object.data.ideas }}</td>
+                </tr>
+
+
+                <tr>
+                    <td class="pr-4"><b>Teilnahme Networking:</b></td>
+                    <td>{{ object.data.networking }}</td>
+                </tr>
+
+                <tr>
+                    <td class="pr-4"><b>Teilnahme Festabend:</b></td>
+                    <td>{{ object.data.celebration }}</td>
+                </tr>
+
+                <tr>
+                    <td class="pr-4"><b>Essenswunsch:</b></td>
+                    <td>{{ object.data.food_preferences }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Anm. Essen:</b></td>
+                    <td>{{ object.data.food_remarks }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Buchung 27./28.9.24:</b></td>
+                    <td>{{ object.data.booking27 }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Buchung 28./29.9.24:</b></td>
+                    <td>{{ object.data.booking28 }}</td>
+                </tr>
+
+                <tr>
+                    <td class="pr-4"><b>Mitgliedschaften:</b></td>
+                    <td>{{ object.data.memberships_full }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Kein Mitglied:</b></td>
+                    <td>{{ object.data.nomember }}</td>
+                </tr>
+                <tr>
+                    <td class="pr-4"><b>Bemerkung:</b></td>
+                    <td>{{ object.data.remarks }}</td>
+                </tr>
+
+
+
+            </tbody>
+        </table>
+    </div>
+    <p><i>Angelegt:</i> {{ object.date_created|date }}</p>
+    <p>
+        <hr />
+    </p>
+
+</div>
+
+{% endblock %}
