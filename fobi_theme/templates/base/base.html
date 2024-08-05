@@ -83,7 +83,7 @@
 			{% if user.is_authenticated %}
 			<a class='px-3 py-3' href="{% url 'event-list-internal' %}">E</a>
 
-			{% if user|has_group:"mv_orga" or user|has_group:"ft_orga" %}
+			{% if user|has_group:"mv_orga" %}
 			{% comment %}<a class='px-3 py-3' href="{% url 'members' event=event_in_frontend %}">TN</a>{% endcomment %}
 
 			<div class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
