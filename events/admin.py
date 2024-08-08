@@ -950,6 +950,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "start_date",
         ("first_day", DateRangeFilter),
     )
+    filter_horizontal = ("visible_to_groups",)
     ordering = ("name",)
     search_fields = ("name",)
     readonly_fields = (
@@ -980,6 +981,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "status",
                     "pub_status",
                     "edit_in_frontend",
+                    "visible_to_groups",
                     "show_date",
                 )
             },

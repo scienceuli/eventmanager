@@ -4,6 +4,8 @@ from decimal import Decimal
 from datetime import datetime
 from datetime import date
 
+from django.contrib.auth.models import Group
+
 from django.db import models
 from django.db.models import F, Sum
 from django.conf import settings
@@ -424,6 +426,9 @@ class Event(BaseModel, HitCountMixin):
     frontend_flag = models.BooleanField(
         verbose_name="im Frontend zeigen?", default=True
     )
+    visible_to_groups = models.ManyToManyField(
+        Group, related_name="visible_events", blank=True
+    )
     edit_in_frontend = models.BooleanField(
         verbose_name="editierbar im Frontend?", default=False
     )
@@ -541,7 +546,6 @@ class Event(BaseModel, HitCountMixin):
         choices=REGISTRATION_FORM_CHOICES,
         default="s",
     )
-
     registration_recipient = models.EmailField(
         verbose_name="Anmelde-Email an",
         max_length=254,

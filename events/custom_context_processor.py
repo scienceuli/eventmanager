@@ -21,7 +21,17 @@ def event_in_frontend_context(request):
 
 
 def events_in_frontend_context(request):
-    events_in_frontend = Event.objects.filter(edit_in_frontend=True).filter(
-        first_day__gte=date.today()
-    )
+    user = request.user
+    user_groups = user.groups.all()
+    if user.is_authenticated:
+        events_in_frontend = (
+            Event.objects.filter(
+                edit_in_frontend=True, visible_to_groups__in=user_groups
+            )
+            .filter(first_day__gte=date.today())
+            .distinct()
+        )
+    else:
+        events_in_frontend = Event.objects.none()
+
     return {"events_in_frontend": events_in_frontend}
