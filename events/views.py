@@ -1551,6 +1551,7 @@ class EventUpdateCapacityView(MVOrgaGroupTestMixin, UpdateView):
 @check_user_able_to_see_page("can_export")
 def export_members_csv(request, event):
     # check group
+    logger.info("event label = %s" % (event,))
     event_obj = Event.objects.get(label=event)
     user = request.user
     user_groups = user.groups.all()
