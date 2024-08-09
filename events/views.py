@@ -1293,8 +1293,19 @@ class EventMembersListView(MVOrgaGroupTestMixin, ListView):
         return context
 
 
-@check_user_able_to_see_page("mv_orga")
+@login_required
 def get_members_list(request, event):
+    event_obj = Event.objects.get(label=event)
+    user = request.user
+    user_groups = user.groups.all()
+    allowed_groups = event_obj.visible_to_groups.all()
+
+    common_group_exists = user_groups.filter(
+        id__in=allowed_groups.values_list("id", flat=True)
+    ).exists()
+
+    if not common_group_exists:
+        raise PermissionDenied
     event_members = EventMember.objects.filter(event__label=event).order_by("lastname")
     context = {}
     context["event"] = Event.objects.get(label=event)
@@ -1302,6 +1313,7 @@ def get_members_list(request, event):
     return render(request, "events/members_list.html", context)
 
 
+@login_required
 def search_members_list(request, event):
     query = request.GET.get("search", "")
     event_members = EventMember.objects.filter(event__label=event).order_by("lastname")
@@ -1319,6 +1331,7 @@ def search_members_list(request, event):
     return render(request, "events/includes/member_list.html", context)
 
 
+@login_required
 def edit_member(request, member_pk):
     member = EventMember.objects.get(pk=member_pk)
     context = {}
@@ -1334,6 +1347,7 @@ def edit_member(request, member_pk):
     return render(request, "events/includes/edit_member.html", context)
 
 
+@login_required
 def edit_member_submit(request, member_pk):
     context = {}
     member = EventMember.objects.get(pk=member_pk)
@@ -1534,10 +1548,25 @@ class EventUpdateCapacityView(MVOrgaGroupTestMixin, UpdateView):
 
 
 @login_required
-@user_passes_test(is_member_of_mv_orga)
-def export_members_csv(request):
+@check_user_able_to_see_page("can_export")
+def export_members_csv(request, event):
+    # check group
+    event_obj = Event.objects.get(label=event)
+    user = request.user
+    user_groups = user.groups.all()
+    allowed_groups = event_obj.visible_to_groups.all()
+
+    common_group_exists = user_groups.filter(
+        id__in=allowed_groups.values_list("id", flat=True)
+    ).exists()
+
+    if not common_group_exists:
+        raise PermissionDenied
+
     response = HttpResponse(content_type="text/csv")
-    response["Content-Disposition"] = 'attachment; filename="members.csv"'
+    response["Content-Disposition"] = (
+        f'attachment; filename="{event}_TN_{date.today()}.csv"'
+    )
 
     writer = csv.writer(response)
     writer.writerow(
@@ -1547,73 +1576,22 @@ def export_members_csv(request):
             "E-Mail",
             "Datum",
             "Mitgliedschaft",
-            "MV",
-            "Stimmübertragung",
-            "Check Stimmübertragung",
-            "Einverständnis MV",
-            "ZW",
-            "Einverständnis ZW",
-            "Status",
         ]
     )
 
-    members_mv = EventMember.objects.filter(event__label="Online-MV2021").values_list(
+    members = EventMember.objects.filter(event__label=event).values_list(
         "firstname",
         "lastname",
         "email",
         "date_created",
         "member_type",
-        "vote_transfer",
-        "vote_transfer_check",
-        "check",
     )
-    members_zw = EventMember.objects.filter(event__label="zukunft2021").values_list(
-        "firstname",
-        "lastname",
-        "email",
-        "date_created",
-        "member_type",
-        "check",
-        "attend_status",
-    )
-    for member in members_mv:
+
+    for member in members:
         member = list(member)
         member[3] = member[3].strftime("%d.%m.%y %H:%M")
-        member.insert(5, "x")
-        if (
-            EventMember.objects.filter(event__label="zukunft2021")
-            .filter(email=member[2])
-            .exists()
-        ):
-            member.append("x")
-            member.append(
-                EventMember.objects.filter(event__label="zukunft2021")
-                .filter(email=member[2])[0]
-                .check
-            )
-            member.append(
-                EventMember.objects.filter(event__label="zukunft2021")
-                .filter(email=member[2])[0]
-                .attend_status
-            )
 
         writer.writerow(member)
-    for member in members_zw:
-        member = list(member)
-        member[3] = member[3].strftime("%d.%m.%y %H:%M")
-
-        if (
-            not EventMember.objects.filter(event__label="Online-MV2021")
-            .filter(email=member[2])
-            .exists()
-        ):
-            member.insert(5, "")
-            member.insert(6, "")
-            member.insert(7, "")
-            member.insert(8, "")
-            member.insert(9, "x")
-
-            writer.writerow(member)
 
     return response
 

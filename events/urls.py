@@ -208,7 +208,7 @@ urlpatterns = [
     path(
         "members/create/<event>", EventMemberCreateView.as_view(), name="member-create"
     ),
-    path("members/export/csv/", export_members_csv, name="export-members-csv"),
+    path("members/export/csv/<event>", export_members_csv, name="export-members-csv"),
     path(
         "members_mv/export/csv/<event>/",
         export_mv_members_csv,
