@@ -535,6 +535,7 @@ class Event(BaseModel, HitCountMixin):
 
     REGISTRATION_FORM_CHOICES = (
         ("s", "Standard"),
+        ("w", "Willkommensveranstaltung"),
         ("m", "MV/ZW"),
         ("f", "Fachtagung 2022/MV"),
         ("f24", "Fachtagung 2024/MV"),

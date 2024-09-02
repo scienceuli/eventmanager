@@ -46,6 +46,8 @@ from events.models import (
     EventOrganizer,
 )
 
+from .api_models import VfllMemberEmail
+
 from .widgets import RelatedFieldWidgetCanAddWithModal, MyRadioSelect
 
 
@@ -518,6 +520,90 @@ class EventMemberForm(forms.Form):
     #         self.add_error(
     #             "Veranstaltung ist nur für Mitglieder. Bitte entsprechende Checkbox bestätigen."
     #         )
+
+
+class WelcomeMemberForm(forms.Form):
+    def __init__(self, *args, **kwargs):
+        self.event_label = kwargs.pop("event_label", "")
+        super(WelcomeMemberForm, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_error_title = "Fehler im Formular"
+        self.error_text_inline = False
+        self.helper.layout = Layout(
+            Fieldset(
+                "Persönliche Daten",
+                "firstname",
+                "lastname",
+                "email",
+                HTML(
+                    """
+                    <p class='mb-2'><small>Bitte beachten: Bitte benutzen Sie die E-Mail-Adresse, mit der Sie beim VFLL
+                    registriert sind.</small
+                    </p>
+                    """
+                ),
+                "member_type",
+                css_class="border-b-2 border-gray-900 pb-2 mb-4",
+            ),
+            ButtonHolder(
+                Submit(
+                    "submit",
+                    "Anmelden",
+                    css_class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full",
+                )
+            ),
+        )
+        # self.helper.add_input(Submit("submit", "Anmelden"))
+
+    def member_type_label(self):
+        return [
+            label
+            for value, label in self.fields["member_type"].choices
+            if value in self["member_type"].value()
+        ]
+
+    firstname = forms.CharField(
+        label="Vorname",
+        widget=forms.TextInput(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            },
+        ),
+        required=True,
+    )
+    lastname = forms.CharField(
+        label="Nachname",
+        widget=forms.TextInput(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=True,
+    )
+
+    email = forms.EmailField(
+        label="E-Mail",
+        widget=forms.EmailInput(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=True,
+    )
+
+    member_type = forms.ChoiceField(label="Ich bin", choices=MEMBER_TYPE_CHOICES)
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+
+        # Check if the email already exists in the local Email model
+        if not VfllMemberEmail.objects.filter(email=email).exists():
+            self.add_error(
+                "email",
+                "Diese E-Mail ist in der Geschäftsstelle nicht bekannt. Bitte prüfen Sie Ihre Eingabe und wenden Sie sich ggf. an die Geschäftsstelle.",
+            )
+
+        return email
 
 
 class SymposiumForm(forms.Form):

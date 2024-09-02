@@ -128,6 +128,7 @@ from .forms import (
     EventCategoryFilterForm,
     FTEventMemberForm,
     FT24EventMemberForm,
+    WelcomeMemberForm,
 )
 
 from events.admin import EventMemberAdmin
@@ -805,6 +806,8 @@ def search_event(request):
 def get_mail_to_admin_template_name(registration_form):
     if registration_form == "s":
         mail_to_admin_template_name = "anmeldung"
+    elif registration_form == "w":
+        mail_to_admin_template_name = "wc_anmeldung"
     elif registration_form == "m":
         mail_to_admin_template_name = "mv_anmeldung"
     elif registration_form == "f":
@@ -820,6 +823,8 @@ def get_mail_to_member_template_name(registration_form, attend_status):
             mail_to_member_template_name = "warteliste"
         else:
             mail_to_member_template_name = "bestaetigung"
+    elif registration_form == "w":
+        mail_to_member_template_name = "wc_bestaetigung"
     elif registration_form == "m":
         mail_to_member_template_name = "mv_bestaetigung"
     elif registration_form == "f":
@@ -832,6 +837,8 @@ def get_mail_to_member_template_name(registration_form, attend_status):
 def get_form_template(registration_form):
     if registration_form == "s":
         form_template = "events/add_event_member_tw.html"
+    elif registration_form == "w":
+        form_template = "events/add_event_member_wc.html"
     elif registration_form == "m":
         form_template = "events/add_event_member_mv.html"
     elif registration_form == "f":
@@ -874,6 +881,9 @@ def get_additional_form_data(form, event, form_type):
             data_dict["attend_status"] = "waiting"
         else:
             data_dict["attend_status"] = "registered"
+    elif form_type == "w":
+        data_dict["member_type"] = form.cleaned_data.get("member_type")
+        data_dict["attend_status"] = "registered"
     elif form_type == "f24":
         data_dict["address_line"] = form.cleaned_data["address_line"]
         data_dict["street"] = form.cleaned_data["street"]
@@ -950,6 +960,11 @@ def make_event_registration(request, form, event):
         new_member = EventMember.objects.create(
             event=event, **personal_data_dict, **s_data_dict
         )
+    elif event.registration_form == "w":
+        w_data_dict = get_additional_form_data(form, event, "w")
+        new_member = EventMember.objects.create(
+            event=event, **personal_data_dict, **w_data_dict
+        )
     elif event.registration_form == "m":
         m_data_dict = get_mv_form_data(form)
         new_member = EventMember.objects.create(
@@ -975,7 +990,7 @@ def make_event_registration(request, form, event):
 
     member_label = EventMember.objects.latest("date_created").label
 
-    if event.registration_form == "s":
+    if event.registration_form == "s" or event.registration_form == "w":
         # attend_status = get_additional_form_data(form, event, "s")["attend_status"]
         attend_status = new_member.attend_status
     elif event.registration_form == "m":
@@ -993,6 +1008,8 @@ def make_event_registration(request, form, event):
 
     if event.registration_form == "s":
         formatting_dict.update(get_additional_form_data(form, event, "s"))
+    if event.registration_form == "w":
+        formatting_dict.update(get_additional_form_data(form, event, "w"))
     elif event.registration_form == "m":
         formatting_dict.update(get_mv_form_data(form))
         if formatting_dict["vote_transfer"]:
@@ -1005,7 +1022,7 @@ def make_event_registration(request, form, event):
         formatting_dict.update(get_f24_form_data(form))
 
     update_boolean_values(formatting_dict)
-    if event.registration_form == "m":
+    if event.registration_form == "m" or event.registration_form == "w":
         formatting_dict["member_type"] = dict(form.fields["member_type"].choices).get(
             formatting_dict["member_type"]
         )
@@ -1036,6 +1053,7 @@ def make_event_registration(request, form, event):
             "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
             "Vielen Dank für Ihre Anmeldung. Sie wurden auf die Warteliste gesetzt und werden benachrichtigt, wenn ein Platz frei wird.",
         )[attend_status == "waiting"],
+        "w": "Vielen Dank für Ihre Anmeldung. Wir melden uns bei Ihnen mit weiteren Informationen.",
         "m": "Vielen Dank für deine Anmeldung. Weitere Informationen und der Zugangscode für das Wahltool werden nach dem Anmeldeschluss, wenige Tage vor den Veranstaltungen, versandt.",
         "f": "Vielen Dank für deine Anmeldung. Weitere Informationen werden nach dem Anmeldeschluss versandt.",
         "f24": "Vielen Dank für deine Anmeldung. Weitere Informationen werden nach dem Anmeldeschluss versandt.",
@@ -1110,6 +1128,8 @@ def event_add_member(request, slug):
     if request.method == "GET":
         if event.registration_form == "s":
             form = EventMemberForm(initial={"country": "DE"})
+        elif event.registration_form == "w":
+            form = WelcomeMemberForm(initial={"country": "DE"})
         elif event.registration_form == "m":
             # print(f"event label: {event.label}")
             # form = SymposiumForm(event_label=event.label)
@@ -1130,6 +1150,8 @@ def event_add_member(request, slug):
     if request.method == "POST":
         if event.registration_form == "s":
             form = EventMemberForm(request.POST)
+        elif event.registration_form == "w":
+            form = WelcomeMemberForm(request.POST)
         elif event.registration_form == "m":
             form = MV2023Form(request.POST, event_label=event.label)
         elif event.registration_form == "f":
