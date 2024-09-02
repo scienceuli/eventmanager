@@ -1954,6 +1954,37 @@ def export_ft_members_xls(request):
     return response
 
 
+def export_moodle_participants(request, event_id):
+    if not request.user.is_staff:
+        raise PermissionDenied
+    event = Event.objects.get(id=event_id)
+    participants = event.members.all().filter(attend_status="registered")
+    today = date.today()
+    filename = f"members_{event.label}_{today}.csv"
+    response = HttpResponse(content_type="text/csv")
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    fields_to_export = [
+        "email",
+        "firstname",
+        "lastname",
+        "email",
+    ]
+    header_list = ["username", "firstname", "lastname", "email", "course1", "role1"]
+    writer.writerow(header_list)
+    # Write data rows
+    print("event label: ", event.label)
+    for member in participants:
+        row = [getattr(member, field) for field in fields_to_export]
+        print("row: ", row)
+        row.append(event.label)
+        row.append("student")
+        writer.writerow(row)
+    return response
+
+
 def export_participants(request, event_id):
     if not request.user.is_staff:
         raise PermissionDenied

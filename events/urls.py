@@ -59,6 +59,7 @@ from .views import (
     export_ft_members_csv,
     export_ft_members_xls,
     export_participants,
+    export_moodle_participants,
     documentation_view,
 )
 
@@ -231,6 +232,11 @@ urlpatterns = [
         "export_participants/<int:event_id>/",
         export_participants,
         name="export-participants",
+    ),
+    path(
+        "export_moodle_participants/<int:event_id>/",
+        export_moodle_participants,
+        name="export-moodle-participants",
     ),
     path("admin/documentation/", documentation_view, name="documentation-view"),
 ]
