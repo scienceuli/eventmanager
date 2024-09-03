@@ -125,7 +125,7 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
         }
     )
 
-    if event.registration_form == "s":
+    if event.registration_form == "s" or event.registration_form == "w":
         subject = f"Anmeldung am Kurs {event.name}"
         reply_to = [settings.REPLY_TO_EMAIL]
     elif event.registration_form == "m":
@@ -196,9 +196,17 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
                 "start": event.get_first_day_start_date(),
             }
         )
+    elif event.registration_form == "w":
+        formatting_dict.update(
+            {
+                "start": event.get_first_day_start_date(),
+                "label": event.label,
+            }
+        )
 
     if (
         event.registration_form == "s"
+        or event.registration_form == "w"
         or event.registration_form == "m"
         or event.registration_form == "f24"
     ):
