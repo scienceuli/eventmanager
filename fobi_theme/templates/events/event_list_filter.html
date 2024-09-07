@@ -127,7 +127,9 @@
         <p class="text-left text-base">
           {% if event.registration_possible %}
           {% if event.close_date %}
+          {% if show_registration_date %}
           <span class="mr-2">Anmeldeschluss: {{ event.close_date |date:"d.m.Y"}}</span>
+          {% endif %}
           {% if event.is_full %}
           <span class="italic">Leider ausgebucht!</span>
           {% else %}

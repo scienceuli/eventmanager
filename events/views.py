@@ -452,6 +452,9 @@ class FilteredEventListView(ListView):
 
         events_without_date = self.filterset.qs.filter(show_date=False)
         context["events_without_date"] = events_without_date
+        context["show_registration_date"] = (
+            settings.REGISTRATION_DATE_SHOWN_IN_EVENT_LIST
+        )
 
         return context
 
