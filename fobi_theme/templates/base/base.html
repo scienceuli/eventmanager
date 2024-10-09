@@ -17,7 +17,9 @@
 	<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
 	-->
 	{% block extra_head %}{% endblock %}
-	{% tailwind_css %}
+
+	{% tailwind_preload_css v='2' %}
+	{% tailwind_css v='2' %}
 
 
 
