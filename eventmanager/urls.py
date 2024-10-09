@@ -24,6 +24,7 @@ urlpatterns = [
     # path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
     # path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLS
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
+    path("__reload__/", include("django_browser_reload.urls")),
     path("admin/", admin.site.urls),
     # path("admin/", admin_site.urls),
     path("users/", include("users.urls")),
@@ -74,6 +75,10 @@ urlpatterns = [
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<int:event_id>/pdf/", admin_event_pdf, name="admin-event-pdf"),
     re_path(r"hitcount/", include(("hitcount.urls", "hitcount"), namespace="hitcount")),
+    path(
+        "export_action/",
+        include("admin_export_action.urls", namespace="admin_export_action"),
+    ),
 ]
 
 

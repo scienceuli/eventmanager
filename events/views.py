@@ -574,7 +574,8 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
 
 class EventCollectionDetailView(DetailView):
     model = EventCollection
-    template_name = "events/event_collection_detail.html"
+    # template_name = "events/event_collection_detail.html"
+    template_name = "events/event_collection_detail_V2.html"
     context_object_name = "event_collection"
 
     def get_context_data(self, **kwargs):
@@ -596,7 +597,8 @@ class EventCollectionDetailView(DetailView):
 class EventDetailView(HitCountDetailView):
     login_url = "login"
     model = Event
-    template_name = "events/event_detail_V2.html"
+    # template_name = "events/event_detail_V2.html"
+    template_name = "events/event_detail_V3.html"
     context_object_name = "event"
 
     count_hit = True
@@ -1988,64 +1990,76 @@ def export_moodle_participants(request, event_id):
     return response
 
 
-def export_participants(request, event_id):
+def export_participants(request, event_id, version):
     if not request.user.is_staff:
         raise PermissionDenied
 
-    # opts = self.model._meta
-    # field_names = self.list_display
-    field_names = [
-        "lastname",
-        "firstname",
-        "academic",
-        "company",
-        "street",
-        "postcode",
-        "city",
-        "phone",
-        "email",
-        "vfll",
-        "check",
-        "date_created",
-    ]
-
-    field_names_participants_list = [
-        "lastname",
-        "firstname",
-        "academic",
-        "phone",
-        "email",
-    ]
-
-    invoice_items_list = ["get_cost_property", "order", "get_invoice_number"]
-
     event = Event.objects.get(id=event_id)
 
-    # file_name = unidecode(opts.verbose_name "_" + datetime.now())
-    file_name = f"TeilnehmerInnen_{event.label}_{datetime.now().date()}"
+    if version == "controlling":
+        field_names = [
+            "lastname",
+            "firstname",
+            "academic",
+            "company",
+            "street",
+            "postcode",
+            "city",
+            "phone",
+            "email",
+            "get_memberships_boolean",
+            "get_no_memberships_boolean",
+            # "vfll",
+            # "check",
+            "date_created",
+            "get_order_nr",
+            "get_order_price",
+            "get_payment_receipt",
+        ]
+        file_name = f"Controlling_{event.label}_{datetime.now().date()}"
+        sheet_title = "Controlling"
+    elif version == "participants":
+        field_names = [
+            "lastname",
+            "firstname",
+            "academic",
+            "phone",
+            "email",
+        ]
+        file_name = f"TeilnehmerInnen_{event.label}_{datetime.now().date()}"
+        sheet_title = "TeilnehmerInnen"
+
+    # invoice_items_list = ["get_cost_property", "order", "get_invoice_number"]
+
     blank_line = []
     wb = Workbook()
     ws = wb.active
-    ws.title = "Daten"
-    # Teilnehmerliste
-    ws1 = wb.create_sheet("TN-Liste")
-    # Rechnungen
-    ws2 = wb.create_sheet("Rechnungen")
-    # Controlling
-    ws3 = wb.create_sheet("Controlling")
+    ws.title = sheet_title
+
     ws.append(
         ExportExcelAction.generate_header(EventMemberAdmin, EventMember, field_names)
     )
-    ws1.append(
-        ExportExcelAction.generate_header(
-            EventMemberAdmin, EventMember, field_names_participants_list
-        )
-    )
-    ws2.append(
-        ExportExcelAction.generate_header(OrderItemAdmin, OrderItem, invoice_items_list)
-    )
+
+    # if version == "participants":
+    #     ws.append(
+    #         ExportExcelAction.generate_header(
+    #             EventMemberAdmin, EventMember, field_names
+    #         )
+    #     )
+    # elif version == "controlling":
+    #     ws.append(
+    #         ExportExcelAction.generate_header(
+    #             OrderItemAdmin, OrderItem, invoice_items_list
+    #         )
+    #     )
 
     def iterate(ws, queryset, admin_cls, field_names):
+        from django.contrib import admin
+
+        # get model for admin_cls
+        model_class = EventMember
+        # crate instance of admin_cls
+        admin_cls_instance = admin_cls(model_class, admin.site)
         counter = 1
         for obj in queryset:
             row = [str(counter)]
@@ -2054,13 +2068,23 @@ def export_participants(request, event_id):
                 if (
                     is_admin_field and not field == "check"
                 ):  # check is also admin_field, but we need model field
-                    value = getattr(admin_cls, field)(obj)
+                    # if field == "get_order":
+                    #     get_order = getattr(admin_cls_instance, field)
+                    #     value = get_order(obj)
+                    # else:
+                    #     value = getattr(admin_cls, field)(obj)
+                    method = getattr(admin_cls_instance, field)
+                    value = method(obj)
+                    if isinstance(value, bool):
+                        value = convert_boolean_field(value)
                 else:
                     value = getattr(obj, field)
                     if isinstance(value, datetime) or isinstance(value, date):
                         value = convert_data_date(value)
                     elif isinstance(value, bool):
                         value = convert_boolean_field(value)
+                    elif value == None:
+                        value = ""
 
                 row.append(str(value))
 
@@ -2072,50 +2096,76 @@ def export_participants(request, event_id):
     qs_event_members_registered = qs_event_members.filter(
         Q(attend_status="registered")
     ).annotate(vfll_true=Count("vfll", filter=Q(vfll=True)))
-    qs_event_members_waiting = qs_event_members.filter(Q(attend_status="waiting"))
     admin_cls = EventMemberAdmin
     # registered participants
     iterate(ws, qs_event_members_registered, admin_cls, field_names)
-    ws.append(blank_line)
-    ws.append(blank_line)
-    # waiting participants on same sheet
-    ws.append(["Warteliste"])
-    iterate(ws, qs_event_members_waiting, admin_cls, field_names)
-    # registered participants with less fields on next sheet
-    iterate(
-        ws1,
-        qs_event_members_registered,
-        admin_cls,
-        field_names_participants_list,
-    )
+    if version == "controlling":
+        qs_event_members_waiting = qs_event_members.filter(Q(attend_status="waiting"))
+        ws.append(blank_line)
+        # waiting participants on same sheet
+        ws.append(["", "Warteliste"])
+        iterate(ws, qs_event_members_waiting, admin_cls, field_names)
+        # Speakers
+        ws.append(blank_line)
+        ws.append(["", "Referentinnen"])
+        for speaker in event.speaker.all():
+            ws.append(["", speaker.last_name, speaker.first_name, speaker.email])
+        # Event Details
+        ws.append(blank_line)
+        ws.append(["", "Veranstaltungsdaten"])
+        ws.append(["", "Veranstaltungstitel:", event.name])
+        ws.append(["", "Veranstaltungsformat:", event.eventformat.name])
+        ws.append(
+            [
+                "",
+                "Termin:",
+                (
+                    datetime.strftime(event.first_day, "%d.%m.%Y")
+                    if event.first_day
+                    else ""
+                ),
+            ]
+        )
+        ws.append(["", "Ort:", event.location.title])
+        ws.append(
+            ["", "Veranstalter:", event.organizer.name if event.organizer else ""]
+        )
+        # for field_name in field_names:
+        #     value = getattr(event, field_name)
+        #     if isinstance(value, datetime) or isinstance(value, date):
+        #         value = convert_data_date(value)
+        #     elif isinstance(value, bool):
+        #         value = convert_boolean_field(value)
+        #     ws.append(["", field_name, value])
+
     # invoices items on next sheet
-    qs_order_items = OrderItem.objects.filter(event=event)
-    admin_cls = OrderItemAdmin
-    iterate(ws2, qs_order_items, admin_cls, invoice_items_list)
+    # qs_order_items = OrderItem.objects.filter(event=event)
+    # admin_cls = OrderItemAdmin
+    # iterate(ws2, qs_order_items, admin_cls, invoice_items_list)
 
     # sum of costs
-    total_costs = sum(item.get_cost_property for item in qs_order_items)
+    # total_costs = sum(item.get_cost_property for item in qs_order_items)
 
-    ws2.append(blank_line)
-    ws2.append(["Summe", total_costs])
+    # ws2.append(blank_line)
+    # ws2.append(["Summe", total_costs])
 
     ws = style_output_file(ws)
-    ws1 = style_output_file(ws1)
-    ws2 = style_output_file(ws1)
+    # ws1 = style_output_file(ws1)
+    # ws2 = style_output_file(ws1)
 
     # Controlling
-    ws3.append(["Veranstaltung:", event.name])
-    ws3.append(["Anz. TN:", len(qs_event_members_registered)])
-    ws3.append(["Einnahmen:", total_costs])
-    total_vfll_true = sum(obj.vfll_true for obj in qs_event_members_registered)
-    ws3.append(["vfll Mitglieder:", total_vfll_true])
-    memberships_list = []  #
-    # obj.memberships is str repr of list so it must be converted to list
-    for obj in qs_event_members_registered:
-        if not obj.vfll:
-            memberships_list.extend(ast.literal_eval(obj.memberships))
-    for ms_short, ms_long in MEMBERSHIP_CHOICES:
-        ws3.append([ms_long, memberships_list.count(ms_short)])
+    # ws3.append(["Veranstaltung:", event.name])
+    # ws3.append(["Anz. TN:", len(qs_event_members_registered)])
+    # ws3.append(["Einnahmen:", total_costs])
+    # total_vfll_true = sum(obj.vfll_true for obj in qs_event_members_registered)
+    # ws3.append(["vfll Mitglieder:", total_vfll_true])
+    # memberships_list = []  #
+    # # obj.memberships is str repr of list so it must be converted to list
+    # for obj in qs_event_members_registered:
+    #     if not obj.vfll:
+    #         memberships_list.extend(ast.literal_eval(obj.memberships))
+    # for ms_short, ms_long in MEMBERSHIP_CHOICES:
+    #     ws3.append([ms_long, memberships_list.count(ms_short)])
 
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"

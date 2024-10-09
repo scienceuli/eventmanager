@@ -1,4 +1,5 @@
 import markdown
+import io, csv
 from datetime import date, datetime
 
 from django.contrib import admin, messages
@@ -19,10 +20,8 @@ from django.contrib.admin.models import LogEntry
 
 from django.contrib.admin import SimpleListFilter
 
-
-import io, csv
-
 from mapbox_location_field.admin import MapAdmin
+from admin_export_action.admin import export_selected_objects
 
 # for inline actions, from 3rd party module
 from inline_actions.admin import InlineActionsMixin
@@ -30,7 +29,12 @@ from inline_actions.admin import InlineActionsModelAdminMixin
 
 from fieldsets_with_inlines import FieldsetsInlineMixin
 
-from .actions import export_as_xls, import_from_csv, copy_member_instances
+from .actions import (
+    export_as_xls,
+    import_from_csv,
+    copy_member_instances,
+    export_members_to_csv,
+)
 
 from .validators import csv_content_validator
 
@@ -348,6 +352,7 @@ class EventMemberAdmin(admin.ModelAdmin):
         "date_created",
         "via_form",
         "mail_to_admin",
+        "get_order_nr",
     ]
     list_filter = [
         "event",
@@ -373,6 +378,7 @@ class EventMemberAdmin(admin.ModelAdmin):
                 "classes": ("collapse",),
                 "fields": (
                     "vfll",
+                    "member_type",
                     "memberships",
                     "check",
                     "attention",
@@ -389,7 +395,65 @@ class EventMemberAdmin(admin.ModelAdmin):
             },
         ),
     )
-    actions = [export_as_xls, import_from_csv, copy_member_instances]
+    actions = [
+        export_as_xls,
+        export_members_to_csv,
+        export_selected_objects,
+        import_from_csv,
+        copy_member_instances,
+    ]
+
+    @admin.display(description="RechNr")
+    def get_order_nr(self, obj):
+        order = (
+            Order.objects.filter(
+                email=obj.email,
+                items__event=obj.event,  # Join through OrderItem to match the event
+            )
+            .distinct()
+            .first()
+        )  # Use distinct() to avoid duplicates
+
+        return order.get_order_number if order else ""
+
+    @admin.display(description="Betrag")
+    def get_order_price(self, obj):
+        order_item = OrderItem.objects.filter(
+            event=obj.event, order__email=obj.email
+        ).first()
+
+        return order_item.get_cost_property if order_item else ""
+
+    @admin.display(description="Zahlungseingang")
+    def get_payment_receipt(self, obj):
+        order = (
+            Order.objects.filter(
+                email=obj.email,
+                items__event=obj.event,  # Join through OrderItem to match the event
+            )
+            .distinct()
+            .first()
+        )  # Use distinct() to avoid duplicates
+
+        return (
+            datetime.strftime(order.payment_date, "%d.%m.%Y")
+            if order.payment_receipt
+            else ""
+        )
+
+    def get_memberships_boolean(self, obj):
+        if obj.vfll or obj.memberships != "[]":
+            return True
+        return False
+
+    get_memberships_boolean.short_description = "Mitglied"
+
+    def get_no_memberships_boolean(self, obj):
+        if not obj.vfll and obj.memberships == "[]":
+            return True
+        return False
+
+    get_no_memberships_boolean.short_description = "Nicht-Mitglied"
 
     def get_urls(self):
         urls = super().get_urls()

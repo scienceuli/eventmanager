@@ -1,0 +1,787 @@
+{% extends 'base/base.html' %}
+
+{% load thumbnail embed_video_tags markdownify %}
+
+
+{% block title %}Veranstaltung Details{% endblock title %}
+{% block breadcrumb %}Veranstaltung Detail{% endblock breadcrumb %}
+
+{% block searchfield %}
+<div class="toggle hidden md:flex w-full md:w-auto">
+    <form action="{% url 'event-filter' %}" method="GET">
+        <div class="pt-2 relative mx-auto text-gray-600">
+            <input class="border-2 border-gray-300 bg-white h-10 px-5 pr-16 rounded-lg text-sm focus:outline-none" type="search" name="search" placeholder="Suche">
+            <button type="submit" class="absolute right-0 top-0 mt-5 mr-4">
+                <svg class="text-gray-600 h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px" viewBox="0 0 56.966 56.966" style="enable-background:new 0 0 56.966 56.966;" xml:space="preserve" width="512px" height="512px">
+                    <path d="M55.146,51.887L41.588,37.786c3.486-4.144,5.396-9.358,5.396-14.786c0-12.682-10.318-23-23-23s-23,10.318-23,23  s10.318,23,23,23c4.761,0,9.298-1.436,13.177-4.162l13.661,14.208c0.571,0.593,1.339,0.92,2.162,0.92  c0.779,0,1.518-0.297,2.079-0.837C56.255,54.982,56.293,53.08,55.146,51.887z M23.984,6c9.374,0,17,7.626,17,17s-7.626,17-17,17  s-17-7.626-17-17S14.61,6,23.984,6z" />
+                </svg>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock searchfield %}
+
+{% block extra_head %}
+<!-- Alpine Plugins -->
+<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/focus@3.x.x/dist/cdn.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.3/dist/cdn.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.css" rel="stylesheet" />
+<style>
+    .doc-description a {
+        color: #ed1c24;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="text-gray-600 body-font">
+    <div class="container px-5 py-12 mx-auto flex flex-wrap">
+        <div class="flex relative flex-col  md:w-2/3 pt-4 pb-4 mx-auto">
+            <div class="flex">
+                <span class="text-left font-bold text-vfllred text-xl mr-4">{% if event.category.singular %}
+                    {{ event.category.singular }}{% else %}{{ event.category }}{% endif %}</span>
+                <span class="text-left font-bold text-vfllred text-xl">|</span>
+                <span class="text-left font-bold text-vfllred text-xl ml-4">{{ event.eventformat }}</span>
+            </div>
+            <div class="flex">
+                <span class="text-left text-xl">
+                    {% if event.show_date %}
+
+                    {% with event.event_days.all|first as first %}
+                    {{ first.start_date|date:"l, j. F Y"}}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"l, j. F Y" }}
+                    {% endif %}
+                    {% endwith %}
+                    {% else %}
+                    Datum noch offen
+                    {% endif %}
+
+                </span>
+            </div>
+
+            <div class="flex py-2">
+                <span class="text-left font-bold text-3xl">{{ event.name }}</span>
+                {% if event.video and event.show_video %}
+                {% video event.video as my_video %}
+                <div class="ml-2" x-data="{videoModalIsOpen: false}">
+                    <button @click="videoModalIsOpen = true, $refs.video.play()" type="button" class="inline-flex cursor-pointer items-center gap-2 whitespace-nowrap rounded-md bg-black px-4 py-2 text-center text-sm font-medium tracking-wide text-white transition hover:opacity-75 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black active:opacity-100 active:outline-offset-0 ">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" class="w-4 h-4">
+                            <path fill-rule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clip-rule="evenodd" />
+                        </svg>
+                        Video
+                    </button>
+                    <div x-cloak x-show="videoModalIsOpen" x-transition.opacity.duration.200ms x-trap.inert.noscroll="videoModalIsOpen" @keydown.esc.window="videoModalIsOpen = false, $refs.video.pause()" @click.self="videoModalIsOpen = false, $refs.video.pause()" class="fixed inset-0 z-30 flex items-center justify-center bg-black/20 p-4 backdrop-blur-md lg:p-8" role="dialog" aria-modal="true" aria-labelledby="videoModalTitle">
+                        <!-- Modal Dialog -->
+                        <div x-show="videoModalIsOpen" x-transition:enter="transition ease-out duration-300 delay-200" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0" class="aspect-video relative">
+                            <!-- Close Button -->
+                            <button type="button" x-show="videoModalIsOpen" @click="videoModalIsOpen = false, $refs.video.pause()" x-transition:enter="transition ease-out duration-200 delay-500" x-transition:enter-start="opacity-0 scale-0" x-transition:enter-end="opacity-100 scale-100" class="absolute -top-12 right-0 flex items-center justify-center rounded-full bg-neutral-50 p-1.5 text-neutral-900 hover:opacity-75 active:opacity-100 dark:bg-neutral-900 dark:text-white" aria-label="close modal">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" stroke="currentColor" fill="none" stroke-width="1.4" class="w-4 h-4">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                            <!-- Video -->
+                            <iframe class="w-full h-full" src="{{ my_video.url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
+                        </div>
+                    </div>
+                </div>
+                {% endvideo %}
+                {% endif %}
+
+            </div>
+            <div class="flex">
+                {% if event.event_collection %}
+                <span class="text-left text-xl">Teil des Bildungsangebots <span class="italic"><a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{ event.event_collection.name }}</a></span></span>
+                {% endif %}
+            </div>
+            <!-- Termin -->
+            <div class="relative flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-calendar-alt"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Termine</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        {% if event.show_date %}
+                        {% for day in event.event_days.all %}
+                        <div class="md:hidden">{{ day.start_date|date:"D, j.m.Y"}}</div>
+                        <div class="hidden md:block">{{ day.start_date|date:"D, j. F Y"}}</div>
+                        <div class="">
+                            {% if day.start_time %}
+                            {{day.start_time|date:"H:i"}}{% if day.start_time_remark %} {{day.start_time_remark}}{% endif %}&ndash;{{day.end_time|date:"H:i"}}{% if day.end_time_remark %} {{day.end_time_remark}}{% endif %}
+                            {% else %}
+                            &nbsp;
+                            {% endif %}
+                        </div>
+
+                        {% endfor %}
+                        {% else %}
+                        <div>Nach Vereinbarung mit den Teilnehmenden</div>
+
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <!-- Ende Termin -->
+
+            <!-- Dauer -->
+            {% if event.duration %}
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-clock"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Dauer</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        {{ event.duration }}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Ende Dauer -->
+
+            <!-- EventURL -->
+            {% if event.eventurl %}
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fa fa-link" aria-hidden="true"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Website</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        <a href="{{ event.eventurl }}">Link zur Veranstaltung</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Ende EventURL -->
+
+            <!-- Location -->
+            {% if event.category.name != "Onlineseminare" and event.location %}
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fa fa-globe" aria-hidden="true"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Ort</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        <p class="text-left ">{{ event.location.title }}</p>
+                        <p class="text-left ">{{ event.location.get_complete_address|linebreaksbr }}</p>
+                        {% if event.location.url %}
+                        <p><a href="{{ event.location.url }}">Webseite</a></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Ende Location -->
+
+            <!-- Veranstalter (Organizer) -->
+            {% if event.organizer %}
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-arrow-alt-circle-right"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Veranstalter</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        <p class="text-left ">{{ event.organizer.name }}</p>
+                        {% if event.organizer.contact %}
+                        <p class="text-left ">{{ event.organizer.contact }}</p>
+                        {% endif %}
+                        {% if event.organizer.url %}
+                        <p class="text-left "><a href="{{ event.organizer.url }}">Website</a></p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Ende Veranstalter (Organizer) -->
+
+
+            <!-- Dozent -->
+
+            {% if event.speaker.all %}
+
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-chalkboard-teacher"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Dozent*in{% if event.speaker.all|length > 1 %}nen{% endif %}</p>
+                    <div class="grid grid-cols-1 gap-2">
+                        <p class="leading-relaxed">
+                            {% for speaker in event.speaker.all %}
+                            {% if speaker.email or speaker.url or speaker.bio %}
+                            <button class="hover:text-vfllred inline-block" onclick="toggleModal('modal-id-{{forloop.counter}}')">
+                                {{speaker.full_name}}{% if not forloop.last %}, {% endif %}
+                            </button>
+                            {% else %}
+                            <span class="">
+                                {{speaker.full_name}}{% if not forloop.last %}, {% endif %}
+                            </span>
+                            {% endif %}
+                            {% endfor %}
+                            {% for speaker in event.speaker.all %}
+                            <div class="hidden overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none justify-center items-center" id="modal-id-{{forloop.counter}}">
+                                <div class="relative w-auto my-6 mx-auto max-w-3xl">
+                                    <!--content-->
+                                    <div class="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
+                                        <!--header-->
+                                        <div class="flex items-start justify-between p-5 border-b border-solid border-blueGray-200 rounded-t">
+                                            <h3 class="text-3xl font-semibold">
+                                                {{ speaker.full_name }}
+                                            </h3>
+                                            <button class="p-1 ml-auto bg-transparent border-0 text-black opacity-5 float-right text-3xl leading-none font-semibold outline-none focus:outline-none" onclick="toggleModal('modal-id')">
+                                                <span class="bg-transparent text-black opacity-5 h-6 w-6 text-2xl block outline-none focus:outline-none">
+                                                    ×
+                                                </span>
+                                            </button>
+                                        </div>
+                                        <!--body-->
+                                        <div class="relative p-6 flex-auto">
+                                            {% if speaker.image %}
+                                            <div class="absolute top-0 right-0">
+                                                <img src="{{speaker.image.url}}" class="rounded-full w-28 h-28 object-cover border-solid border-gray-500 border-2 ml-4 mr-4 -mt-14">
+                                            </div>
+                                            {% endif %}
+                                            <p>
+                                                {% if speaker.email %}
+                                                <span>{{ speaker.email }}</span>
+                                                {% endif %}
+                                                {% if speaker.url %}
+                                                <span>{% if speaker.email %} | {% endif %}<a href="{{ speaker.url }}">
+                                                        {{ speaker.url }}</a></span>
+                                                {% endif %}
+                                                {% if speaker.bio %}
+                                                <p class="my-4 text-blueGray-500 text-lg leading-relaxed">
+                                                    {{ speaker.bio }}
+                                                </p>
+                                                {% endif %}
+                                        </div>
+                                        <!--footer-->
+                                        <div class="flex items-center justify-end p-6 border-t border-solid border-blueGray-200 rounded-b">
+                                            <button class="text-red-500 background-transparent font-bold uppercase px-6 py-2 text-sm outline-none focus:outline-none mr-1 mb-1 ease-linear transition-all duration-150" type="button" onclick="toggleModal('modal-id-{{forloop.counter}}')">
+                                                Schließen
+                                            </button>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="hidden opacity-25 fixed inset-0 z-40 bg-black" id="modal-id-backdrop"></div>
+
+                            {% endfor %}
+                        </p>
+                        <p class="text-sm">(Namen anklicken für mehr Infos)</p>
+                    </div>
+                </div>
+            </div>
+
+
+            {% endif %}
+            <!-- Ende Dozent-->
+
+
+            <!-- Zielgruppe -->
+            {% if event.target_group %}
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-users"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Für wen?</p>
+                    <p class="leading-relaxed">
+
+                        {{ event.target_group }}
+
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Ende Zielgruppe -->
+
+            <!-- Verpflegung -->
+            {% if event.catering %}
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-utensils"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Verpflegung</p>
+                    <p class="leading-relaxed">
+
+                        {{ event.target_group }}
+
+                    </p>
+                </div>
+            </div>
+
+            {% endif %}
+            <!-- Ende Verpflegung-->
+
+            <!-- Übernachtung -->
+            {% if event.lodging %}
+
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-bed"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Übernachtung</p>
+                    <p class="leading-relaxed">
+
+                        {{ event.lodging|safe }}
+
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+            <!-- Ende Übernachtung -->
+
+
+            <!-- Kosten -->
+            {% if event.premium_price or event.price or event.fees %}
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-euro-sign"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Kosten</p>
+                    <p class="leading-1 md:leading-relaxed">
+
+                        {% if event.price %}
+                        {{ event.price }}&nbsp;€ für Mitglieder*
+                        {% if event.premium_price and not event.vfll_only %}
+                        /&nbsp;{{ event.premium_price }}&nbsp;€ für Nichtmitglieder
+                        {% endif %}
+                        <br><small>*VFLL, VdÜ, BücherFrauen, Illustratoren Organisation, Berufsverband Text und Konzept, Selfpublisher-Verband, Junge Verlags- und Medienmenschen, texttreff.de</small>
+                        {% else %}
+                        {{ event.fees|safe }}
+                        {% endif %}
+
+                    </p>
+                </div>
+            </div>
+
+            {% endif %}
+            <!-- Ende Kosten -->
+
+            <!-- Kontakt, mehr Infos -->
+            {% if event.sponsors.all %}
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-utensils"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Weitere Infos</p>
+                    <p class="leading-relaxed">
+                        {% for sponsor in event.sorted_sponsors %}
+                        {% spaceless %}
+                        {{ sponsor.first_name }}&nbsp;{{ sponsor.last_name }}{% if sponsor.email %},&nbsp;
+                        {{ sponsor.email }}{% endif %}{% if sponsor.phone %},&nbsp;
+                        {{ sponsor.phone }}
+                        {% endif %}
+                        {% if not forloop.last %}
+                        <br />
+                        {% endif %}
+                        {% endspaceless %}
+                        {% endfor %}
+                    </p>
+                </div>
+            </div>
+
+            {% endif %}
+            <!-- Ende Kontakt , mehr Infos-->
+
+            <!-- Anmeldung -->
+            {% if event.show_registration_boolean and show_registration %}
+            <div class="flex">
+                <div class="mr-4 flex flex-col items-center">
+                    <div>
+                        <div class="flex-shrink-0 w-10 h-10 bg-red-100 text-red-500 rounded-full inline-flex items-center justify-center z-10">
+                            <span class="text-xl"><i class="fas fa-calendar-plus"></i></span>
+                        </div>
+                    </div>
+                    <div class="h-full w-px bg-gray-300 dark:bg-slate-500"></div>
+                </div>
+                <div class="pt-1 pb-8">
+                    <p class="mb-2 text-xl font-bold text-gray-900 dark:text-slate-300">Anmeldung</p>
+                    <div class="flex mx-auto">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+
+                            <p class="text-sm md:text-base leading-relaxed mr-4">{{ registration_text|safe }}</p>
+
+
+
+                            {% if show_button %}
+
+                            {% if event.direct_payment and event.is_open_for_registration %}
+                            <div class="item">
+                                <div class="bg-gray-200 font-bold flex-shrink text-center text-vfllred px-2">
+                                    <form action="{% url 'shop:cart-add' event.id %}" method="post">
+                                        {{ cart_event_form }}
+                                        {% csrf_token %}
+                                        <input type="submit" value="In den Warenkorb{% if additional_text %}*{% endif %}">
+                                    </form>
+
+                                </div>
+                            </div>
+                            {% elif event.is_open_for_registration %}
+
+                            <div class="item">
+                                <div class="">
+                                    <a class=' bg-gray-200 font-bold  text-vfllred ml-2 px-2 ' href="{% url 'event-add-member' event.slug %}">
+                                        {{ registration_button  }}
+                                    </a>
+                                </div>
+                            </div>
+                            {% elif not event.is_open_for_registration %}
+
+                            <div class="item">
+                                <div class="">
+                                    <span class='font-bold  text-vfllred ml-2 px-2 '>
+                                        Anmeldung möglich ab {{ event.open_date | date:'d.m.y'}}
+                                    </span>
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+
+                    </div>
+                    {% if additional_text %}
+                    <div class="leading-relaxed text-xs mr-4">{{ additional_text }}</div>
+
+                    {% endif %}
+                </div>
+            </div>
+
+            {% endif %}
+            <!-- Ende Anmeldung -->
+
+
+            <!-- Beschreibung -->
+
+            <div class="pt-8 flex-col w-2/3 mx-auto">{{ event.description|safe }}</div>
+
+            {% if pc_events or show_action_button or event.video and event.eventimage %}
+
+            <div>
+
+                <img alt='' class='w-2/3' src='{{ event.eventimage.image.url }}'>
+
+            </div>
+            {% endif %}
+            <!-- Ende Beschreibung -->
+
+            <!-- Voraussetzungen -->
+            {% if event.prerequisites %}
+            <div class="pt-4 flex-col md:w-2/3 mx-auto">
+                <div class="pt-2"><span class="font-bold text-gray-900 text-xl">Voraussetzungen</span></div>
+
+                <div class="pt-1">{{ event.prerequisites|safe }}</div>
+
+            </div>
+            {% endif %}
+            <!-- Ende Voraussetzungen -->
+
+            <!-- Lernziele -->
+            {% if event.objectives %}
+            <div class="pt-4 flex-col md:w-2/3 mx-auto">
+                <div class="pt-2"><span class="font-bold text-gray-900 text-xl">Lernziele</span></div>
+
+                <div class="pt-1">{{ event.objectives|safe }}</div>
+
+            </div>
+            {% endif %}
+
+            <!-- Ende Lernziele -->
+
+            <!-- Methoden -->
+            {% if event.methods %}
+            <div class="pt-4 flex-col md:w-2/3 mx-auto">
+                <div class="pt-2"><span class="font-bold text-gray-900 text-xl">Methoden</span></div>
+
+                <div class="pt-1">{{ event.methods|safe }}</div>
+
+            </div>
+            {% endif %}
+
+            <!-- Ende Methoden -->
+
+            <!-- Beteiligung des VFLL -->
+            {% if event.contribution and event.category.name == "vfll_intern" %}
+            <div class="pt-4 flex-col md:w-2/3 mx-auto">
+                <div class="pt-2"><span class="font-bold text-gray-900 text-xl">VFLL-Beteiligung</span></div>
+
+                <div class="pt-1">{{ event.contribution }}</div>
+
+            </div>
+            {% endif %}
+
+            <!-- Ende Beteiligung des VFLL -->
+
+            <!-- Hinweise -->
+            {% if event.notes %}
+
+            <div class="pt-4 flex-col md:w-2/3 mx-auto">
+                <div class="pt-2"><span class="font-bold text-gray-900 text-xl">Hinweise</span></div>
+
+                <div class="pt-1">{{ event.notes|safe }}</div>
+
+            </div>
+            {% endif %}
+            <!-- Ende Hinweise -->
+
+            <!-- Sponsoren -->
+            {% if event.externalsponsors.all %}
+            <div class="pt-4 flex-col md:w-2/3 mx-auto">
+                <div class="pt-2"><span class="font-bold text-gray-900 text-xl">Sponsoren</span></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    {% for externalsponsor in event.externalsponsors.all %}
+
+                    <a href='{{ externalsponsor.url }}'><img alt='' class='w-64  block mx-auto' src='{{ externalsponsor.image.url }}'></a>
+
+                    {% comment %}
+                    <div class="max-w-md px-4">
+                        <div class='relative m-0 shadow-lg flex bg-white'>
+                            <div class='flex-no-shrink'>
+                                <img alt='' class='w-48 h-48 block mx-auto' src='{{ externalsponsor.image.url }}'>
+                            </div>
+                            <div class='flex-1 card-block relative'>
+                                <div class="p-6">
+                                    <h4 class='font-medium text-2xl mb-3'>{{ externalsponsor.name }}</h4>
+                                    <p class='leading-normal'>{{ externalsponsor.text }}</p>
+                                    {% if externalsponsor.url %}
+                                    <p class="text-sm text-grey block mt-6"><a href='{{ externalsponsor.url }}'>Webseite</a></p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endcomment %}
+
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% endif %}
+            <!-- Ende Sponsoren -->
+
+            <!-- download pdf -->
+            {% if event.pdf_file %}
+            <div class="pt-4 flex-col md:w-2/3 mx-auto">
+                <div class="pt-2"><span class="font-bold text-gray-900 text-xl">Programm</span></div>
+                {% comment %}
+                <div class="pt-1"><a href="{{ event.pdf_file.url }}" download="{{ event.pdf_file.url }}"><span class="text-vfllred">Hier</span></a> gibt es das ausführliche Programm zum Download.</div>
+                {% endcomment %}
+                <div class="pt-1"><a href="{% url 'pdf-download' event.slug %}"><span class="text-vfllred">Hier</span></a> gibt es das ausführliche Programm zum Download.</div>
+
+            </div>
+            {% endif %}
+
+            <!-- Programm -->
+            {% if event.agendas.all %}
+            <div class="pt-4 flex-col md:w-2/3 mx-auto">
+                <div class="pt-2"><span class="font-bold text-vfllred text-2xl">Programm</span></div>
+                {% for agenda in event.agendas.all %}
+                <div class="pt-2"><span class="text-sm font-semibold">{{agenda.session_name}}</span>
+                    {% if agenda.start_time %}
+                    {% spaceless %}
+                    <span class="text-sm font-light">({{agenda.start_time|date:"H:i"}}{% if agenda.end_time %}&ndash;{{agenda.end_time|date:"H:i"}}{% endif %})</span>
+                    {% endspaceless %}
+                    {% endif %}
+                </div>
+                <div class="pt-1">{{ agenda.description|safe }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <!-- Ende Programm -->
+
+
+            <!-- event_documents -->
+            {% if event_documents %}
+            {% for doc in event_documents %}
+            <div class="pt-2 flex-col md:w-2/3 mx-auto">
+                <div class="{% if doc.emphasize %}bg-gray-100 pl-3 pr-3 pt-2 pb-2{% endif %}">
+                    <div class=""><span class="font-bold text-gray-900 text-xl">{{doc.title}}</span></div>
+                    <div class="doc-description pt-2">{{doc.description|markdownify}}</div>
+                    {% comment %}
+                    <div class="pt-1"><a href="{{ event.pdf_file.url }}" download="{{ event.pdf_file.url }}"><span class="text-vfllred">Hier</span></a> gibt es das ausführliche Programm zum Download.</div>
+                    {% endcomment %}
+                    <div class="pt-1"><a href="{% url 'doc-download' doc.id %}"><span class="text-vfllred">Download</span></a></div>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <!-- Ende event_document -->
+
+            {% comment %}
+            <!-- Video for mobile and non mobile -->
+            {% if event.video and event.show_video %}
+            {% video event.video as my_video %}
+            <!-- non mobile -->
+            <div class="hidden md:block absolute top-0 right-4 w-2/5 ">
+                <div class="aspect-w-16 aspect-h-9">
+                    <iframe src="{{ my_video.url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+            <!-- mobile-->
+            <div class="md:hidden">
+                <div class="aspect-w-16 aspect-h-9">
+                    <iframe src="{{ my_video.url }}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            {% endvideo %}
+            {% endif %}
+            <!-- Ende Video for mobile and non mobile -->
+            {% endcomment %}
+
+            {% if pc_events and show_action_button %}
+
+            <!-- Pay less Modal powered by alpine.js -->
+            <div x-data="{ 'showModal': false }" @keydown.escape="showModal = false">
+                <!-- Trigger for Modal -->
+                <div class="absolute {% if event.video and event.show_video %}top-10{% else %}top-0 {% endif %} {% if event.video and event.show_video %}right-6 {% else %}right-6 md:right-4{% endif %} w-2/5 text-right">
+                    <button type="button" @click="showModal = true" class="animate-pulse inline-block w-32 md:w-48 h-32 md:h-48 rounded-full  font-bold text-sm md:text-xl text-center uppercase align-middle  border border-solid  shadow-none cursor-pointer  leading-pro bg-red-100 border-vfllred transition ease-in-out delay-150  hover:-translate-y-1 hover:scale-110  duration-300">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</button>
+                </div>
+
+                <!-- Modal -->
+                <div class="fixed inset-0 z-30 flex items-center justify-center overflow-auto bg-white/50" x-show="showModal">
+                    <!-- Modal inner -->
+                    <div class="px-10 mx-auto flex flex-col items-center justify-center ring-2 ring-vfllred bg-gray-300 rounded-md shadow-lg transition delay-150 duration-700 ease-in-out" @click.away="showModal = false" x-transition:enter="motion-safe:ease-out duration-300" x-transition:enter-start="opacity-0 scale-90" x-transition:enter-end="opacity-100 scale-100">
+                        <!-- Title / Close-->
+
+                        <div class="">
+                            <h5 class="mx-3 text-2xl font-bold max-w-none"><span class="text-gray-700">{% if payless_collection.title %}{{payless_collection.title|safe}}{% else %}{{payless_collection.name}}{% endif %}</span></h5>
+
+                        </div>
+                        <!-- content -->
+                        {% if payless_collection.type == 'n' %}
+                        {% for event in pc_events %}
+                        <div class="mx-4 pt-2 text-center font-semibold text-vfllred"><a href="{% url 'event-detail' event.slug %}">{{event.name}}</a></div>
+                        <p class="mx-4">{{ event.oneliner }}</p>
+                        {% endfor %}
+                        {% elif payless_collection.type == 'p' %}
+                        <p class="pt-2 text-center font-semibold text-vfllred">bei Buchung aller Veranstaltungen des Bildungsangebots: <a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{event.event_collection.name}}</a></p>
+
+                        {% endif %}
+                        <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.get_action_prices.0 }}&thinsp;€ statt {{ payless_collection.get_action_prices.1 }}&thinsp;€</p>
+                        <p>Preis für Mitglieder</p>
+                        <p class="pt-2 text-xl font-bold text-vfllred">{{ payless_collection.get_action_prices.2 }}&thinsp;€ statt {{ payless_collection.get_action_prices.3 }}&thinsp;€</p>
+                        <p>Preis für Nichtmitglieder</p>
+                        <div class="pt-4">
+                            <button type="button" class="z-50 cursor-pointer" @click="showModal = false">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ende Payless Modal -->
+
+            {% endif %}
+
+            <!-- show event image here if no video an no pc_events and no action_button -->
+            {% if not pc_events and not show_action_button and not event.video and event.eventimage %}
+            <div class="invisible md:visible absolute top-0 right-4 w-2/5 ">
+                <div class="aspect-w-16 aspect-h-9">
+                    <figure class="w-4/5 lg:w-2/3">
+                        <img class="h-auto max-w-full rounded-lg shadow-xl dark:shadow-gray-800" src="{{ event.eventimage.image.url }}" alt="{{ event.eventimage.description }}">
+                        {% if event.eventimage.caption %}
+                        <figcaption class="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">{{ event.eventimage.caption }}</figcaption>
+                        {% endif %}
+                    </figure>
+
+                </div>
+            </div>
+            {% endif %}
+
+
+
+
+        </div>
+    </div>
+</section>
+
+{% endblock content %}
+
+{% block extrascript %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.7.0/flowbite.min.js"></script>
+
+<script type="text/javascript">
+    function toggleModal(modalID) {
+        document.getElementById(modalID).classList.toggle("hidden");
+        document.getElementById(modalID + "-backdrop").classList.toggle("hidden");
+        document.getElementById(modalID).classList.toggle("flex");
+        document.getElementById(modalID + "-backdrop").classList.toggle("flex");
+    }
+</script>
+
+
+
+
+
+{% endblock extrascript %}

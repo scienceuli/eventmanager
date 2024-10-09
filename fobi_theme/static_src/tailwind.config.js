@@ -14,9 +14,10 @@ module.exports = {
      * Set mode to "jit" if you want to generate your styles on-demand as you author your templates;
      * Set mode to "aot" if you want to generate the stylesheet in advance and purge later (aka legacy mode).
      */
-    mode: "jit",
-    
-    purge: [
+    /** not needed in tw 3 
+     * mode: "jit", 
+    */
+    content: [
         /**
          * HTML. Paths to Django template files that will contain Tailwind CSS classes.
          */
@@ -51,7 +52,7 @@ module.exports = {
          */
         // '../../**/*.py'
     ],
-    darkMode: false, // or 'media' or 'class'
+    /** darkMode: false, // or 'media' or 'class' */
     theme: {
         screens: {
             sm: '480px',
@@ -60,14 +61,15 @@ module.exports = {
             xl: '1440px',
         },
         colors: {
-            gray: colors.coolGray,
-            blue: colors.lightBlue,
+            gray: colors.gray,
+            blue: colors.sky,
             vfllred: '#ed1c24',
             red: colors.red,
             white: colors.white,
             green: colors.emerald,
             success: '#6B8E23',
             pink: colors.fuchsia,
+            black: colors.black,
         },
         fontFamily: {
             sans: ['Noto Sans', 'Roboto', 'sans-serif'],

@@ -1,3 +1,4 @@
+import csv
 from openpyxl import Workbook
 from django.shortcuts import render
 from django.core.exceptions import PermissionDenied
@@ -21,9 +22,14 @@ def style_output_file(file):
         cell.font = black_font
 
     for column_cells in file.columns:
-        length = max(len((cell.value)) for cell in column_cells if cell.value)
-        length += 2
-        file.column_dimensions[column_cells[0].column_letter].width = length
+        if len(column_cells) > 0:
+            length = max(
+                len((cell.value))
+                for cell in column_cells
+                if cell.value and len(cell.value) > 0
+            )
+            length += 2
+            file.column_dimensions[column_cells[0].column_letter].width = length
 
     return file
 
@@ -136,3 +142,47 @@ def copy_member_instances(modeladmin, request, queryset):
 copy_member_instances.short_description = (
     "Ausgewählte TN kopieren und anderem Event zuordnen"
 )
+
+
+def export_members_to_csv(modeladmin, request, queryset):
+    """
+    Admin action to export selected members to a CSV file.
+
+    """
+    if not request.user.is_staff:
+        raise PermissionDenied
+
+    # filename
+    today = date.today()
+    filename = f"members_{today}.csv"
+
+    # Define the response with CSV headers
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+
+    # Dynamically get field names from the request, or use default fields
+    fields_to_export = [
+        "email",
+        "firstname",
+        "lastname",
+        "email",
+    ]
+
+    # Write the header row
+    # writer.writerow(fields_to_export)
+    header_list = ["username", "firstname", "lastname", "email", "course1", "role1"]
+    writer.writerow(header_list)
+
+    # for course1 take event label = short name, role1 = 'student'
+
+    # Write data rows
+    for member in queryset:
+        row = [getattr(member, field) for field in fields_to_export]
+        writer.writerow(row)
+
+    return response
+
+
+export_members_to_csv.short_description = "Export > CSV (Vorname, Nachname, Email)"

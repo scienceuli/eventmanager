@@ -229,7 +229,7 @@ urlpatterns = [
     re_path(r"^download/(?P<slug>[A-Za-z0-9_-]+)/$", download, name="pdf-download"),
     path("doc_download/<int:pk>/", doc_download, name="doc-download"),
     path(
-        "export_participants/<int:event_id>/",
+        "export_participants/<int:event_id>/<str:version>/",
         export_participants,
         name="export-participants",
     ),

@@ -20,20 +20,18 @@
 
 <section class="py-20 bg-white">
     <div class="container max-w-6xl mx-auto">
-        <h2 class="text-4xl font-bold tracking-tight text-center text-vfllred">{{ home.title }}</h2>
+        <h2 class="text-xl md:text-4xl font-bold tracking-tight text-center text-vfllred">{{ home.title }}</h2>
 
-        <p class="text-xl  text-gray-600 mt-4 max-w-3xl mx-auto">{{ home.text }}</p>
+        <p class="text-sm md:text-xl  text-gray-600 mt-4 max-w-3xl mx-2 md:mx-auto">{{ home.text }}</p>
 
         <div class="grid grid-cols-3 gap-8 mt-10 sm:grid-cols-3 md:grid-cols-9 lg:grid-cols-12 sm:px-8 xl:px-0">
-
-
 
 
 
             {% for c in all_categories %}
 
 
-            <div class="flex flex-col items-center justify-between col-span-3 px-8 py-12 space-y-4 bg-gray-100 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110">
+            <div class="flex flex-col items-center justify-between col-span-3 px-8 py-12 space-y-4 bg-gray-100 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110 mx-2 md:mx-0">
                 <a href="{% url 'event-filter' %}?category={{ c.id }}">
                     <div class="p-3 text-white bg-vfllred rounded-full">
                         <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 " viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">

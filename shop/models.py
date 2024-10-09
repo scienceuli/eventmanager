@@ -26,14 +26,18 @@ class Order(AddressModel):
         verbose_name="Bezahltyp",
         max_length=1,
         choices=PAYMENT_TYPE_CHOICES,
-        default="n",
+        default="r",
     )
     discounted = models.BooleanField(verbose_name="reduziert", default=True)
     paid = models.BooleanField(verbose_name="bezahlt", default=False)
     storno = models.BooleanField(verbose_name="Storno", default=False)
     payment_date = models.DateTimeField(
-        verbose_name="Bezahldatum", null=True, blank=True
+        verbose_name="Rechnungsdatum", null=True, blank=True
     )
+    payment_receipt = models.DateTimeField(
+        verbose_name="Zahlungseingang", null=True, blank=True
+    )
+
     mail_sent_date = models.DateTimeField(
         verbose_name="Rechnungsversand", null=True, blank=True
     )

@@ -95,13 +95,13 @@
         {{ form.memberships }}
         <label for="attention" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Ich bin auf die
           Veranstaltung aufmerksam geworden durch</label>
-        <div class="flex justify-between gap-3 mt-2">
-          <span class="w-1/2">
+        <div class="grid grid-cols-1 md:grid-cols2 gap-2 mt-2">
+          <div class="">
             {{ form.attention }}
-          </span>
-          <span class="w-1/2">
+          </div>
+          <div class="">
             {{ form.attention_other }}
-          </span>
+          </div>
         </div>
         {% comment %}
         <span class="pt-2 text-xs font-semibold text-gray-600 uppercase">Bildungsprämie</span>

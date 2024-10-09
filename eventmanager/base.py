@@ -74,8 +74,10 @@ INSTALLED_APPS = [
     "ajax_datatable",
     "django_crontab",
     "markdownify.apps.MarkdownifyConfig",
+    "admin_export_action",
     # tailwind theme app
     "fobi_theme",
+    "django_browser_reload",
     # lokale apps
     "events.apps.EventsConfig",
     "users.apps.UsersConfig",
@@ -97,6 +99,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "events.middleware.MaintenanceModeMiddleware",
+    "django_browser_reload.middleware.BrowserReloadMiddleware",
 ]
 
 ROOT_URLCONF = "eventmanager.urls"
@@ -266,3 +269,6 @@ PAY_NOW_TEXT = "Jetzt kaufen"
 REGISTER_NOW_TEXT = "Jetzt kostenpflichtig anmelden"
 REGISTER_NOW_FREE_TEXT = "Jetzt anmelden"
 REGISTER_NOW_TEXT_WAITING = "Jetzt anmelden"
+
+# disable sitewide django-admin-export-action
+ADMIN_EXPORT_ACTION = {"ENABLE_SITEWIDE": False}

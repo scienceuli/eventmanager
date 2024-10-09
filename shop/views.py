@@ -82,6 +82,7 @@ def cart_detail(request):
     return render(
         request,
         "shop/cart_detail.html",
+        # "shop/test.html",
         {
             "payment_cart": split_cart(cart)[0],
             "non_payment_cart": split_cart(cart)[1],
