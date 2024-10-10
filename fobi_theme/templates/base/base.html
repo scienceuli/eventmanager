@@ -18,8 +18,8 @@
 	-->
 	{% block extra_head %}{% endblock %}
 
-	{% tailwind_preload_css v='2' %}
-	{% tailwind_css v='2' %}
+	{% tailwind_preload_css v='2.1' %}
+	{% tailwind_css v='2.1' %}
 
 
 
@@ -27,7 +27,7 @@
 
 <body class="bg-grey-lightest font-sans leading-normal tracking-normal">
 
-	<nav class="flex flex-wrap items-center justify-between p-5 bg-white border-b-2 border-red">
+	<nav class="flex flex-wrap items-center justify-between p-5 bg-white border-b-2 border-vfllred">
 		<a href="https://www.vfll.de"><img src="{% static 'images/vfll_logo_rot_Bild.svg' %}" class="object-contain h-24 object-left"></a>
 		<!-- logo -->
 		<!-- togglr button hamburger -->
@@ -39,15 +39,15 @@
 		</div>
 
 		<!-- links -->
-		<div class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
+		<div class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-gray-400 md:border-none">
 
-			<a href="{% url 'home' %}" class="block md:inline-block text-red font-bold hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">VFLL
+			<a href="{% url 'home' %}" class="block md:inline-block text-vfllred font-bold hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none">VFLL
 				Veranstaltungen</a>
 			{% comment %}
-			<a href="{% url 'event-list' %}" class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">Alle
+			<a href="{% url 'event-list' %}" class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none">Alle
 				Veranstaltungen</a>
 			{% endcomment %}
-			<div class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+			<div class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none">
 				<button style="transition:all .15s ease" type="button" onclick="openDropdown(event,'dropdown-id')">
 					Veranstaltungen nach Kategorien
 				</button>
@@ -67,8 +67,9 @@
 
 		<!-- login / logout / shopping cart / faq -->
 
-		<div class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-blue-900 md:border-none">
+		<div class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-gray-400 md:border-none">
 			<a class='px-3 py-3' href="{% url 'faqs:index-view' %}">FAQ</a>
+			{% comment %}
 			<span class="cart px-3 py-3">
 				{% with total_items=cart|length %}
 				{% if total_items > 0 %}
@@ -79,17 +80,19 @@
 					{% if cart.get_total_price %}&thinsp;/&thinsp;€&thinsp;{{ cart.get_total_price }}{% endif %}
 				</a>
 				{% else %}
-				Warenkorb ist leer
+				<i class="fa fa-shopping-cart" aria-hidden="true"></i>
+				<span class="inline-flex items-center rounded-full bg-vfllred px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-600/20">0</span>
 				{% endif %}
 				{% endwith %}
 			</span>
+			{% endcomment %}
 			{% if user.is_authenticated %}
 			<a class='px-3 py-3' href="{% url 'event-list-internal' %}">E</a>
 
 			{% if user|has_group:"mv_orga" %}
 			{% comment %}<a class='px-3 py-3' href="{% url 'members' event=event_in_frontend %}">TN</a>{% endcomment %}
 
-			<div class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+			<div class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none">
 				<button style="transition:all .15s ease" type="button" onclick="openDropdown(event,'events-in-frontend-id')">
 					TN
 				</button>
@@ -112,18 +115,37 @@
 			</div>
 
 			{% endif %}
-			<a href="{% url 'users:logout' %}" class="block md:inline-block text-red  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+			<a href="{% url 'users:logout' %}" class="block md:inline-block text-vfllred  hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none">
 				Logout</a>
 			{% else %}
-			<a href="{% url 'users:login' %}" class="block md:inline-block text-red  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none">
+			<a href="{% url 'users:login' %}" class="block md:inline-block text-vfllred  hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none">
 				Login</a>
 			{% endif %}
 			{% if user.is_superuser %}
 
-			<a class="block md:inline-block  text-red  hover:text-gray-400 px-3 py-3 border-b-2 border-blue-900 md:border-none" href="{% url 'admin:index' %}">
+			<a class="block md:inline-block  text-vfllred  hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none" href="{% url 'admin:index' %}">
 				<img src="{% static 'images/cogwheel.svg' %}" class="mt-1 w-4 align-bottom">
 			</a>
 			{% endif %}
+		</div>
+
+		<div class="md:flex w-full md:w-auto text-right text-bold mt-2 md:mt-0  md:border-none">
+			<span class="cart px-3 py-3">
+				{% with total_items=cart|length %}
+				{% if total_items > 0 %}
+				<i class="fa fa-shopping-cart" aria-hidden="true"></i>
+				<a href="{% url 'shop:cart-detail' %}">
+					<span class="inline-flex items-center rounded-full bg-vfllred px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-600/20">{{ total_items }}</span>
+					{% if cart.get_discounted_total_price %}€&thinsp;{{ cart.get_discounted_total_price }}{% endif %}
+					{% if cart.get_total_price %}&thinsp;/&thinsp;€&thinsp;{{ cart.get_total_price }}{% endif %}
+				</a>
+				{% else %}
+				<i class="fa fa-shopping-cart" aria-hidden="true"></i>
+				<span class="inline-flex items-center rounded-full bg-vfllred px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-600/20">0</span>
+				{% endif %}
+				{% endwith %}
+			</span>
+
 		</div>
 
 		<!-- cta -->
