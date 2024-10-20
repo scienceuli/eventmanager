@@ -12,7 +12,7 @@ from django.utils.html import format_html
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, path
 from django import forms
-from django.db.models import Min, Max
+from django.db.models import Min, Max, Q
 from django.forms.models import BaseInlineFormSet
 from django.forms import inlineformset_factory
 
@@ -164,13 +164,18 @@ class PayLessActionForm(forms.ModelForm):
     ref: https://stackoverflow.com/questions/6034047/one-to-many-inline-select-with-django-admin
     """
 
+    # events = forms.ModelMultipleChoiceField(
+    #     queryset=Event.objects.filter(first_day__gte=date.today())
+    #     .filter(pub_status="PUB")
+    #     .exclude(event_days=None)
+    #     .order_by("name"),
+    #     widget=forms.CheckboxSelectMultiple,
+    #     required=True,
+    # )
     events = forms.ModelMultipleChoiceField(
-        queryset=Event.objects.filter(first_day__gte=date.today())
-        .filter(pub_status="PUB")
-        .exclude(event_days=None)
-        .order_by("name"),
+        queryset=Event.objects.none(),  # We'll define this queryset in the __init__ method
         widget=forms.CheckboxSelectMultiple,
-        required=True,
+        required=True,  # Make it optional
     )
     name = forms.CharField(max_length=255)
     title = forms.Textarea()
@@ -198,10 +203,24 @@ class PayLessActionForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(PayLessActionForm, self).__init__(*args, **kwargs)
-        if self.instance:
-            events = self.instance.events.all()
-            self.fields["events"].initial = events
-            events_with_collection = events.filter(event_collection__isnull=False)
+        current_time = date.today()
+
+        if self.instance and self.instance.pk:  # Editing an existing instance
+            # Get events related to this PayLessAction (past and future) + all future events
+            self.fields["events"].queryset = (
+                Event.objects.filter(
+                    (Q(first_day__gte=current_time) & Q(pub_status="PUB"))
+                    | Q(payless_collection=self.instance)
+                )
+                .exclude(event_days=None)
+                .order_by("name")
+            )
+            # Pre-select events already assigned to this PayLessCollection
+            pay_less_events = self.instance.events.all()
+            self.fields["events"].initial = pay_less_events
+            events_with_collection = pay_less_events.filter(
+                event_collection__isnull=False
+            )
             collection_events = []
             if events_with_collection:
                 collection_events = list(
@@ -216,6 +235,36 @@ class PayLessActionForm(forms.ModelForm):
                 help_text = "Bitte alle Veranstaltungen wählen, die zu einer Event Collection gehören"
 
             self.fields["events"].help_text = help_text
+
+        else:  # Creating a new instance
+            # Show only future events
+            self.fields["events"].queryset = (
+                Event.objects.filter(
+                    (Q(first_day__gte=current_time) & Q(pub_status="PUB"))
+                )
+                .exclude(event_days=None)
+                .order_by("name")
+            )
+
+        # if self.instance and self.instance.pk:
+        #     pay_less_events = self.instance.events.all()
+        #     events_with_collection = pay_less_events.filter(
+        #         event_collection__isnull=False
+        #     )
+        #     collection_events = []
+        #     if events_with_collection:
+        #         collection_events = list(
+        #             events_with_collection[0]
+        #             .event_collection.events.all()
+        #             .values_list("name", flat=True)
+        #         )
+        #         help_text = (
+        #             f"Bitte folgende Veranstaltungen wählen: {collection_events}"
+        #         )
+        #     else:
+        #         help_text = "Bitte alle Veranstaltungen wählen, die zu einer Event Collection gehören"
+
+        #     self.fields["events"].help_text = help_text
 
     def save_m2m(self):
         pass
@@ -236,21 +285,24 @@ class PayLessActionForm(forms.ModelForm):
             )
         return self.cleaned_data
 
-    def save(self, *args, **kwargs):
-        self.fields["events"].initial.update(payless_collection=None)
-        payless_collection_instance = PayLessAction()
-        payless_collection_instance.pk = self.instance.pk
-        payless_collection_instance.name = self.instance.name
-        payless_collection_instance.title = self.instance.title
-        payless_collection_instance.type = self.instance.type
-        payless_collection_instance.percents = self.instance.percents
-        payless_collection_instance.price_premium = self.instance.price_premium
-        payless_collection_instance.price_members = self.instance.price_members
-        payless_collection_instance.save()
-        self.cleaned_data["events"].update(
-            payless_collection=payless_collection_instance
-        )
-        return payless_collection_instance
+    # def save(self, *args, **kwargs):
+    #     # import pdb
+
+    #     # pdb.set_trace()
+    #     self.fields["events"].initial.update(payless_collection=None)
+    #     payless_collection_instance = PayLessAction()
+    #     payless_collection_instance.pk = self.instance.pk
+    #     payless_collection_instance.name = self.instance.name
+    #     payless_collection_instance.title = self.instance.title
+    #     payless_collection_instance.type = self.instance.type
+    #     payless_collection_instance.percents = self.instance.percents
+    #     payless_collection_instance.price_premium = self.instance.price_premium
+    #     payless_collection_instance.price_members = self.instance.price_members
+    #     payless_collection_instance.save()
+    #     self.cleaned_data["events"].update(
+    #         payless_collection=payless_collection_instance
+    #     )
+    #     return payless_collection_instance
 
 
 class PayLessActionAdmin(admin.ModelAdmin):
@@ -269,6 +321,11 @@ class PayLessActionAdmin(admin.ModelAdmin):
         return ", ".join([ev.name for ev in obj.events.all()])
 
     events_display.short_description = "Veranstaltungen"
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        # Save the selected events to the PayLessAction instance
+        form.instance.events.set(form.cleaned_data["events"])
 
 
 admin.site.register(PayLessAction, PayLessActionAdmin)
@@ -418,6 +475,17 @@ class EventMemberAdmin(admin.ModelAdmin):
 
     @admin.display(description="Betrag")
     def get_order_price(self, obj):
+        # update order
+        order = (
+            Order.objects.filter(
+                email=obj.email,
+                items__event=obj.event,  # Join through OrderItem to match the event
+            )
+            .distinct()
+            .first()
+        )
+        update_order(order)
+
         order_item = OrderItem.objects.filter(
             event=obj.event, order__email=obj.email
         ).first()

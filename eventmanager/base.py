@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django_otp",
     "django_otp.plugins.otp_totp",
     # third party
+    "fontawesomefree",
     "crispy_forms",
     "crispy_tailwind",
     "ckeditor",
