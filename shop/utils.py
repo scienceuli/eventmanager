@@ -8,5 +8,5 @@ def round_up(n, decimals=0):
 
 
 def premium_price(price):
-    premium_price = round_up(float(1.35) * float(price), -1)
+    premium_price = round_up(float(1.50) * float(price), -1)
     return round(Decimal(premium_price), 2)
