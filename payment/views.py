@@ -44,7 +44,9 @@ def payment_process(request):
         "return_url": "http://{}{}".format(
             host, reverse("payment:payment-success", args=[order.id])
         ),
-        "cancel_return": "http://{}{}".format(host, reverse("payment:payment-failed")),
+        "cancel_return": "http://{}{}".format(
+            host, reverse("payment:payment-failed", args=[order.id])
+        ),
     }
     paypal_form = CustomPayPalPaymentsForm(initial=paypal_dict)
 
@@ -66,7 +68,14 @@ def payment_success(request, order_id):
 # Payment failed
 
 
-def payment_failed(request):
+def payment_failed(request, order_id):
+    # if payment failed payment_type is set to r
+    order = Order.objects.get(id=order_id)
+    order.payment_type = "r"
+    order.save()
+    order.payment_date = get_payment_date(order)
+    order.save()
+
     return render(request, "payment/payment_failed.html")
 
 

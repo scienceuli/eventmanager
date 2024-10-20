@@ -8,7 +8,7 @@ urlpatterns = [
     path(
         "payment_success/<int:order_id>", views.payment_success, name="payment-success"
     ),
-    path("payment_failed/", views.payment_failed, name="payment-failed"),
+    path("payment_failed/<int:order_id>", views.payment_failed, name="payment-failed"),
     path(
         "payment_by_invoice/<int:order_id>/",
         views.payment_by_invoice,
