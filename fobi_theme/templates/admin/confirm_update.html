@@ -1,0 +1,40 @@
+<!-- confirm_update.html -->
+{% extends "admin/base_site.html" %}
+
+
+
+{% block content %}
+<div id="grp-content-container">
+    <header id="grp-content-header">
+
+        <h1>{{order}} aktualisieren?</h1>
+    </header>
+    <div class="g-d-c">
+
+        <div class="grp-group">
+            <h2>Soll die Rechnung {{order.get_order_number}} aktualisiert werden?
+                <br>Das Rechnungsdatum {{ order.payment_date }} liegt in der Vergangenheit.
+                <br>
+            </h2>
+
+        </div>
+
+        <form method="post">{% csrf_token %}
+            <input type="hidden" name="object_id" value="{{ object.pk }}">
+            <div id="submit" class="grp-module grp-submit-row grp-fixed-footer">
+
+                <ul>
+                    <li class="grp-float-left"><a href="{{cancel_url}}" class="grp-button grp-cancel-link">Abbrechen</a></li>
+                    <li><input type="submit" name='update' value="Ja" class="grp-button grp-default"></li>
+                    <li><input type="submit" name='update' value="Nein" class="grp-button grp-default"></li>
+                </ul>
+            </div>
+        </form>
+
+
+
+
+
+    </div>
+</div>
+{% endblock %}

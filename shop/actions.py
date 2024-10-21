@@ -7,7 +7,12 @@ from django.core.files.base import ContentFile
 
 from shop.models import OrderItem
 
-from payment.utils import render_to_pdf_directly, generate_zip, update_order
+from payment.utils import (
+    render_to_pdf_directly,
+    generate_zip,
+    update_order,
+    check_order_date_in_future,
+)
 
 
 def export_to_csv(modeladmin, request, queryset):
@@ -42,7 +47,8 @@ def download_invoices_as_zipfile(modeladmin, request, queryset):
     files = []
 
     for q in queryset.filter(download_marker=False):
-        update_order(q)
+        if check_order_date_in_future(q):
+            update_order(q)
         context = {"order": q}
         context["order_items"] = OrderItem.objects.filter(order=q, status="r")
         context["contains_action_price"] = any(

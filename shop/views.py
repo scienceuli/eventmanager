@@ -1,5 +1,8 @@
 import locale
 from typing import Any
+import pytz
+from datetime import datetime
+
 
 from django import http
 
@@ -33,7 +36,11 @@ from shop.forms import CartAddEventForm
 from shop.models import Order, OrderItem
 from shop.tasks import order_created
 
-from payment.utils import render_to_pdf, update_order, check_order_complete
+from payment.utils import (
+    render_to_pdf,
+    update_order,
+    check_order_complete,
+)
 from payment.tasks import payment_completed
 
 
@@ -497,11 +504,14 @@ class OrderCreateView(FormView):
 
 @staff_member_required
 def admin_order_pdf(request, order_id):
+    print("admin_order_pdf")
     context = {}
     order = get_object_or_404(Order, id=order_id)
     template_path = "shop/pdf_invoice.html"
 
-    update_order(order)
+    # if check_update_order(request, order):
+    #     update_order(order)
+
     context["order"] = order
     context["order_items"] = OrderItem.objects.filter(order=order, status="r")
     context["contains_action_price"] = any(

@@ -5,7 +5,7 @@ from shop.models import Order
 from payment.tasks import payment_completed
 
 
-from payment.utils import update_order
+from payment.utils import update_order, check_order_date_in_future
 
 
 def send_invoices_of_actual_day():
@@ -26,7 +26,8 @@ def send_invoices_of_actual_day():
     # check if the recipient is still registered for the events (=items) of his invoice
     not_sent_invoices_of_today_list = []
     for order in qs_not_sent_invoices_of_today:
-        update_order(order)
+        if check_order_date_in_future(order):
+            update_order(order)
         items = order.items.filter(status="r")
         number_of_items = items.count()
 

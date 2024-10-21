@@ -13,7 +13,11 @@ from tempfile import NamedTemporaryFile
 
 from shop.models import Order, OrderItem
 
-from payment.utils import render_to_pdf_directly, update_order
+from payment.utils import (
+    render_to_pdf_directly,
+    update_order,
+    check_order_date_in_future,
+)
 from events.utils import get_email_template, validate_email_template, send_email
 
 
@@ -73,7 +77,8 @@ def payment_completed(order_id):
     template = "shop/pdf_invoice.html"
 
     # update order due to status of event member status
-    update_order(order)
+    if check_order_date_in_future(order):
+        update_order(order)
 
     context["order"] = order
     context["order_items"] = OrderItem.objects.filter(order=order, status="r")

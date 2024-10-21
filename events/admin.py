@@ -70,7 +70,7 @@ from events.filter import PeriodFilter, DateRangeFilter
 
 from shop.models import Order, OrderItem
 
-from payment.utils import update_order
+from payment.utils import update_order, check_order_date_in_future
 from payment.views import get_payment_date
 from events.utils import send_email
 
@@ -484,7 +484,8 @@ class EventMemberAdmin(admin.ModelAdmin):
             .distinct()
             .first()
         )
-        update_order(order)
+        if check_order_date_in_future(order):
+            update_order(order)
 
         order_item = OrderItem.objects.filter(
             event=obj.event, order__email=obj.email
@@ -725,7 +726,8 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         try:
             order_item = OrderItem.objects.get(event=event, order__email=obj.email)
             order = order_item.order
-            order_updated = update_order(order)
+            if check_order_date_in_future(order):
+                order_updated = update_order(order)
             order.storno = True
             order.save()
             if order_updated:
@@ -1381,7 +1383,8 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                 counter = 0
                 for order_item in order_items:
                     order = order_item.order
-                    order_updated = update_order(order)
+                    if check_order_date_in_future(order):
+                        order_updated = update_order(order)
                     order.storno = True
                     order.save()
                     counter += 1

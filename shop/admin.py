@@ -1,10 +1,16 @@
+import pytz
+from datetime import datetime
+from django.utils import timezone
+
 from django.contrib import admin
-from django.urls import reverse
+from django.urls import reverse, path
+from django.shortcuts import redirect, get_object_or_404, render
+from django.http import HttpResponseRedirect
+
 from django.utils.html import mark_safe
 
-
 from shop.models import Order, OrderItem
-
+from payment.utils import check_order_date_in_future, update_order
 from .actions import export_to_csv, download_invoices_as_zipfile, reset_download_markers
 
 from .filter import EventListFilter
@@ -15,14 +21,6 @@ from events.filter import DateRangeFilter
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     raw_id_fields = ["event"]
-
-
-def order_pdf(obj):
-    url = reverse("shop:admin-order-pdf", args=[obj.id])
-    return mark_safe(f'<a href="{url}">PDF</a>')
-
-
-order_pdf.short_description = "Rechnung"
 
 
 def order_pdf_and_mail(obj):
@@ -82,7 +80,7 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_receipt",
         "download_marker",
         order_detail,
-        order_pdf,
+        "order_pdf_button",
         order_pdf_and_mail,
         reminder_mail,
         order_events,
@@ -112,6 +110,50 @@ class OrderAdmin(admin.ModelAdmin):
     export_to_csv.short_description = "Export -> CSV"
     download_invoices_as_zipfile.short_description = "Export -> ZIP"
     reset_download_markers.short_description = "Reset Download Markers"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path(
+                "order_pdf/<int:order_id>/",
+                self.admin_site.admin_view(self.order_pdf),
+                name="order_pdf",
+            ),
+        ]
+        return custom_urls + urls
+
+    def order_pdf_button(self, obj):
+        url = reverse("admin:order_pdf", args=[obj.id])
+        return mark_safe(f'<a href="{url}">PDF</a>')
+
+    order_pdf_button.short_description = "Rechnung"
+    order_pdf_button.allow_tags = True
+
+    def order_pdf(self, request, order_id):
+        order = get_object_or_404(Order, id=order_id)
+        order_list_url = reverse(
+            "admin:%s_%s_changelist" % (order._meta.app_label, order._meta.model_name),
+        )
+
+        if not check_order_date_in_future(order):
+            if request.method == "POST":
+                if request.POST.get("update") == "Ja":
+                    update_order(order)
+                    self.message_user(request, "Order updated successfully!")
+                return redirect(reverse("shop:admin-order-pdf", args=[order_id]))
+
+            # Render a template to ask for confirmation
+            return render(
+                request,
+                "admin/confirm_update.html",
+                {"order": order, "cancel_url": order_list_url},
+            )
+
+        else:
+            # If order is valid, directly update and return to the changelist
+            update_order(order)
+            self.message_user(request, "Order updated successfully!")
+            return redirect(reverse("shop:admin-order-pdf", args=[order_id]))
 
     def amount(self, instance):
         return instance.get_total_cost()

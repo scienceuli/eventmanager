@@ -1,3 +1,4 @@
+from django import forms
 from paypal.standard.forms import PayPalPaymentsForm
 
 from django.utils.html import format_html
