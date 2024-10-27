@@ -76,6 +76,7 @@ INSTALLED_APPS = [
     "django_crontab",
     "markdownify.apps.MarkdownifyConfig",
     "admin_export_action",
+    "honeypot",
     # tailwind theme app
     "fobi_theme",
     "django_browser_reload",
@@ -101,6 +102,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "events.middleware.MaintenanceModeMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "honeypot.middleware.HoneypotMiddleware",
 ]
 
 ROOT_URLCONF = "eventmanager.urls"
@@ -273,3 +275,6 @@ REGISTER_NOW_TEXT_WAITING = "Jetzt anmelden"
 
 # disable sitewide django-admin-export-action
 ADMIN_EXPORT_ACTION = {"ENABLE_SITEWIDE": False}
+
+# honeypot
+HONEYPOT_FIELD_NAME = "secret_key"
