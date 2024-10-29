@@ -127,7 +127,7 @@ class OrderAdmin(admin.ModelAdmin):
         "id",
         "lastname",
         "items__event__name",
-        "notes__text",
+        "notes__note",
         "notes__title",
     ]
     inlines = [OrderItemInline, OrderNoteInline]
