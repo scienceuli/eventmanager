@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.contrib.auth.models import User
 
 from django.db import models
 from events.models import Event
@@ -151,3 +152,20 @@ class OrderItem(models.Model):
     @property
     def get_payment_type(self):
         return self.order.payment_type
+
+
+class OrderNote(BaseModel):
+    order = models.ForeignKey(
+        Order, verbose_name="Bestellung", related_name="notes", on_delete=models.CASCADE
+    )
+    title = models.CharField(verbose_name="Titel", max_length=255)
+    note = models.TextField(verbose_name="Notiz")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ["-date_created"]
+        verbose_name = "Notiz"
+        verbose_name_plural = "Notizen"
+
+    def __str__(self):
+        return self.title

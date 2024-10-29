@@ -6,10 +6,12 @@ from django.contrib import admin
 from django.urls import reverse, path
 from django.shortcuts import redirect, get_object_or_404, render
 from django.http import HttpResponseRedirect
+from django.forms.models import BaseInlineFormSet
+
 
 from django.utils.html import mark_safe
 
-from shop.models import Order, OrderItem
+from shop.models import Order, OrderItem, OrderNote
 from payment.utils import check_order_date_in_future, update_order
 from .actions import export_to_csv, download_invoices_as_zipfile, reset_download_markers
 
@@ -21,6 +23,29 @@ from events.filter import DateRangeFilter
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
     raw_id_fields = ["event"]
+
+
+class OrderNoteInlineFormSet(BaseInlineFormSet):
+    def save_new(self, form, commit=True):
+        obj = super().save_new(form, commit=False)
+        if not obj.created_by_id:  # Only set created_by if it hasn't been set already
+            obj.created_by = self.request.user  # Set created_by to the logged-in user
+        if commit:
+            obj.save()
+        return obj
+
+
+class OrderNoteInline(admin.TabularInline):
+    model = OrderNote
+    raw_id_fields = ["order"]
+    extra = 1
+    formset = OrderNoteInlineFormSet
+    readonly_fields = ["created_by", "date_created", "date_modified"]
+
+    def get_formset(self, request, obj=None, **kwargs):
+        formset = super().get_formset(request, obj, **kwargs)
+        formset.request = request  # Pass the request to formset
+        return formset
 
 
 def order_pdf_and_mail(obj):
@@ -102,8 +127,10 @@ class OrderAdmin(admin.ModelAdmin):
         "id",
         "lastname",
         "items__event__name",
+        "notes__text",
+        "notes__title",
     ]
-    inlines = [OrderItemInline]
+    inlines = [OrderItemInline, OrderNoteInline]
 
     actions = [export_to_csv, download_invoices_as_zipfile, reset_download_markers]
 
