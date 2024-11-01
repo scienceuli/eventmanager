@@ -89,6 +89,7 @@ INSTALLED_APPS = [
     "payment.apps.PaymentConfig",
     "faqs.apps.FaqsConfig",
     "reports.apps.ReportsConfig",
+    "newsletter.apps.NewsletterConfig",
 ]
 
 MIDDLEWARE = [

@@ -153,6 +153,8 @@ import itertools
 
 from wkhtmltopdf.views import PDFTemplateResponse
 
+from newsletter.models import NewsletterSubscription
+
 import locale
 
 yes_no_dict = {
@@ -1082,11 +1084,24 @@ def make_event_registration(request, form, event):
         new_member.save()
 
 
+def add_to_newsletter(email):
+    try:
+        newsletter = NewsletterSubscription.objects.get(email=email)
+    except NewsletterSubscription.DoesNotExist:
+        newsletter = NewsletterSubscription(email=email)
+        newsletter.save()
+
+
 def handle_form_submission(request, form, event):
     if form.is_valid():
+        newsletter = form.cleaned_data.get("newsletter", None)
         personal_data_dict = get_personal_form_data(form)
         if no_duplicate_check(personal_data_dict.get("email"), event):
+
+            if newsletter:
+                add_to_newsletter(personal_data_dict.get("email"))
             make_event_registration(request, form, event)
+
         elif not event.direct_payment:
             messages.error(
                 request,

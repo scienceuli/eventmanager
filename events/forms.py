@@ -506,6 +506,10 @@ class EventMemberForm(forms.Form):
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}), required=False
     )
 
+    newsletter = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}), required=False
+    )
+
     # def clean_check(self):
     #    data = self.cleaned_data['check']
     #    if not data:
