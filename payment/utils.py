@@ -109,7 +109,8 @@ item_status_dict = {
 
 
 def check_order_date_in_future(order):
-    order_date = order.payment_date if order.payment_date else order.date_created
+    # order_date = order.payment_date if order.payment_date else order.date_created
+    order_date = order.date_created
     today = datetime.now().astimezone(pytz.timezone("UTC"))
     if order_date < today:
         return False
