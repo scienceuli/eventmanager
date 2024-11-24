@@ -252,23 +252,26 @@ class OrderCreateView(FormView):
         # clear the cart
         cart.clear()
 
-        if payment_cart and order_item_counter > 0 and len(duplicate_list) == 0:
-            message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
-            level = messages.SUCCESS
-        elif payment_cart and order_item_counter > 0 and len(duplicate_list) > 0:
-            message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Für folgende Veranstaltungen waren Sie bereits angemeldet: {duplicate_string}. Diese werden aus Ihrer Bestellung entfernt. Für die anderen ist die Bestellnummer {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
-            level = messages.SUCCESS
-        elif payment_cart and order_item_counter == 0:
-            message = f"Für alle von Ihnen ausgewählten Veranstaltungen sind sie bereits angemeldet. Ihre Bestellung wird daher verworfen."
-            level = messages.ERROR
-        elif non_payment_cart:
-            message = f"Vielen Dank für Ihre Anmeldung."
-            level = messages.SUCCESS
-        else:
-            message = f"Sie haben noch keine Anmeldung vorgenommen."
-            level = messages.INFO
+        if settings.PAYPAL_ENABLED:
 
-        messages.add_message(self.request, level, message, fail_silently=True)
+            if payment_cart and order_item_counter > 0 and len(duplicate_list) == 0:
+
+                message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
+                level = messages.SUCCESS
+            elif payment_cart and order_item_counter > 0 and len(duplicate_list) > 0:
+                message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Für folgende Veranstaltungen waren Sie bereits angemeldet: {duplicate_string}. Diese werden aus Ihrer Bestellung entfernt. Für die anderen ist die Bestellnummer {order.get_order_number}. en Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
+                level = messages.SUCCESS
+            elif payment_cart and order_item_counter == 0:
+                message = f"Für alle von Ihnen ausgewählten Veranstaltungen sind sie bereits angemeldet. Ihre Bestellung wird daher verworfen."
+                level = messages.ERROR
+            elif non_payment_cart:
+                message = f"Vielen Dank für Ihre Anmeldung."
+                level = messages.SUCCESS
+            else:
+                message = f"Sie haben noch keine Anmeldung vorgenommen."
+                level = messages.INFO
+
+            messages.add_message(self.request, level, message, fail_silently=True)
 
         if order:
             if not order_item_counter == 0:

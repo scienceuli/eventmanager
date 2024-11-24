@@ -32,27 +32,32 @@ def payment_process(request):
     host = request.get_host()
 
     # paypal dict
-    amount = order.get_total_cost()
-    paypal_dict = {
-        "business": settings.PAYPAL_RECEIVER_EMAIL,
-        "amount": amount,
-        "item_name": order.get_order_number,
-        "no_shipping": "2",
-        "invoice": str(order.uuid),
-        "currency_code": "EUR",
-        "notify_url": "http://{}{}".format(host, reverse("paypal-ipn")),
-        "return_url": "http://{}{}".format(
-            host, reverse("payment:payment-success", args=[order.id])
-        ),
-        "cancel_return": "http://{}{}".format(
-            host, reverse("payment:payment-failed", args=[order.id])
-        ),
-    }
-    paypal_form = CustomPayPalPaymentsForm(initial=paypal_dict)
+    if settings.PAYPAL_ENABLED:
+        amount = order.get_total_cost()
+        paypal_dict = {
+            "business": settings.PAYPAL_RECEIVER_EMAIL,
+            "amount": amount,
+            "item_name": order.get_order_number,
+            "no_shipping": "2",
+            "invoice": str(order.uuid),
+            "currency_code": "EUR",
+            "notify_url": "http://{}{}".format(host, reverse("paypal-ipn")),
+            "return_url": "http://{}{}".format(
+                host, reverse("payment:payment-success", args=[order.id])
+            ),
+            "cancel_return": "http://{}{}".format(
+                host, reverse("payment:payment-failed", args=[order.id])
+            ),
+        }
+        paypal_form = CustomPayPalPaymentsForm(initial=paypal_dict)
 
-    return render(
-        request, "payment/process.html", {"paypal_form": paypal_form, "order": order}
-    )
+        return render(
+            request,
+            "payment/process.html",
+            {"paypal_form": paypal_form, "order": order},
+        )
+    else:
+        return redirect("payment:payment-by-invoice", order.id)
 
 
 # Payment success
@@ -114,6 +119,8 @@ def get_payment_date(order):
 
 # payment by invoice
 def payment_by_invoice(request, order_id):
+    if not settings.PAYPAL_ENABLED:
+        request.method = "POST"
     if request.method == "POST":
         order = Order.objects.get(id=order_id)
         order.payment_type = "r"
