@@ -1,3 +1,4 @@
+import uuid
 import json
 import ast
 import sys
@@ -839,6 +840,8 @@ class Event(BaseModel, HitCountMixin):
             self.slug = slugify(
                 f"{self.name.replace('Kopie von ', '')}-{str(last_id+1)}"
             )[:max_length]
+        if not self.uuid:
+            self.uuid = uuid.uuid4()
         add = not self.pk
         # super(Event, self).save(*args, **kwargs)
         if add:

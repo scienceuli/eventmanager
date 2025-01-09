@@ -1559,6 +1559,10 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         for event in queryset:
             # fk's to copy
             old_agendas = event.agendas.all()
+            print("old_agendas", old_agendas)
+            # import pdb
+
+            # pdb.set_trace()
             # m2m to copy
             old_speakers = event.speaker.all()
             # alter Name
@@ -1566,6 +1570,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             new_name = "Kopie von " + old_name
             event.name = new_name
             event.pk = None
+            event.uuid = None
             event.slug = None
             event.label = None
             # set collections to none
@@ -1589,18 +1594,22 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             # parent. We create a dictionary with related objects and make a bulk create afterwards
             # to avoid calling fk.save() and hitting the database once per iteration of this loop
             new_agendas = {}
+
             for fk in old_agendas:
-                fk.pk = None
-                try:
-                    # Use fk.__class__ here to avoid hard-coding the class name
-                    new_agendas[fk.__class__].append(fk)
-                except KeyError:
-                    new_agendas[fk.__class__] = [fk]
+                new_fk = fk
+                new_fk.pk = None
+                new_fk.event = event
+                new_fk.save()
+                # try:
+                #     # Use fk.__class__ here to avoid hard-coding the class name
+                #     new_agendas[fk.__class__].append(fk)
+                # except KeyError:
+                #     new_agendas[fk.__class__] = [fk]
 
             # Now we can issue just two calls to bulk_create,
             # one for fkeys_a and one for fkeys_b
-            for cls, list_of_fks in new_agendas.items():
-                cls.objects.bulk_create(list_of_fks)
+            # for cls, list_of_fks in new_agendas.items():
+            #     cls.objects.bulk_create(list_of_fks)
 
             # go to new object if only one was copied
             # Get the URL of the new object and redirect to it
