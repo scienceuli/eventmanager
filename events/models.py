@@ -147,6 +147,9 @@ class EventCategory(BaseModel):
 
     objects = models.Manager()
     shown_event_categories = ShownEventCategoriesManager()
+    belongs_to_all_events = models.BooleanField(
+        verbose_name="gehört zu VFLL-Fortbildungen", default=True
+    )
 
     class Meta:
         ordering = ("position",)
