@@ -222,6 +222,7 @@ def home(request):
     context = {
         "event_highlight": event_highlight,
         "home": home,
+        "all_events_headline": settings.ALL_EVENTS_HEADLINE,
     }
 
     return render(request, "events/home.html", context)
