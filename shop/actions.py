@@ -1,5 +1,6 @@
 import csv
 import zipfile
+import openpyxl
 
 from datetime import datetime, date
 from django.http import HttpResponse
@@ -37,6 +38,48 @@ def export_to_csv(modeladmin, request, queryset):
                 value = value.strftime("%d.%m.%Y")
             data_row.append(value)
         writer.writerow(data_row)
+    return response
+
+
+def export_to_excel(modeladmin, request, queryset):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Rechnungen Export"
+    opts = modeladmin.model._meta
+    fields_no_export = ["uuid", "country"]
+    fields = [
+        field
+        for field in opts.get_fields()
+        if not field.many_to_many
+        and not field.one_to_many
+        and field.name not in fields_no_export
+    ]
+
+    # Define the header row
+    headers = [field.verbose_name for field in fields]
+    headers.append("Betrag")
+    ws.append(headers)
+
+    # Append data rows
+    for obj in queryset:
+        data_row = []
+        for field in fields:
+            value = getattr(obj, field.name)
+            if isinstance(value, datetime):
+                value = value.strftime("%d.%m.%Y")
+            data_row.append(value)
+        data_row.append(obj.get_total_cost())
+        ws.append(data_row)
+
+    # Prepare the response
+    content_disposition = f"attachment; filename={opts.verbose_name}_{datetime.today().strftime('%Y-%m-%d')}.xlsx"
+    response = HttpResponse(
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    )
+    response["Content-Disposition"] = content_disposition
+
+    wb.save(response)
+
     return response
 
 

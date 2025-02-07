@@ -13,9 +13,14 @@ from django.utils.html import mark_safe
 
 from shop.models import Order, OrderItem, OrderNote
 from payment.utils import check_order_date_in_future, update_order
-from .actions import export_to_csv, download_invoices_as_zipfile, reset_download_markers
+from .actions import (
+    export_to_csv,
+    export_to_excel,
+    download_invoices_as_zipfile,
+    reset_download_markers,
+)
 
-from .filter import EventListFilter
+from .filter import EventListFilter, YearQuarterFilter
 
 from events.filter import DateRangeFilter
 
@@ -119,6 +124,7 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_receipt",
         "date_created",
         "date_modified",
+        YearQuarterFilter,
         "download_marker",
         ("date_created", DateRangeFilter),
     ]
@@ -132,9 +138,15 @@ class OrderAdmin(admin.ModelAdmin):
     ]
     inlines = [OrderItemInline, OrderNoteInline]
 
-    actions = [export_to_csv, download_invoices_as_zipfile, reset_download_markers]
+    actions = [
+        export_to_csv,
+        export_to_excel,
+        download_invoices_as_zipfile,
+        reset_download_markers,
+    ]
 
     export_to_csv.short_description = "Export -> CSV"
+    export_to_excel.short_description = "Export -> Excel"
     download_invoices_as_zipfile.short_description = "Export -> ZIP"
     reset_download_markers.short_description = "Reset Download Markers"
 
