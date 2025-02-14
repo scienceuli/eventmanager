@@ -845,7 +845,7 @@ class Event(BaseModel, HitCountMixin):
     def get_balance(self):
         if not self.costs:
             return round(Decimal(0), 2)
-        balance = self.costs - self.get_total_income_for_event()
+        balance = self.get_total_income_for_event() - self.cost
         return balance
 
     def get_total_income_for_event(self):
