@@ -33,6 +33,7 @@ from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
 
 from events.utils import find_duplicates_in_list
 
+from shop.models import OrderItem
 from shop.utils import premium_price
 
 
@@ -468,6 +469,14 @@ class Event(BaseModel, HitCountMixin):
         help_text="Hier kommt der reduzierte Mitgliederpreis rein. Der volle Preis ist 35% höher, wobei auf 10 Euro aufgerundet wird.",
     )
 
+    costs = models.DecimalField(
+        verbose_name="Kosten",
+        max_digits=10,
+        decimal_places=2,
+        default=0,
+        help_text="Kosten der Veranstaltung",
+    )
+
     speaker = models.ManyToManyField(
         EventSpeaker, verbose_name="Dozent*innen", through="EventSpeakerThrough"
     )
@@ -832,6 +841,24 @@ class Event(BaseModel, HitCountMixin):
         return round(Decimal(0), 2)
 
     premium_price.fget.short_description = "Nicht reduzierter Preis"
+
+    def get_balance(self):
+        if not self.costs:
+            return round(Decimal(0), 2)
+        balance = self.costs - self.get_total_income_for_event()
+        return balance
+
+    def get_total_income_for_event(self):
+        total_income = OrderItem.objects.filter(
+            event=self.id,
+            order__email__in=EventMember.objects.filter(
+                event=self.id, attend_status="registered"
+            ).values_list(
+                "email", flat=True
+            ),  # Get only registered emails
+        ).aggregate(total=Sum("cost"))["total"]
+
+        return total_income or 0
 
     def save(self, *args, **kwargs):
         # slug

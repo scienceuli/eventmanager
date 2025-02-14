@@ -279,3 +279,7 @@ ADMIN_EXPORT_ACTION = {"ENABLE_SITEWIDE": False}
 
 # honeypot
 HONEYPOT_FIELD_NAME = "secret_key"
+
+# invoiceninja settings
+INVOICE_NINJA_API_KEY = os.environ.get("INVOICE_NINJA_API_KEY", None)
+INVOICE_NINJA_BASE_URL = os.environ.get("INVOICE_NINJA_BASE_URL", None)

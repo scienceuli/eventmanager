@@ -3,7 +3,6 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 
 from django.db import models
-from events.models import Event
 
 from events.abstract import BaseModel, AddressModel
 from shop.utils import premium_price
@@ -114,7 +113,7 @@ ORDER_ITEM_STATUS_CHOICES = (
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, related_name="items", on_delete=models.CASCADE)
     event = models.ForeignKey(
-        Event, related_name="order_items", on_delete=models.CASCADE
+        "events.Event", related_name="order_items", on_delete=models.CASCADE
     )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     premium_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -123,6 +122,7 @@ class OrderItem(models.Model):
     status = models.CharField(
         max_length=1, choices=ORDER_ITEM_STATUS_CHOICES, default="r"
     )
+    cost = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
 
     def __str__(self):
         return str(self.id)
@@ -152,6 +152,10 @@ class OrderItem(models.Model):
     @property
     def get_payment_type(self):
         return self.order.payment_type
+
+    def save(self, *args, **kwargs):
+        self.cost = self.get_cost()
+        super().save(*args, **kwargs)
 
 
 class OrderNote(BaseModel):

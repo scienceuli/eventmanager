@@ -12,7 +12,8 @@ from django.utils.html import format_html
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, path
 from django import forms
-from django.db.models import Min, Max, Q
+from django.db.models import Min, Max, Q, Sum
+
 from django.forms.models import BaseInlineFormSet
 from django.forms import inlineformset_factory
 
@@ -605,18 +606,20 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "check",
         "education_bonus",
         "get_registration_date",
+        "total_cost",
         "change_link",
-        "enroled",
-        "moodle_id",
+        # "enroled",
+        # "moodle_id",
     )
     # inline_actions = ['enrol_to_moodle_course']
     readonly_fields = (
+        "total_cost",
         "change_link",
         "get_registration_date",
         "get_memberships_string",
         "enroled",
         "attend_status",
-        "moodle_id",
+        # "moodle_id",
     )
 
     # def has_add_permission(self, request, obj=None):
@@ -630,6 +633,19 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     #    return "-"
 
     # get_short_attend_status.short_description = "St"
+
+    def total_cost(self, obj):
+        if obj.attend_status == "registered":
+            total = OrderItem.objects.filter(
+                order__email=obj.email,
+                event=obj.event,
+            ).aggregate(total=Sum("cost"))["total"]
+        else:
+            total = 0
+
+        return total or 0  # Return 0 if None
+
+    total_cost.short_description = "Betrag"
 
     def change_link(self, obj):
         return mark_safe(
@@ -1068,6 +1084,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "get_start_date",
         "get_end_date",
         "price",
+        "get_balance_colored",
         "direct_payment",
         "view_members_link",
         "capacity",
@@ -1128,6 +1145,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "direct_payment",
                     "price",
                     "full_price",
+                    "costs",
                 )
             },
         ),
@@ -1219,6 +1237,15 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
     )
+
+    def get_balance_colored(self, obj):
+        color = "red" if obj.get_balance() < 0 else "green"
+        return format_html(
+            '<span style="color: {};">{}</span>', color, obj.get_balance()
+        )
+
+    get_balance_colored.admin_order_field = "get_balance"
+    get_balance_colored.short_description = "Marge"
 
     def name_with_status(self, obj):
         if obj.status == "cancel":
