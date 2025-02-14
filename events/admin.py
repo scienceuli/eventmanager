@@ -1239,10 +1239,13 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     )
 
     def get_balance_colored(self, obj):
-        color = "red" if obj.get_balance() < 0 else "green"
-        return format_html(
-            '<span style="color: {};">{}</span>', color, obj.get_balance()
-        )
+        if obj.get_balance() == 0:
+            balance = "-"
+            color = "gray"
+        else:
+            balance = obj.get_balance()
+            color = "red" if obj.get_balance() < 0 else "green"
+        return format_html('<span style="color: {};">{}</span>', color, balance)
 
     get_balance_colored.admin_order_field = "get_balance"
     get_balance_colored.short_description = "Marge"
