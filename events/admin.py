@@ -1217,18 +1217,18 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             "Programm als Pdf",
             {"fields": ("pdf_file",)},
         ),
-        (
-            "Moodle",
-            {
-                "fields": (
-                    "moodle_course_type",
-                    "moodle_id",
-                    "moodle_course_created",
-                    "moodle_new_user_flag",
-                    "moodle_standard_password",
-                ),
-            },
-        ),
+        # (
+        #     "Moodle",
+        #     {
+        #         "fields": (
+        #             "moodle_course_type",
+        #             "moodle_id",
+        #             "moodle_course_created",
+        #             "moodle_new_user_flag",
+        #             "moodle_standard_password",
+        #         ),
+        #     },
+        # ),
         (
             "Intern",
             {
@@ -1351,14 +1351,14 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             actions.append("cancel_event")
         if obj and obj.status == "cancel" and not obj.is_past():
             actions.append("reactivate_event")
-        if obj.moodle_id == 0 and obj.eventformat.moodle:
-            actions.append("create_course_in_moodle")
-        if (
-            not obj.moodle_id == 0
-            and obj.category.name == "Onlineseminare"
-            and not obj.members.exists()
-        ):
-            actions.append("delete_course_in_moodle")
+        # if obj.moodle_id == 0 and obj.eventformat.moodle:
+        #     actions.append("create_course_in_moodle")
+        # if (
+        #     not obj.moodle_id == 0
+        #     and obj.category.name == "Onlineseminare"
+        #     and not obj.members.exists()
+        # ):
+        #     actions.append("delete_course_in_moodle")
         return actions
 
     def test_intermediate(self, request, obj, parent_obj=None):
