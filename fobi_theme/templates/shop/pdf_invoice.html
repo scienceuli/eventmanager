@@ -277,11 +277,11 @@
         </div>
         <div class="invoice-data">
             Steuernummer: 204/111/20369<br />
-            Amorbach, {% if order.payment_date %}{{order.payment_date|date}}{% else %}{{order.date_created|date}}{% endif %}
+            Amorbach, {{invoice_date|date}}
         </div>
         <div class="invoice-label">
 
-            Rechnung
+            {{label}}
         </div>
         <div class="invoice-number">
 
@@ -320,7 +320,12 @@
                         {% endif %}
                         {% endwith %}
                     </td>
-                    <td class="amount"><span class="euro">{{ item.get_cost }} €
+                    <td class="amount"><span class="euro">
+                            {% if process == 'storno' %}
+                            {{ item.get_storno_cost }} €
+                            {% else %}
+                            {{ item.get_cost }} €
+                            {% endif %}
                         </span></td>
                 </tr>
                 {% endfor %}
@@ -330,13 +335,15 @@
                     <td colspan="2"><span class="total-amount">Rechnungsbetrag<sup>{{ust_footnote_counter}}</sup></span>
 
                     </td>
-                    <td class="amount"><span class="total-amount">{{ order.get_total_cost }} €
+                    <td class="amount"><span class="total-amount">
+                            {% if process == 'storno' %}
+                            {{ order.get_total_storno_cost }} €
+                            {% else %}
+                            {{ order.get_total_cost }} €
+                            {% endif %}
                             {% if order.discounted %}*{% endif %}
                         </span></td>
                 </tr>
-
-
-
             </tbody>
         </table>
         <div class="invoice-remark">
@@ -347,12 +354,17 @@
 
         </div>
         <div class="payment-text">
+            {% if process == 'order' %}
             {% if order.payment_type == 'p' and order.paid %}
             Der Rechnungsbetrag wurde bereits per PayPal bezahlt. Vielen Dank!
             {% endif %}
             {% if order.payment_type == 'r' or order.payment_type == "n" %}
             <b>Zahlbar sofort und ohne Abzug</b>
             {% endif %}
+            {% elif process == 'storno' %}
+            <b>Der Betrag wird erstattet.</b>
+            {% endif %}
+
         </div>
         <div class="signature">
             Mit freundlichen Grüßen<br />
