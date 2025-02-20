@@ -678,6 +678,13 @@ class Event(BaseModel, HitCountMixin):
                 "Die Teilnehmer*innenzahl darf nicht größer als die Kapazität sein."
             )
 
+        if self.price and self.price != 0 and not self.direct_payment:
+            raise ValidationError(
+                {
+                    "direct_payment": "Warenkorb ankreuzen, wenn Mitgliederpreis angegeben wird."
+                }
+            )
+
     def get_absolute_url(self):
         return reverse("event-detail", kwargs={"slug": self.slug})
 
