@@ -41,38 +41,78 @@ def export_to_csv(modeladmin, request, queryset):
     return response
 
 
-def export_to_excel(modeladmin, request, queryset):
+def export_to_excel_short(modeladmin, request, queryset):
+    response = export_to_excel(modeladmin, request, queryset, short=True)
+    return response
+
+
+def export_to_excel(modeladmin, request, queryset, short=False):
     wb = openpyxl.Workbook()
     ws = wb.active
     ws.title = "Rechnungen Export"
     opts = modeladmin.model._meta
     fields_no_export = ["uuid", "country"]
-    fields = [
-        field
-        for field in opts.get_fields()
-        if not field.many_to_many
-        and not field.one_to_many
-        and field.name not in fields_no_export
-    ]
+
+    if short:
+        fields = [
+            "get_order_number",
+            "get_full_name_and_events",
+            "get_total_cost",
+            "paid",
+            "payment_date",
+            "payment_receipt",
+        ]
+    else:
+        fields = [
+            field
+            for field in opts.get_fields()
+            if not field.many_to_many
+            and not field.one_to_many
+            and field.name not in fields_no_export
+        ]
 
     # Define the header row
-    headers = [field.verbose_name for field in fields]
-    headers.append("Betrag")
+    if short:
+        headers = [
+            "Rechnungsnr.",
+            "Buchungstext",
+            "Betrag",
+            "bezahlt",
+            "Rechungsdatum",
+            "Zahlungseingang",
+        ]
+    else:
+        headers = [field.verbose_name for field in fields]
+        headers.append("Betrag")
     ws.append(headers)
 
     # Append data rows
     for obj in queryset:
         data_row = []
-        for field in fields:
-            value = getattr(obj, field.name)
-            if isinstance(value, datetime):
-                value = value.strftime("%d.%m.%Y")
-            data_row.append(value)
-        data_row.append(obj.get_total_cost())
+        if short:
+            for field in fields:
+                if hasattr(obj, field):
+                    value = getattr(obj, field)
+                    # If it's a method, call it
+                    value = value() if callable(value) else value
+                    if isinstance(value, datetime):
+                        value = value.strftime("%d.%m.%Y")
+                    data_row.append(value)
+        else:
+            for field in fields:
+                value = getattr(obj, field.name)
+                if isinstance(value, datetime):
+                    value = value.strftime("%d.%m.%Y")
+                data_row.append(value)
+                data_row.append(obj.get_total_cost())
         ws.append(data_row)
 
+    filename = f"{opts.verbose_name}_{datetime.today().strftime('%Y-%m-%d')}"
+    if short:
+        filename = filename + "_kurz"
+
     # Prepare the response
-    content_disposition = f"attachment; filename={opts.verbose_name}_{datetime.today().strftime('%Y-%m-%d')}.xlsx"
+    content_disposition = f"attachment; filename={filename}.xlsx"
     response = HttpResponse(
         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )

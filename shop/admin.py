@@ -16,6 +16,7 @@ from payment.utils import check_order_date_in_future, update_order
 from .actions import (
     export_to_csv,
     export_to_excel,
+    export_to_excel_short,
     download_invoices_as_zipfile,
     reset_download_markers,
 )
@@ -55,7 +56,7 @@ class OrderNoteInline(admin.TabularInline):
 
 def order_pdf_and_mail(obj):
     url = reverse("shop:admin-order-pdf-and-mail", args=[obj.id])
-    if obj.payment_type == "n":
+    if obj.payment_type == "r":
         return mark_safe(f'<a href="{url}">Pdf+✉</a>')
     else:
         return ""
@@ -111,6 +112,7 @@ class OrderAdmin(admin.ModelAdmin):
         "download_marker",
         order_detail,
         "order_pdf_button",
+        "storno_pdf_button",
         order_pdf_and_mail,
         reminder_mail,
         order_events,
@@ -141,12 +143,14 @@ class OrderAdmin(admin.ModelAdmin):
     actions = [
         export_to_csv,
         export_to_excel,
+        export_to_excel_short,
         download_invoices_as_zipfile,
         reset_download_markers,
     ]
 
     export_to_csv.short_description = "Export -> CSV"
     export_to_excel.short_description = "Export -> Excel"
+    export_to_excel_short.short_description = "Export -> Excel (St.)"
     download_invoices_as_zipfile.short_description = "Export -> ZIP"
     reset_download_markers.short_description = "Reset Download Markers"
 
@@ -154,7 +158,7 @@ class OrderAdmin(admin.ModelAdmin):
         urls = super().get_urls()
         custom_urls = [
             path(
-                "order_pdf/<int:order_id>/",
+                "order_pdf/<int:order_id>/<str:process>",
                 self.admin_site.admin_view(self.order_pdf),
                 name="order_pdf",
             ),
@@ -162,37 +166,55 @@ class OrderAdmin(admin.ModelAdmin):
         return custom_urls + urls
 
     def order_pdf_button(self, obj):
-        url = reverse("admin:order_pdf", args=[obj.id])
+        url = reverse("admin:order_pdf", args=[obj.id, "order"])
         return mark_safe(f'<a href="{url}">PDF</a>')
 
     order_pdf_button.short_description = "Rechnung"
     order_pdf_button.allow_tags = True
 
-    def order_pdf(self, request, order_id):
+    def storno_pdf_button(self, obj):
+        if obj.storno:
+            url = reverse("admin:order_pdf", args=[obj.id, "storno"])
+            return mark_safe(f'<a href="{url}">Storno</a>')
+        else:
+            return mark_safe("-")
+
+    storno_pdf_button.short_description = "Storno"
+    storno_pdf_button.allow_tags = True
+
+    def order_pdf(self, request, order_id, process):
         order = get_object_or_404(Order, id=order_id)
         order_list_url = reverse(
             "admin:%s_%s_changelist" % (order._meta.app_label, order._meta.model_name),
         )
 
-        if not check_order_date_in_future(order):
-            if request.method == "POST":
-                if request.POST.get("update") == "Ja":
-                    update_order(order)
-                    self.message_user(request, "Order updated successfully!")
-                return redirect(reverse("shop:admin-order-pdf", args=[order_id]))
+        if process == "order":
+            if not check_order_date_in_future(order):
+                if request.method == "POST":
+                    if request.POST.get("update") == "Ja":
+                        update_order(order)
+                        self.message_user(request, "Order updated successfully!")
+                    return redirect(
+                        reverse("shop:admin-order-pdf", args=[order_id, process])
+                    )
 
-            # Render a template to ask for confirmation
-            return render(
-                request,
-                "admin/confirm_update.html",
-                {"order": order, "cancel_url": order_list_url},
-            )
+                # Render a template to ask for confirmation
+                return render(
+                    request,
+                    "admin/confirm_update.html",
+                    {"order": order, "cancel_url": order_list_url},
+                )
 
-        else:
-            # If order is valid, directly update and return to the changelist
-            update_order(order)
-            self.message_user(request, "Order updated successfully!")
-            return redirect(reverse("shop:admin-order-pdf", args=[order_id]))
+            else:
+                # If order is valid, directly update and return to the changelist
+                update_order(order)
+                self.message_user(request, "Order updated successfully!")
+                return redirect(
+                    reverse("shop:admin-order-pdf", args=[order_id, process])
+                )
+
+        elif process == "storno":
+            return redirect(reverse("shop:admin-order-pdf", args=[order_id, process]))
 
     def amount(self, instance):
         return instance.get_total_cost()

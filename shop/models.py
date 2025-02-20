@@ -83,6 +83,14 @@ class Order(AddressModel):
 
     get_total_cost.short_description = "Betrag"
 
+    def get_total_storno_cost(self):
+        storno_costs = sum(
+            item.get_storno_cost() for item in self.items.filter(status="c")
+        )
+        return storno_costs
+
+    get_total_storno_cost.short_description = "Storno-Betrag"
+
     # def get_premium_total_cost(self):  # was get_discounted_total_cost
     #     price = premium_price(self.get_total_cost())
     #     return price
@@ -90,6 +98,10 @@ class Order(AddressModel):
     @property
     def get_order_number(self):
         return "V{:06d}".format(self.id)
+
+    @property
+    def get_full_name_and_events(self):
+        return f"{self.lastname}, {self.firstname} / {', '.join([ev.label for ev in self.get_registered_items_events()])}"
 
     def get_registered_items_events(self):
         """returns items/events of an order with status=registered"""
@@ -107,6 +119,7 @@ ORDER_ITEM_STATUS_CHOICES = (
     ("s", "storniert"),
     ("n", "nicht erschienen"),
     ("u", "unklar"),
+    ("c", "Veranstaltung abgesagt"),
 )
 
 
@@ -138,6 +151,9 @@ class OrderItem(models.Model):
     get_cost_property.short_description = "Betrag"
 
     get_cost_property = property(get_cost_property)
+
+    def get_storno_cost(self):
+        return (-1) * self.get_cost()
 
     @property
     def get_invoice_number(self):

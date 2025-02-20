@@ -188,7 +188,6 @@ class OrderCreateView(FormView):
         return context
 
     def form_valid(self, form):
-        print("form valid called")
         payment_cart = self.payment_cart
         non_payment_cart = self.non_payment_cart
         cart = self.cart
@@ -506,8 +505,7 @@ class OrderCreateView(FormView):
 
 
 @staff_member_required
-def admin_order_pdf(request, order_id):
-    print("admin_order_pdf")
+def admin_order_pdf(request, order_id, process):
     context = {}
     order = get_object_or_404(Order, id=order_id)
     template_path = "shop/pdf_invoice.html"
@@ -516,7 +514,22 @@ def admin_order_pdf(request, order_id):
     #     update_order(order)
 
     context["order"] = order
-    context["order_items"] = OrderItem.objects.filter(order=order, status="r")
+    context["process"] = process
+    if process == "storno":
+        context["label"] = "Storno-Rechnung"
+        context["invoice_date"] = datetime.now()
+    elif process == "order":
+        context["label"] = "Rechnung"
+        if order.payment_date:
+            invoice_date = order.payment_date
+        else:
+            invoice_date = order.date_created
+        context["invoice_date"] = invoice_date
+
+    if process == "order":
+        context["order_items"] = OrderItem.objects.filter(order=order, status="r")
+    elif process == "storno":
+        context["order_items"] = OrderItem.objects.filter(order=order, status="c")
     context["contains_action_price"] = any(
         [
             item.is_action_price
@@ -534,7 +547,7 @@ def admin_order_pdf(request, order_id):
     # response['Content-Disposition'] = 'attachment; filename="report.pdf"'
 
     # to view on browser we can remove attachment
-    filename = "rechnung_%s" % (order.get_order_number)
+    filename = f"{process}_rechnung_{order.get_order_number}"
 
     response["Content-Disposition"] = f'filename="{filename}.pdf"'
 

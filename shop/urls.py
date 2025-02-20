@@ -15,7 +15,9 @@ urlpatterns = [
     # path("order_create/", views.order_create, name="order-create"),
     path("order_create/", views.OrderCreateView.as_view(), name="order-create"),
     path(
-        "admin/order/<int:order_id>/pdf/", views.admin_order_pdf, name="admin-order-pdf"
+        "admin/order/<int:order_id>/<str:process>/pdf/",
+        views.admin_order_pdf,
+        name="admin-order-pdf",
     ),
     path(
         "admin/order/<int:order_id>/pdf_and_mail/",
