@@ -13,8 +13,9 @@ from tempfile import NamedTemporaryFile
 
 from shop.models import Order, OrderItem
 
+from utilities.pdf import render_to_pdf_directly
+
 from payment.utils import (
-    render_to_pdf_directly,
     update_order,
     check_order_date_in_future,
 )

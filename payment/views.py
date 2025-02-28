@@ -86,16 +86,20 @@ def payment_failed(request, order_id):
 
 def get_payment_date(order):
     """returns the correct date for invoice
-    invoice can have more than one item (event)
+    invoice can have more than one item (event).
+    If payment date is delayed to the first day of the event,
     correct invoice date is first_day of earliest event
 
     if payment_type = p(aypal) or payment_type = 'r' and settings.SEND_INVOICE_AFTER_ORDER_CREATION is true
+    or settings.ORDER_DATE_DELAYED is true,
     the invoice/payment date is date_created
 
     if payment_type = r and not settings.SEND_INVOICE_AFTER_ORDER_CREATION:
     invoice can have more than one item (event)
     correct invoice date is now first_day of earliest event
     """
+    if not settings.ORDER_DATE_DELAYED:
+        return order.date_created
     if order.payment_type == "p":
         return order.date_created
     else:

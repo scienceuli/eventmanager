@@ -1,9 +1,9 @@
 from django.apps import AppConfig
 
 
-class ShopConfig(AppConfig):
+class MailingsConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
-    name = "shop"
+    name = "mailings"
 
     def ready(self):
-        import shop.signals
+        import mailings.signals

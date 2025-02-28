@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "django_otp",
     "django_otp.plugins.otp_totp",
     # third party
+    "mailqueue",
     "fontawesomefree",
     "crispy_forms",
     "crispy_tailwind",
@@ -90,6 +91,9 @@ INSTALLED_APPS = [
     "faqs.apps.FaqsConfig",
     "reports.apps.ReportsConfig",
     "newsletter.apps.NewsletterConfig",
+    "mailings.apps.MailingsConfig",
+    "invoices.apps.InvoicesConfig",
+    "utilities.apps.UtilitiesConfig",
 ]
 
 MIDDLEWARE = [

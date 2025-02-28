@@ -29,9 +29,16 @@ class CustomIndexDashboard(Dashboard):
                 collapsible=True,
                 children=[
                     modules.AppList(
-                        title="Versanstaltungen", models=("events.models.Event",)
+                        title="Veranstaltungen", models=("events.models.Event",)
                     ),
-                    modules.AppList(title="Rechnungen", models=("shop.models.Order",)),
+                    modules.AppList(
+                        title="Rechnungen",
+                        models=(
+                            "shop.models.Order",
+                            "invoices.models.Invoice",
+                            "mailings.models.InvoiceMessage",
+                        ),
+                    ),
                 ],
             )
         )

@@ -277,7 +277,7 @@
         </div>
         <div class="invoice-data">
             Steuernummer: 204/111/20369<br />
-            Amorbach, {{invoice_date|date}}
+            Amorbach, {{invoice.invoice_date|date}}
         </div>
         <div class="invoice-label">
 
@@ -285,7 +285,7 @@
         </div>
         <div class="invoice-number">
 
-            Rechnungsnummer: {{ order.get_order_number }}
+            Rechnungsnummer: {{ invoice.invoice_number }}
         </div>
 
         Teilnahmekosten für die VFLL-Fortbildungen <br />
@@ -339,7 +339,8 @@
                             {% if process == 'storno' %}
                             {{ order.get_total_storno_cost }} €
                             {% else %}
-                            {{ order.get_total_cost }} €
+                            <!-- {{ order.get_total_cost }} € -->
+                            {{ invoice.amount }} €
                             {% endif %}
                             {% if order.discounted %}*{% endif %}
                         </span></td>

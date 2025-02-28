@@ -16,7 +16,6 @@ from payment.utils import check_order_date_in_future, update_order
 from .actions import (
     export_to_csv,
     export_to_excel,
-    export_to_excel_short,
     download_invoices_as_zipfile,
     reset_download_markers,
 )
@@ -103,18 +102,19 @@ class OrderAdmin(admin.ModelAdmin):
         "payment_type",
         "storno",
         "discounted",
-        "payment_date_html",
-        "mail_sent_date",
+        # "payment_date_html",
+        # "mail_sent_date",
         "date_created",
         "date_modified",
-        "paid",
-        "payment_receipt",
-        "download_marker",
+        # "paid",
+        # "payment_receipt",
+        # "download_marker",
         order_detail,
-        "order_pdf_button",
-        "storno_pdf_button",
-        order_pdf_and_mail,
-        reminder_mail,
+        "invoices_button",
+        # "order_pdf_button",
+        # "storno_pdf_button",
+        # order_pdf_and_mail,
+        # reminder_mail,
         order_events,
     ]
 
@@ -143,14 +143,12 @@ class OrderAdmin(admin.ModelAdmin):
     actions = [
         export_to_csv,
         export_to_excel,
-        export_to_excel_short,
         download_invoices_as_zipfile,
         reset_download_markers,
     ]
 
     export_to_csv.short_description = "Export -> CSV"
     export_to_excel.short_description = "Export -> Excel"
-    export_to_excel_short.short_description = "Export -> Excel (St.)"
     download_invoices_as_zipfile.short_description = "Export -> ZIP"
     reset_download_markers.short_description = "Reset Download Markers"
 
@@ -171,6 +169,15 @@ class OrderAdmin(admin.ModelAdmin):
 
     order_pdf_button.short_description = "Rechnung"
     order_pdf_button.allow_tags = True
+
+    def invoices_button(self, obj):
+        url = (
+            reverse("admin:invoices_invoice_changelist") + f"?order__id__exact={obj.id}"
+        )
+        return mark_safe(f"<a class='button' href='{url}'>Rechnung(en)</a>")
+
+    invoices_button.short_description = "Rechnung(en)"
+    invoices_button.allow_tags = True
 
     def storno_pdf_button(self, obj):
         if obj.storno:

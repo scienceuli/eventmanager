@@ -36,12 +36,17 @@ from shop.forms import CartAddEventForm
 from shop.models import Order, OrderItem
 from shop.tasks import order_created
 
+from utilities.pdf import render_to_pdf
+
 from payment.utils import (
-    render_to_pdf,
     update_order,
     check_order_complete,
 )
 from payment.tasks import payment_completed
+
+from invoices.models import Invoice
+from invoices.utils import get_invoice_date
+from mailings.models import InvoiceMessage
 
 
 def split_cart(cart):
@@ -247,6 +252,21 @@ class OrderCreateView(FormView):
 
         for item in cart:
             new_member = handle_form_submission(self.request, form, item["event"])
+
+        # creating invoice
+        if order_saved:
+            invoice_name = f"Rechnung {order.lastname}, {order.firstname} ({', '.join([ev.label for ev in order.get_registered_items_events()])})"
+
+            new_invoice = Invoice.objects.create(
+                order=order,
+                invoice_number=order.get_order_number,
+                invoice_date=get_invoice_date(order),
+                invoice_type="i",
+                name=invoice_name,
+                amount=order.get_total_cost(),
+            )
+            if new_invoice:
+                new_invoice_message = new_invoice.create_invoice_message()
 
         # clear the cart
         cart.clear()

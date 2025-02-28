@@ -1,4 +1,6 @@
 from decimal import Decimal
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from django.contrib.auth.models import User
 
@@ -37,7 +39,6 @@ class Order(AddressModel):
     payment_receipt = models.DateTimeField(
         verbose_name="Zahlungseingang", null=True, blank=True
     )
-
     mail_sent_date = models.DateTimeField(
         verbose_name="Rechnungsversand", null=True, blank=True
     )
