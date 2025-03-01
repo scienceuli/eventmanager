@@ -4,7 +4,7 @@ from django.urls import reverse, path
 from django.contrib import messages
 from django.shortcuts import redirect
 
-from invoices.models import Invoice
+from invoices.models import Invoice, StornoInvoice
 from invoices.actions import export_to_excel_short
 from mailings.models import InvoiceMessage
 
@@ -22,6 +22,7 @@ class InvoiceAdmin(admin.ModelAdmin):
         "mail_sent_date",
         "pdf",
         "recreate_invoice_pdf_button",
+        "get_storno",
     )
     actions = [
         export_to_excel_short,
@@ -40,6 +41,11 @@ class InvoiceAdmin(admin.ModelAdmin):
                 "create_mail/<int:invoice_id>/",
                 self.admin_site.admin_view(self.create_invoice_message),
                 name="create-invoice-message",
+            ),
+            path(
+                "create_storno/<int:invoice_id>/",
+                self.admin_site.admin_view(self.create_storno_invoice),
+                name="create-storno-invoice",
             ),
         ]
         return custom_urls + urls
@@ -108,5 +114,43 @@ class InvoiceAdmin(admin.ModelAdmin):
             request.META.get("HTTP_REFERER", "admin:invoices_invoice_changelist")
         )
 
+    def get_storno(self, obj):
+        if hasattr(obj, "storno_invoice") and obj.storno_invoice:
+            # if obj.storno_invoice:
+            url = reverse(
+                "admin:invoices_stornoinvoice_change", args=[obj.storno_invoice.id]
+            )
+            return mark_safe(f'<a href="{url}">zur Storno-Rechnung</a>')
+        else:
+            url = reverse(
+                "admin:create-storno-invoice", args=[obj.pk]
+            )  # reverse("admin:create-invoice-message", args=[obj.pk])
+            return mark_safe(f"<a class='button' href='{url}'>Storno erzeugen</a>")
+
+    get_storno.short_description = "Storno-Rechnung"
+    get_storno.allow_tags = True
+
+    def create_storno_invoice(self, request, invoice_id):
+        invoice = Invoice.objects.get(pk=invoice_id)
+
+        if (
+            hasattr(invoice, "storno_invoice") and invoice.storno_invoice
+        ):  # Prevent duplicate messages
+            messages.warning(request, "Storno-Rechnung existiert bereits!")
+            return redirect(reverse("admin:invoices_invoice_change", args=[invoice_id]))
+
+        storno = invoice.create_storno_invoice()
+        messages.success(request, "Storno-Rechnung wurde angelegt!")
+        return redirect(
+            reverse("admin:invoices_stornoinvoice_change", args=[storno.pk])
+        )
+
 
 admin.site.register(Invoice, InvoiceAdmin)
+
+
+class StornoInvoiceAdmin(admin.ModelAdmin):
+    model = StornoInvoice
+
+
+admin.site.register(StornoInvoice, StornoInvoiceAdmin)

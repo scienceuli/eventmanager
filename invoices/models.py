@@ -182,11 +182,33 @@ class Invoice(models.Model):
     def create_invoice_message_button(self):
         """Return a button for recreating the invoice message in admin list view."""
         url = reverse("admin:create-invoice-message", args=[self.pk])
-        todo = "erzeugen" if not self.pdf else ""
+        todo = "erzeugen" if not self.message else ""
         return format_html(f'<a class="button" href="{url}">Rechnungs-Mail {todo}</a>')
 
     recreate_invoice_pdf_button.short_description = "Mail"
     recreate_invoice_pdf_button.allow_tags = True
+
+    def create_storno_invoice(self):
+        invoice = self
+        if StornoInvoice.objects.filter(original_invoice=invoice).exists():
+            return False
+        storno_invoice_number = f"{invoice.invoice_number}S"
+        new_storno = StornoInvoice.objects.create(
+            original_invoice=invoice,
+            invoice_number=storno_invoice_number,
+            amount=invoice.amount,
+        )
+        new_storno.create_storno_invoice_pdf()
+        return new_storno
+
+    def create_storno_invoice_button(self):
+        """Return a button for creating the storno invoice in admin list view."""
+        url = reverse("admin:create-storno-invoice", args=[self.pk])
+        todo = "erzeugen" if not self.storno_invoice else ""
+        return format_html(f'<a class="button" href="{url}">Storno-Rechnung {todo}</a>')
+
+    create_storno_invoice_button.short_description = "Storno"
+    create_storno_invoice_button.allow_tags = True
 
 
 class StornoInvoice(models.Model):
@@ -198,8 +220,17 @@ class StornoInvoice(models.Model):
         on_delete=models.SET_NULL,
         related_name="storno_invoice",
     )
-    amount = models.DecimalField(verbose_name="Betrag", max_digits=10, decimal_places=2)
-    invoice_number = models.CharField(verbose_name="Rechnungsnummer", max_length=255)
+    amount = models.DecimalField(
+        verbose_name="Betrag",
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text="Der Betrag erscheint auf der Storno-Rechnung mit Minuszeichen.",
+    )
+    invoice_number = models.CharField(
+        verbose_name="Rechnungsnummer", max_length=255, null=True, blank=True
+    )
     invoice_date = models.DateTimeField(
         verbose_name="Rechnungsdatum", auto_now_add=True
     )

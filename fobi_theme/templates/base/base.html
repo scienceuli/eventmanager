@@ -24,11 +24,21 @@
 	{% tailwind_preload_css v='2.1' %}
 	{% tailwind_css v='2.1' %}
 
+	{% if SHOW_DEV_RIBBON %}
+	<link rel='stylesheet' href="{% static 'css/dev_ribbon.css' %}">
+
+	{% endif %}
+
 
 
 </head>
 
 <body class="bg-grey-lightest font-sans leading-normal tracking-normal">
+
+	{% if SHOW_DEV_RIBBON %}
+	{% include 'base/dev_ribbon.html' %}
+	{% endif %}
+
 
 	<nav class="flex flex-wrap items-center justify-between p-5 bg-white border-b-2 border-vfllred">
 		<a href="https://www.vfll.de"><img src="{% static 'images/vfll_logo_rot_Bild.svg' %}" class="object-contain h-24 object-left"></a>

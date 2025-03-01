@@ -126,6 +126,7 @@ TEMPLATES = [
                 "events.custom_context_processor.category_renderer",
                 "events.custom_context_processor.event_in_frontend_context",
                 "events.custom_context_processor.events_in_frontend_context",
+                "events.custom_context_processor.dev_ribbon",
                 "shop.context_processors.cart",
             ],
         },
@@ -239,6 +240,7 @@ TAILWIND_APP_NAME = "fobi_theme"
 X_FRAME_OPTIONS = "SAMEORIGIN"
 
 # GRAPPELLI setting
+
 GRAPPELLI_ADMIN_TITLE = "FOBI Eventmanager"
 GRAPPELLI_INDEX_DASHBOARD = "eventmanager.dashboard.CustomIndexDashboard"
 

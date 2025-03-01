@@ -18,6 +18,11 @@ class CustomIndexDashboard(Dashboard):
     Custom index dashboard for www.
     """
 
+    class Media:
+        css = {
+            "all": ("css/dashboard.css",),
+        }
+
     def init_with_context(self, context):
         site_name = get_admin_site_name(context)
 
@@ -37,6 +42,7 @@ class CustomIndexDashboard(Dashboard):
                             "shop.models.Order",
                             "invoices.models.Invoice",
                             "mailings.models.InvoiceMessage",
+                            "invoices.models.StornoInvoice",
                         ),
                     ),
                 ],

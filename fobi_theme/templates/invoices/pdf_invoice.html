@@ -285,10 +285,10 @@
         </div>
         <div class="invoice-number">
 
-            Rechnungsnummer: {{ invoice.invoice_number }}
+            {% if storno %}Storno-{% endif %}Rechnungsnummer: {{ invoice.invoice_number }}
         </div>
 
-        Teilnahmekosten für die VFLL-Fortbildungen <br />
+        {% if storno %}Erstattung der {% endif %}Teilnahmekosten für die VFLL-Fortbildungen <br />
 
 
 
@@ -321,7 +321,7 @@
                         {% endwith %}
                     </td>
                     <td class="amount"><span class="euro">
-                            {% if process == 'storno' %}
+                            {% if storno %}
                             {{ item.get_storno_cost }} €
                             {% else %}
                             {{ item.get_cost }} €
@@ -336,12 +336,8 @@
 
                     </td>
                     <td class="amount"><span class="total-amount">
-                            {% if process == 'storno' %}
-                            {{ order.get_total_storno_cost }} €
-                            {% else %}
                             <!-- {{ order.get_total_cost }} € -->
-                            {{ invoice.amount }} €
-                            {% endif %}
+                            {% if storno %}&minus;&nbsp;{% endif %}{{ invoice.amount }} €
                             {% if order.discounted %}*{% endif %}
                         </span></td>
                 </tr>

@@ -35,3 +35,7 @@ def events_in_frontend_context(request):
         events_in_frontend = Event.objects.none()
 
     return {"events_in_frontend": events_in_frontend}
+
+
+def dev_ribbon(request):
+    return {"SHOW_DEV_RIBBON": settings.DEBUG}

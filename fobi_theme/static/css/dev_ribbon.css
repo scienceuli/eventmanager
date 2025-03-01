@@ -1,0 +1,35 @@
+.dev-ribbon {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: red;
+    color: white;
+    padding: 10px 40px;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(-45deg);
+    transform-origin: top left;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+}
+
+
+.ribbon-1 {
+    position: fixed;
+    background: red;
+    box-shadow: 0 0 0 999px red;
+    clip-path: inset(0 -100%);
+    color: #fff;
+    font-size: 48px;
+    font-weight: bold;
+    padding: 10px 50px;
+    text-align: center;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+  .left {
+    inset: 0 auto auto 0;
+    transform-origin: 100% 0;
+    transform: translate(-29.3%) rotate(-45deg);
+  }
