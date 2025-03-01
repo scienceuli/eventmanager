@@ -9,18 +9,43 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('shop', '0021_auto_20250222_0738'),
-        ('mailqueue', '0009_alter_attachment_file_attachment'),
+        ("shop", "0021_auto_20250222_0738"),
+        # ('mailqueue', '0009_alter_attachment_file_attachment'),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='InvoiceMessage',
+            name="InvoiceMessage",
             fields=[
-                ('mailermessage_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='mailqueue.mailermessage')),
-                ('mail_type', models.CharField(choices=[('s', 'Storno'), ('i', 'Rechnung')], default='i', max_length=1)),
-                ('order', models.OneToOneField(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='shop.order')),
+                (
+                    "mailermessage_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="mailqueue.mailermessage",
+                    ),
+                ),
+                (
+                    "mail_type",
+                    models.CharField(
+                        choices=[("s", "Storno"), ("i", "Rechnung")],
+                        default="i",
+                        max_length=1,
+                    ),
+                ),
+                (
+                    "order",
+                    models.OneToOneField(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="shop.order",
+                    ),
+                ),
             ],
-            bases=('mailqueue.mailermessage',),
+            bases=("mailqueue.mailermessage",),
         ),
     ]
