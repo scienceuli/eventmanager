@@ -1,0 +1,210 @@
+[
+{
+  "model": "events.emailtemplate",
+  "pk": 1,
+  "fields": {
+    "uuid": "7c95f9b2-a6e3-45d0-9ca0-4a581b4e27c3",
+    "date_created": "2021-05-06T20:33:40.624Z",
+    "date_modified": "2025-02-27T08:08:09.970Z",
+    "name": "anmeldung",
+    "text_template": "Eine neue Anmeldung für eine VFLL-Veranstaltung ist eingegangen.\r\n\r\nVeranstaltung:\r\n\r\n{event} ({label})\r\nBeginn: {start} \r\n\r\nStatus: {attend_status}\r\n\r\nAnmeldedaten:\r\n{academic} {firstname} {lastname}\r\n{address_line}\r\n{street}\r\n{postcode} {city}\r\n{email}\r\n{phone}\r\nVFLL-Mitglied: {vfll}\r\nMitgliedschaften: {memberships}\r\nAnm.: {message}\r\nFreitextfeld:\r\n{free_text_field}\r\nEinverständniserklärung {check}",
+    "html_template": "<p>Eine neue Anmeldung für folgende VFLL-Veranstaltung ist eingegangen:</p>\r\n\r\n<p><b>{event}</b> ({label})</p>\r\n<p>Beginn: {start}</p>\r\n\r\n<p>Status: {attend_status}</p>\r\n\r\n<p>Anmeldedaten:<br/>\r\n\r\n{academic} {firstname} {lastname}<br/>\r\n{address_line}<br/>\r\n{street}</br>\r\n{postcode} {city}</br>\r\n{email}<br/>\r\n{phone}<br/>\r\nVFLL-Mitglied: {vfll}<br/>\r\nMitgliedschaften: {memberships}<br/>\r\nAnm.: {message}<br/>\r\nFreitextfeld: <br/>\r\n{free_text_field}<br/>\r\nEinverständniserklärung {check}",
+    "counter": 293
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 2,
+  "fields": {
+    "uuid": "32b20db2-53a1-42ca-87c8-8ab6c2de6882",
+    "date_created": "2021-05-10T06:15:34.012Z",
+    "date_modified": "2025-02-27T08:08:10.185Z",
+    "name": "bestaetigung",
+    "text_template": "Guten Tag {academic} {firstname} {lastname},\r\n\r\nvielen Dank für das Interesse an der VFLL-Fortbildung:\r\n{event}  \r\nBeginn: {start} \r\nDozent*innen: {speaker_string}\r\n\r\nHiermit bestätigen wir die Anmeldung. \r\n\r\nIhre Anmeldedaten:\r\n\r\n{academic} {firstname} {lastname}\r\n{address_line}\r\n{street}\r\n{postcode} {city}\r\n{email}\r\n{phone}\r\n\r\nSobald der Anmeldeschluss verstrichen ist (nach dem {close_date}), senden wir eine Einladung mit Informationen zur Veranstaltung. Einige Tage vor dem Veranstaltungsbeginn versendet die VFLL-Geschäftsstelle die Rechnungen über die Teilnahmegebühr. \r\n\r\n{sponsors_string}\r\n \r\nIhr Feedback und Ihre Anregungen zum Veranstaltungskalender des VFLL können Sie gerne an fortbildung@vfll.de schicken. \r\n\r\nViele Grüße\r\nvom VFLL-Fortbildungsteam\r\n\r\n--\r\nVerband der Freien Lektorinnen und Lektoren e. V.\r\nFortbildungsteam\r\nFranz-Mehring-Platz 1, 10243 Berlin\r\nKontakt: fortbildung@vfll.de\r\nVeranstaltungskalender: https://veranstaltungskalender.vfll.de/\r\n\r\n\r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 171
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 3,
+  "fields": {
+    "uuid": "70599ce2-65e6-419b-ba73-75e4c90bed43",
+    "date_created": "2021-07-26T22:23:09.692Z",
+    "date_modified": "2021-07-28T05:11:59.085Z",
+    "name": "mv_zw_anmeldung",
+    "text_template": "Eine neue Anmeldung für {event} ist eingegangen.\r\n\r\nStatus: {attend_status}\r\n\r\nAnmeldedaten:\r\n\r\n{firstname} {lastname}\r\n{email}\r\n\r\nArt der Mitgliedschaft: {member_type}\r\n\r\n{transfer_string}",
+    "html_template": "kommt noch",
+    "counter": 14
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 4,
+  "fields": {
+    "uuid": "a96ee5fd-ebcd-4c69-85df-8c75253bc432",
+    "date_created": "2021-07-26T22:24:19.990Z",
+    "date_modified": "2021-09-09T17:13:36.543Z",
+    "name": "mv_zw_bestaetigung",
+    "text_template": "Guten Tag,\r\n \r\nhiermit bestätigen wir deine Anmeldung zur folgenden VFLL-Veranstaltung:\r\n \r\n{event} \r\n \r\nDeine Anmeldedaten:\r\n \r\n{firstname} {lastname}\r\n{email}\r\n \r\n{member_type}.\r\n \r\n{transfer_string}\r\n \r\n{info_string}\r\n\r\n{waiting_string}\r\n \r\nHerzliche Grüße\r\nvon den Orgateams des VFLL\r\n \r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "kommt noch",
+    "counter": 33
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 5,
+  "fields": {
+    "uuid": "64b50a29-af02-4051-8ecf-68012c818b79",
+    "date_created": "2022-06-10T12:10:16.844Z",
+    "date_modified": "2022-09-10T07:59:21.030Z",
+    "name": "ft_anmeldung",
+    "text_template": "Eine neue Anmeldung für {event}, Beginn: {start}, ist eingegangen.\r\n\r\n\r\nAnmeldedaten:\r\n \r\n{firstname} {lastname}\r\n{address_line}\r\n{street}\r\n{postcode} {city}\r\n{email}\r\nTel: {phone}\r\n\r\nWorkshop: {ws2022}, Alternative: {ws_alter}\r\nTeilnahme an der MV: {takes_part_in_mv}\r\nMittagessen: {having_lunch}\r\nFührung: {tour}\r\nTeilnahme Netzwerkabend: {networking}\r\nTeilnahme: {yoga}\r\nTeilnahme Feier: {celebration}\r\nEssenwünsche: {food_preferences}\r\nMitgliedschaften: {memberships}\r\nKein Mitglied: {nomember}\r\nBemerkungen: {remarks}\r\n \r\n \r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 33
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 6,
+  "fields": {
+    "uuid": "469c44fe-89c6-44e2-969e-8169465f4cdc",
+    "date_created": "2022-06-10T12:14:39.796Z",
+    "date_modified": "2022-09-10T07:59:21.035Z",
+    "name": "ft_bestaetigung",
+    "text_template": "Guten Tag,\r\n \r\nhiermit bestätigen wir deine Anmeldung zur folgenden VFLL-Veranstaltung:\r\n \r\n{event} , Beginn: {start}\r\n \r\nDeine Anmeldedaten:\r\n \r\n{firstname} {lastname}\r\n{address_line}\r\n{street}\r\n{postcode} {city}\r\n{email}\r\nTel: {phone}\r\n\r\nWorkshop: {ws2022}, Alternative: {ws_alter}\r\nTeilnahme an der MV: {takes_part_in_mv}\r\nMittagessen: {having_lunch}\r\nFührung: {tour}\r\nTeilnahme Netzwerkabend: {networking}\r\nTeilnahme: {yoga}\r\nTeilnahme Feier: {celebration}\r\nEssenwünsche: {food_preferences}\r\nMitgliedschaften: {memberships}\r\nKein Mitglied: {nomember}\r\nBemerkungen: {remarks}\r\n \r\nHerzliche Grüße\r\nvon der Geschäftsstelle des VFLL\r\n \r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 34
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 7,
+  "fields": {
+    "uuid": "6f2aaa9b-f65c-465a-9736-64a65c8d27d4",
+    "date_created": "2023-07-02T08:28:48.917Z",
+    "date_modified": "2024-02-01T20:30:04.287Z",
+    "name": "paypal",
+    "text_template": "Guten Tag {academic} {firstname} {lastname},\r\n\r\nvielen Dank für das Interesse an der VFLL-Fortbildung!\r\n\r\nFolgende Veranstaltungen hast du gebucht und bereits bezahlt:\r\n\r\n{event_string}\r\n\r\nWunschgemäß erfolgte die Bezahlung der Teilnahmekosten in Höhe von {costs}  über PayPal. Die Rechnung hängt an.\r\n  \r\nFür Fragen stehen wir zur Verfügung unter fortbildung@vfll.de. \r\n\r\nViele Grüße\r\nvom VFLL-Fortbildungsteam\r\n\r\n--\r\nVerband der Freien Lektorinnen und Lektoren e. V.\r\nFortbildungsteam\r\nFranz-Mehring-Platz 1, 10243 Berlin\r\nKontakt: fortbildung@vfll.de\r\nVeranstaltungskalender: https://veranstaltungskalender.vfll.de/\r\n\r\n\r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 3
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 8,
+  "fields": {
+    "uuid": "b22ea918-4a3c-4ebb-87d5-f5e2b2c8e128",
+    "date_created": "2023-07-10T20:35:03.706Z",
+    "date_modified": "2025-02-24T09:48:16.032Z",
+    "name": "warteliste",
+    "text_template": "Guten Tag {academic} {firstname} {lastname},\r\n\r\nvielen Dank für das Interesse an der VFLL-Fortbildung:\r\n{event}  \r\nBeginn: {start} \r\nDozent*innen: {speaker_string}\r\n\r\nHiermit bestätigen wir die Aufnahme in die Warteliste, da das Seminar ausgebucht ist. \r\n\r\nIhre Anmeldedaten:\r\n\r\n{academic} {firstname} {lastname}\r\n{address_line}\r\n{street}\r\n{postcode} {city}\r\n{email}\r\n{phone}\r\n \r\n \r\nSollte bei der Veranstaltung ein Platz frei werden, informieren wir sie umgehend.\r\n \r\nFür Fragen stehen wir zur Verfügung unter fortbildung@vfll.de. \r\n\r\nViele Grüße\r\nvom VFLL-Fortbildungsteam\r\n\r\n--\r\nVerband der Freien Lektorinnen und Lektoren e. V.\r\nFortbildungsteam\r\nFranz-Mehring-Platz 1, 10243 Berlin\r\nKontakt: fortbildung@vfll.de\r\nVeranstaltungskalender: https://veranstaltungskalender.vfll.de/\r\n\r\n\r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 26
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 9,
+  "fields": {
+    "uuid": "b8c643d6-29fa-4ff7-94b3-22e0f20d267f",
+    "date_created": "2023-07-30T19:56:56.194Z",
+    "date_modified": "2025-02-23T15:46:04.375Z",
+    "name": "invoice",
+    "text_template": "Guten Tag {academic} {firstname} {lastname},\r\n\r\nvielen Dank für das Interesse an der VFLL-Fortbildung!\r\n\r\nFolgende Veranstaltungen haben Sie gebucht:\r\n\r\n{event_string}\r\n\r\n\r\nWunschgemäß erfolgt die Bezahlung der Teilnahmekosten in Höhe von {costs} € auf Rechnung. Die Rechnung hängt an.\r\n  \r\nFür Fragen stehen wir zur Verfügung unter fortbildung@vfll.de. \r\n\r\nViele Grüße\r\nvom VFLL-Fortbildungsteam\r\n\r\n--\r\nVerband der Freien Lektorinnen und Lektoren e. V.\r\nFortbildungsteam\r\nFranz-Mehring-Platz 1, 10243 Berlin\r\nKontakt: fortbildung@vfll.de\r\nVeranstaltungskalender: https://veranstaltungskalender.vfll.de/\r\n\r\n\r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 108
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 10,
+  "fields": {
+    "uuid": "ef8c0952-8ee5-4fbc-8513-2cce066765b7",
+    "date_created": "2023-08-14T15:54:42.539Z",
+    "date_modified": "2023-08-21T14:16:25.938Z",
+    "name": "mv_anmeldung",
+    "text_template": "Eine neue Anmeldung für {event} ist eingegangen.\r\n\r\nStatus: {attend_status}\r\n\r\nAnmeldedaten:\r\n\r\n{firstname} {lastname}\r\n{email}\r\n\r\nArt der Mitgliedschaft: {member_type}\r\n\r\n{transfer_string}",
+    "html_template": "",
+    "counter": 11
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 11,
+  "fields": {
+    "uuid": "15730856-0414-4dac-b729-505da4848dc6",
+    "date_created": "2023-08-14T15:55:05.739Z",
+    "date_modified": "2023-08-21T14:16:25.941Z",
+    "name": "mv_bestaetigung",
+    "text_template": "Guten Tag,\r\n \r\nhiermit bestätigen wir deine Anmeldung zur folgenden VFLL-Veranstaltung:\r\n \r\n{event} \r\n \r\nDeine Anmeldedaten:\r\n \r\n{firstname} {lastname}\r\n{email}\r\n \r\nArt der Mitgliedschaft {member_type}\r\n \r\n{transfer_string}\r\n \r\n \r\nHerzliche Grüße\r\nvon den Orgateams des VFLL\r\n \r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 11
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 12,
+  "fields": {
+    "uuid": "858f7fff-ef38-4d36-97b6-b9471546a4f8",
+    "date_created": "2024-02-22T11:58:09.063Z",
+    "date_modified": "2024-02-22T20:53:23.774Z",
+    "name": "reminder",
+    "text_template": "Guten Tag {firstname} {lastname},\r\n \r\nmit Datum vom {payment_date} haben wir Ihnen die Rechnung mit der Re-Nr. {order_number} (Veranstaltung/en: {events}) in Höhe von EUR {total_costs} zugeschickt. Leider konnten wir bislang keinen entsprechenden Geldeingang auf unserem Konto feststellen – oder haben wir diesen übersehen? Falls ja, möchten wir Sie bitten, uns mitzuteilen, wann Sie den Rechnungsbetrag an uns überwiesen haben, damit wir den Geldeingang nachvollziehen können. Falls nein, möchten wir Sie bitten, den Betrag umgehend an uns zu überweisen.\r\n  \r\nMit besten Grüßen\r\n\r\nVeronika Adelmann\r\nVFLL e. V. Geschäftsstelle\r\n\r\n\r\n----\r\nDiese E-Mail wurde automatisch erstellt.\r\nHeinrich-Albert-Str. 3 // 63916 Amorbach",
+    "html_template": "",
+    "counter": 5
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 13,
+  "fields": {
+    "uuid": "c1ff986c-4b40-4874-9716-27c574099b7a",
+    "date_created": "2024-07-05T11:47:40.981Z",
+    "date_modified": "2024-08-02T07:59:46.329Z",
+    "name": "ft_24_anmeldung",
+    "text_template": "Eine neue Anmeldung für {event}, Beginn: {start}, ist eingegangen.\r\n\r\nAnmeldedaten:\r\n \r\n{firstname} {lastname}\r\n{address_line}\r\n{street}\r\n{postcode} {city}\r\n{email}\r\nTel: {phone}\r\n\r\nTeilnahme an der FT: {takes_part_in_ft}\r\nTeilnahme an der MV: {takes_part_in_mv}\r\nMittagessen: {having_lunch}\r\nTeilnahme Netzwerkabend: {networking}\r\nTeilnahme Erfahrungsaustausch (AG Sprachwandel): {ideas}\r\nTeilnahme Führung: {yoga}\r\nTeilnahme Feier: {celebration}\r\nEssenwünsche: {food_preferences}\r\nAnmerkung zum Essen: {food_remarks}\r\nBuchungen: \r\n27./28.9.: {booking27}\r\n28./29.9.: {booking28}\r\nMitgliedschaften: {memberships}\r\nKein Mitglied: {nomember}\r\nBemerkungen: {remarks}\r\n \r\n \r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 15
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 14,
+  "fields": {
+    "uuid": "a0b03487-2acf-43e3-8ddd-f5adb2684f7d",
+    "date_created": "2024-07-05T11:48:12.263Z",
+    "date_modified": "2024-08-02T07:59:46.331Z",
+    "name": "ft_24_bestaetigung",
+    "text_template": "Guten Tag,\r\n \r\nhiermit bestätigen wir deine Anmeldung zur folgenden VFLL-Veranstaltung:\r\n \r\n{event} , Beginn: {start}\r\n \r\nDeine Anmeldedaten:\r\n \r\n{firstname} {lastname}\r\n{address_line}\r\n{street}\r\n{postcode} {city}\r\n{email}\r\nTel: {phone}\r\n\r\nTeilnahme an der FT: {takes_part_in_ft}\r\nTeilnahme an der MV: {takes_part_in_mv}\r\n\r\nMittagessen: {having_lunch}\r\nEssenwünsche: {food_preferences}\r\nAnm. Essen: {food_remarks}\r\n\r\nBuchungen:\r\n27./28.9.: {booking27}\r\n28./29.9.: {booking28}\r\n\r\nTeilnahme Netzwerkabend: {networking}\r\nTeilnahme Erfahrungsaustausch (AG Sprachwandel): {ideas}\r\nTeilnahme Führung: {yoga}\r\nTeilnahme Feier: {celebration}\r\n\r\nMitgliedschaften: {memberships}\r\nKein Mitglied: {nomember}\r\nBemerkungen: {remarks}\r\n \r\nHerzliche Grüße\r\nvon der Geschäftsstelle des VFLL\r\n \r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 15
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 15,
+  "fields": {
+    "uuid": "560e6ac3-29a8-4727-8d3a-15ba8a790e91",
+    "date_created": "2024-09-01T06:17:49.902Z",
+    "date_modified": "2024-09-01T06:31:45.287Z",
+    "name": "wc_anmeldung",
+    "text_template": "Eine neue Anmeldung für eine Willkommensveranstaltung ist eingegangen.\r\n\r\nVeranstaltung:\r\n\r\n{event} ({label})\r\nBeginn: {start} \r\n\r\nStatus: {attend_status}\r\n\r\nAnmeldedaten:\r\n{firstname} {lastname}\r\n\r\n{email}\r\n\r\nArt der Mitgliedschaft: {member_type}",
+    "html_template": "",
+    "counter": 1
+  }
+},
+{
+  "model": "events.emailtemplate",
+  "pk": 16,
+  "fields": {
+    "uuid": "792dba14-b379-4ceb-a263-a156910d15cd",
+    "date_created": "2024-09-01T06:20:33.523Z",
+    "date_modified": "2024-09-01T06:31:45.291Z",
+    "name": "wc_bestaetigung",
+    "text_template": "Guten Tag {firstname} {lastname},\r\n\r\nvielen Dank für die Anmeldung zur Willkommensveranstaltung:\r\n{event}  \r\nBeginn: {start} \r\n\r\n\r\nHiermit bestätigen wir die Anmeldung. \r\n\r\nIhre Anmeldedaten:\r\n\r\n{firstname} {lastname}\r\n{email}\r\n\r\nMitgleidschaft: {member_type}\r\n \r\nIhr Feedback und Ihre Anregungen zum Veranstaltungskalender des VFLL können Sie gerne an fortbildung@vfll.de schicken. \r\n\r\nViele Grüße\r\nvom VFLL-Fortbildungsteam\r\n\r\n--\r\nVerband der Freien Lektorinnen und Lektoren e. V.\r\nFortbildungsteam\r\nFranz-Mehring-Platz 1, 10243 Berlin\r\nKontakt: fortbildung@vfll.de\r\nVeranstaltungskalender: https://veranstaltungskalender.vfll.de/\r\n\r\n\r\n----\r\nDiese E-Mail wurde automatisch erstellt.",
+    "html_template": "",
+    "counter": 1
+  }
+}
+]
