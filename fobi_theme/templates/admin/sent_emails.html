@@ -1,0 +1,62 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<h1>📧 Gesendete E-Mails</h1>
+
+{% if emails %}
+<style>
+    .email-container {
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background: #f9f9f9;
+    }
+
+    .email-header {
+        padding: 10px;
+        background: #0073aa;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        border-radius: 5px 5px 0 0;
+    }
+
+    .email-content {
+        display: none;
+        padding: 10px;
+        background: #fff;
+        border-top: 1px solid #ddd;
+        white-space: pre-wrap;
+        /* Preserve formatting */
+        font-family: monospace;
+    }
+
+    .email-header:hover {
+        background: #005f8d;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".email-header").forEach(header => {
+            header.addEventListener("click", function () {
+                let content = this.nextElementSibling;
+                content.style.display = content.style.display === "none" ? "block" : "none";
+            });
+        });
+    });
+</script>
+
+{% for email in emails %}
+<div class="email-container">
+    <div class="email-header">
+        {{ email.filename }} (Klicken zum Ausklappen)
+    </div>
+    <div class="email-content">
+        <pre>{{ email.content }}</pre>
+    </div>
+</div>
+{% endfor %}
+{% else %}
+<p>Keine E-Mails gefunden.</p>
+{% endif %}
+{% endblock %}

@@ -3,6 +3,7 @@ from django.utils.html import format_html, mark_safe
 from django.contrib import admin
 
 from .models import InvoiceMessage
+from django.urls import reverse
 
 from mailqueue.admin import MailerAdmin  # Import base admin class
 
@@ -71,3 +72,15 @@ class InvoiceMessageAdmin(MailerAdmin):
 
     invoice_date_display.admin_order_field = "invoice"  # Enables sorting by order
     invoice_date_display.short_description = "Rechnungsdatum"  # Column name in admin
+
+
+class SentMailsAdmin(admin.ModelAdmin):
+    list_display = ("id", "view_email_logs")  # Add the button to the admin list
+
+    def view_email_logs(self, obj):
+        url = reverse("mailings:view-emails")
+        return format_html(
+            '<a href="{}" target="_blank" class="button">Gesendete Emails</a>', url
+        )
+
+    view_email_logs.short_description = "Email Logs"

@@ -8,6 +8,7 @@ To activate your index dashboard add the following to your settings.py::
 
 from django.utils.translation import gettext_lazy as _
 from django.urls import reverse
+from django.conf import settings
 
 from grappelli.dashboard import modules, Dashboard
 from grappelli.dashboard.utils import get_admin_site_name
@@ -60,6 +61,19 @@ class CustomIndexDashboard(Dashboard):
                 ],
             )
         )
+        if settings.DEBUG:
+            self.children.append(
+                modules.LinkList(
+                    "Email Logs",
+                    column=1,
+                    children=[
+                        {
+                            "title": _("Gesendete Emails"),
+                            "url": reverse("mailings:view-emails"),
+                        },
+                    ],
+                )
+            )
 
         # append a group for "Administration" & "Applications"
         self.children.append(
