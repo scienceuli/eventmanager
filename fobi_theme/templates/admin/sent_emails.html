@@ -46,17 +46,18 @@
     });
 </script>
 
-{% for email in emails %}
 <div class="email-container">
+    {% for email in emails %}
     <div class="email-header">
         {{ email.filename }} (Klicken zum Ausklappen)
     </div>
     <div class="email-content">
         <pre>{{ email.content }}</pre>
     </div>
+    {% endfor %}
+    {% else %}
+    <p>Keine E-Mails gefunden.</p>
+    {% endif %}
+
 </div>
-{% endfor %}
-{% else %}
-<p>Keine E-Mails gefunden.</p>
-{% endif %}
 {% endblock %}
