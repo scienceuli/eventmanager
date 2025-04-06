@@ -4,13 +4,13 @@
 
 <div class="max-w-3xl mx-auto pt-8">
 
-<h1>{{ object.firstname }} {{ object.lastname }}</h1>
-<p class="mb-4">{{ object.email }}</p>
-<p>Stimmübertragung: {{ object.vote_transfer }}</p>
-<p>Stimmübertragung Check: {{ object.vote_transfer_check }}</p>
-<p>Einverständniserklärung: {{ object.check }}</p>
+    <h1>{{ object.firstname }} {{ object.lastname }}</h1>
+    <p class="mb-4">{{ object.email }}</p>
+    <p>Stimmübertragung: {{ object.vote_transfer }}</p>
+    <p>Stimmübertragung Check: {{ object.vote_transfer_check }}</p>
+    <p>Einverständniserklärung: {{ object.agree }}</p>
 
-<p>Angelegt: {{ object.date_created|date }}</p>
+    <p>Angelegt: {{ object.date_created|date }}</p>
 
 </div>
 

@@ -34,6 +34,9 @@ INTERNAL_IPS = [
 # Default Auto Field
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
+# site id
+SITE_ID = 1
+
 
 # Application definition
 
@@ -48,6 +51,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
     "django_filters",
     "django_tables2",
     "django_countries",
@@ -78,6 +82,7 @@ INSTALLED_APPS = [
     "markdownify.apps.MarkdownifyConfig",
     "admin_export_action",
     "honeypot",
+    "newsletter",
     # tailwind theme app
     "fobi_theme",
     "django_browser_reload",
@@ -90,7 +95,7 @@ INSTALLED_APPS = [
     "payment.apps.PaymentConfig",
     "faqs.apps.FaqsConfig",
     "reports.apps.ReportsConfig",
-    "newsletter.apps.NewsletterConfig",
+    "simple_newsletter.apps.NewsletterConfig",
     "mailings.apps.MailingsConfig",
     "invoices.apps.InvoicesConfig",
     "utilities.apps.UtilitiesConfig",
@@ -289,3 +294,9 @@ HONEYPOT_FIELD_NAME = "secret_key"
 # invoiceninja settings
 INVOICE_NINJA_API_KEY = os.environ.get("INVOICE_NINJA_API_KEY", None)
 INVOICE_NINJA_BASE_URL = os.environ.get("INVOICE_NINJA_BASE_URL", None)
+
+# django-newsletter settings
+# Using easy-thumbnails
+NEWSLETTER_THUMBNAIL = "easy-thumbnails"
+# Using django-tinymce
+NEWSLETTER_RICHTEXT_WIDGET = "tinymce.widgets.TinyMCE"

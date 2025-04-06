@@ -5,104 +5,104 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-md-12">
-        <div class="card">
-            <div class="card-header">
-                <div class="row">
-                    <div class="col-md-10">
-                        <div class="jumbotron jumbotron-fluid">
-                            <div class="container">
-                                <h1 class="display-3">{{ event.name }}</h1>
-                                <p class='lead'>Termin: {{ event.start_date|date:"DATE_FORMAT" }}{% if event.end_date %}
-                                    -
-                                    {{ event.end_date|date:"DATE_FORMAT" }}{% endif %}</p>
-                                <p><span>Ort: {{ event.location.city }}</span></p>
-                                <p><span>Refent*in: {{ event.speaker }}</span></p>
+  <div class="col-md-12">
+    <div class="card">
+      <div class="card-header">
+        <div class="row">
+          <div class="col-md-10">
+            <div class="jumbotron jumbotron-fluid">
+              <div class="container">
+                <h1 class="display-3">{{ event.name }}</h1>
+                <p class='lead'>Termin: {{ event.start_date|date:"DATE_FORMAT" }}{% if event.end_date %}
+                  -
+                  {{ event.end_date|date:"DATE_FORMAT" }}{% endif %}</p>
+                <p><span>Ort: {{ event.location.city }}</span></p>
+                <p><span>Refent*in: {{ event.speaker }}</span></p>
 
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+              </div>
             </div>
-            <div class="card-body">
-                <div class="panel panel-primary" style="margin:20px;">
-                    <div class="panel-heading">
-                        <h3 class="panel-title">Anmeldung</h3>
-                    </div>
-                    <div class="panel-body">
-                        <form method="post">
-                            {% csrf_token %}
-                            <div class="form-row">
-                                <div class="form-group col-md-6 mb-0">
-                                  {{ form.firstname|as_crispy_field }}
-                                </div>
-                                <div class="form-group col-md-6 mb-0">
-                                  {{ form.lastname|as_crispy_field }}
-                                </div>
-                              </div>
-                              {{ form.address_line|as_crispy_field }}
-                              {{ form.street|as_crispy_field }}
-                              <div class="form-row">
-                                <div class="form-group col-md-2 mb-0">
-                                  {{ form.postcode|as_crispy_field }}
-                                </div>
-                                <div class="form-group col-md-10 mb-0">
-                                  {{ form.city|as_crispy_field }}
-                                </div>
-                              </div>
+          </div>
 
-                              <div class="form-row">
-                                <div class="form-group col-md-12 mb-0">
-                                  {{ form.state|as_crispy_field }}
-                                </div>
-                                
-                              </div>
-
-                              <div class="form-row">
-                                <div class="form-group col-md-6 mb-0">
-                                  {{ form.email|as_crispy_field }}
-                                </div>
-                                <div class="form-group col-md-6 mb-0">
-                                  {{ form.phone|as_crispy_field }}
-                                </div>
-                              </div>
-                              <hr/>
-                              {{ form.vfll|as_crispy_field }}
-                              <div class="form-row">
-                                <div class="form-group col-md-6 mb-0">
-                                  {{ form.memberships|as_crispy_field }}
-                                </div>
-                                <div class="form-group col-md-6 mb-0">
-                                  {{ form.attention|as_crispy_field }}
-                                  {{ form.attention_other|as_crispy_field }}
-
-                                </div>
-                              </div>
-                              {{ form.education_bonus|as_crispy_field }}
-                              <hr/>
-                              <p>
-                                <b>Anmeldeverfahren:</b> Anmeldung – Rechnungsstellung nach Anmeldeschluss – Zahlung nach Rechnungserhalt. Die Anmeldungen werden in der Reihenfolge ihres Eingangs berücksichtigt.
-                              </p>
-                              <p>
-                                Bei einer Stornierung der Teilnahme nach dem Anmeldeschluss wird die Teilnahmegebühr nur erstattet, wenn a) eine Person von der Warteliste nachrücken kann oder b) die Person, die storniert, eine Ersatzperson stellt. Dies gilt auch im Krankheitsfall. Bei einer Stornierung der Teilnahme vor dem Anmeldeschluss entstehen keine Kosten.
-                                
-                              </p>
-                              <hr/>
-                              <div class="alert alert-primary" role="alert">
-                                  <strong>Einverständniserklärung</strong>
-                                  {{ form.check|as_crispy_field }}
-                              </div>
-
-                              
-                            <button class="btn btn-success ml-2" type="submit">Anmelden</button>
-                            <button class="btn btn-link" onclick="javascript:history.back();">Abbrechen</button>
-                        </form>
-                    </div>
-                </div>
-                
-            </div>
         </div>
+      </div>
+      <div class="card-body">
+        <div class="panel panel-primary" style="margin:20px;">
+          <div class="panel-heading">
+            <h3 class="panel-title">Anmeldung</h3>
+          </div>
+          <div class="panel-body">
+            <form method="post">
+              {% csrf_token %}
+              <div class="form-row">
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.firstname|as_crispy_field }}
+                </div>
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.lastname|as_crispy_field }}
+                </div>
+              </div>
+              {{ form.address_line|as_crispy_field }}
+              {{ form.street|as_crispy_field }}
+              <div class="form-row">
+                <div class="form-group col-md-2 mb-0">
+                  {{ form.postcode|as_crispy_field }}
+                </div>
+                <div class="form-group col-md-10 mb-0">
+                  {{ form.city|as_crispy_field }}
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-12 mb-0">
+                  {{ form.state|as_crispy_field }}
+                </div>
+
+              </div>
+
+              <div class="form-row">
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.email|as_crispy_field }}
+                </div>
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.phone|as_crispy_field }}
+                </div>
+              </div>
+              <hr />
+              {{ form.vfll|as_crispy_field }}
+              <div class="form-row">
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.memberships|as_crispy_field }}
+                </div>
+                <div class="form-group col-md-6 mb-0">
+                  {{ form.attention|as_crispy_field }}
+                  {{ form.attention_other|as_crispy_field }}
+
+                </div>
+              </div>
+              {{ form.education_bonus|as_crispy_field }}
+              <hr />
+              <p>
+                <b>Anmeldeverfahren:</b> Anmeldung – Rechnungsstellung nach Anmeldeschluss – Zahlung nach Rechnungserhalt. Die Anmeldungen werden in der Reihenfolge ihres Eingangs berücksichtigt.
+              </p>
+              <p>
+                Bei einer Stornierung der Teilnahme nach dem Anmeldeschluss wird die Teilnahmegebühr nur erstattet, wenn a) eine Person von der Warteliste nachrücken kann oder b) die Person, die storniert, eine Ersatzperson stellt. Dies gilt auch im Krankheitsfall. Bei einer Stornierung der Teilnahme vor dem Anmeldeschluss entstehen keine Kosten.
+
+              </p>
+              <hr />
+              <div class="alert alert-primary" role="alert">
+                <strong>Einverständniserklärung</strong>
+                {{ form.agree|as_crispy_field }}
+              </div>
+
+
+              <button class="btn btn-success ml-2" type="submit">Anmelden</button>
+              <button class="btn btn-link" onclick="javascript:history.back();">Abbrechen</button>
+            </form>
+          </div>
+        </div>
+
+      </div>
     </div>
+  </div>
 </div>
 {% endblock content %}

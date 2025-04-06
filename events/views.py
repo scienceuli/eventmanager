@@ -153,7 +153,7 @@ import itertools
 
 from wkhtmltopdf.views import PDFTemplateResponse
 
-from newsletter.models import NewsletterSubscription
+from simple_newsletter.models import NewsletterSubscription
 
 import locale
 
@@ -889,7 +889,7 @@ def get_additional_form_data(form, event, form_type):
         data_dict["attention_other"] = form.cleaned_data["attention_other"]
         data_dict["education_bonus"] = form.cleaned_data["education_bonus"]
         data_dict["free_text_field"] = form.cleaned_data["free_text_field"]
-        data_dict["check"] = form.cleaned_data["check"]
+        data_dict["agree"] = form.cleaned_data["agree"]
         if event.is_full():
             data_dict["attend_status"] = "waiting"
         else:
@@ -987,7 +987,7 @@ def make_event_registration(request, form, event):
         f24_additional_data = get_additional_form_data(form, event, "f24")
         f24_data_dict = get_f24_form_data(form)
         new_member = EventMember.objects.create(
-            check=True,
+            agree=True,
             data=f24_data_dict,
             attend_status="registered",
             event=event,
@@ -1568,7 +1568,7 @@ class EventMemberCreateView(MVOrgaGroupTestMixin, CreateView):
     def form_valid(self, form):
         self.object = form.save(commit=False)
         self.object.takes_part = True
-        self.object.check = True
+        self.object.agree = True
         self.object.event = self.event
         if self.event_members.count() >= self.event.capacity:
             self.object.attend_status = "waiting"
@@ -1696,7 +1696,7 @@ def export_mv_members_csv(request, event):
             members_mv.values_list(
                 "vote_transfer",
                 "vote_transfer_check",
-                "check",
+                "agree",
             )
         )
 
@@ -2031,7 +2031,7 @@ def export_participants(request, event_id, version):
             "get_memberships_boolean",
             "get_no_memberships_boolean",
             # "vfll",
-            # "check",
+            # "agree",
             "date_created",
             "get_order_nr",
             "get_order_price",
