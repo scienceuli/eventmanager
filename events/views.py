@@ -58,6 +58,8 @@ from bootstrap_modal_forms.generic import (
 
 from django_tables2 import SingleTableView
 
+from meta.views import Meta
+
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
 from rest_framework import permissions, status
@@ -82,6 +84,7 @@ from events.utils import (
     convert_data_date,
     convert_boolean_field,
     no_duplicate_check,
+    convert_html_to_text,
 )
 
 # logging
@@ -211,6 +214,11 @@ def registration_possible_for_this_event(label):
 
 def home(request):
     home = Home.objects.all().first()
+    if not home:
+        home = Home.objects.create(name=settings.HOME_NAME,
+            title=settings.HOME_TITLE,
+            text=settings.HOME_TEXT)
+                            
     event_highlight_query = EventHighlight.objects.filter(id=1).filter(
         event__first_day__gte=date.today()
     )
@@ -219,10 +227,23 @@ def home(request):
     else:
         event_highlight = None
 
+    _metadata = {
+        'title': 'title',
+        'description': 'text',
+        'image': 'get_meta_image',
+    }
+
+    meta = Meta(
+        title=home.title,
+        description=home.text if home.text else settings.DEFAULT_META_DESCRIPTION,
+        keywords=[kw.strip() for kw in home.keywords.split(",") ] if home.keywords else settings.DEFAULT_META_KEYWORDS,
+    )
+
     context = {
         "event_highlight": event_highlight,
         "home": home,
         "all_events_headline": settings.ALL_EVENTS_HEADLINE,
+        'meta': meta
     }
 
     return render(request, "events/home.html", context)
@@ -703,6 +724,15 @@ class EventDetailView(HitCountDetailView):
         context["payless_collection"] = payless_collection
         context["event_documents"] = event.event_documents.all()
         # context["show_action_button"] = show_action_button
+
+        # meta
+
+        meta = Meta(
+            title=self.get_object().name,
+            description=convert_html_to_text(self.get_object().description) if self.get_object().description else settings.DEFAULT_META_DESCRIPTION,
+            keywords=[kw.strip() for kw in self.get_object().keywords.split(",") ] if self.get_object().keywords else settings.DEFAULT_META_KEYWORDS,
+        )
+        context["meta"] = meta
         return context
 
 

@@ -34,6 +34,8 @@ INTERNAL_IPS = [
 # Default Auto Field
 DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
+SITE_ID = 1
+
 
 # Application definition
 
@@ -48,6 +50,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "django.contrib.sitemaps",
     "django_filters",
     "django_tables2",
     "django_countries",
@@ -77,6 +81,7 @@ INSTALLED_APPS = [
     "markdownify.apps.MarkdownifyConfig",
     "admin_export_action",
     "honeypot",
+    "meta",
     # tailwind theme app
     "fobi_theme",
     "django_browser_reload",
@@ -283,3 +288,5 @@ HONEYPOT_FIELD_NAME = "secret_key"
 # invoiceninja settings
 INVOICE_NINJA_API_KEY = os.environ.get("INVOICE_NINJA_API_KEY", None)
 INVOICE_NINJA_BASE_URL = os.environ.get("INVOICE_NINJA_BASE_URL", None)
+
+

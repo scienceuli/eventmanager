@@ -5,6 +5,7 @@ import sys
 from decimal import Decimal
 from datetime import datetime
 from datetime import date
+from bs4 import BeautifulSoup
 
 from django.contrib.auth.models import Group
 
@@ -47,6 +48,8 @@ class Home(BaseModel):
     name = models.CharField("Name", max_length=40)
     title = models.CharField("Titel", max_length=255, null=True, blank=True)
     text = models.TextField("Haupttext", blank=True)
+    image = models.ImageField(default='images/vfll_logo_rot_Bild.jpg', upload_to='home/')
+    keywords = models.CharField("Keywords", max_length=255, null=True, blank=True, help_text="Keywords für SEO, bitte mit Komma getrennt angeben.")    
 
     class Meta:
         verbose_name = "Home"
@@ -417,7 +420,8 @@ class Event(BaseModel, HitCountMixin):
     oneliner = models.CharField(max_length=80, blank=True)
     slug = models.SlugField(max_length=255, null=False, unique=True, editable=True)
     eventurl = models.URLField(null=True, blank=True)
-
+    image = models.ImageField(default="images/vfll_logo_rot_Bild.jpg")
+    keywords = models.CharField(max_length=255, blank=True, help_text="Keywords für SEO, bitte mit Komma getrennt angeben.")
     pub_status = models.CharField(
         max_length=8,
         choices=PUB_STATUS_CHOICES,
@@ -646,6 +650,17 @@ class Event(BaseModel, HitCountMixin):
         related_query_name="hit_count_generic_relation",
     )
 
+    # _metadata = {
+    #     "title": "name",
+    #     "description": "get_meta_description",
+    #     "image": "get_meta_image",
+    # }
+
+    # def get_meta_description(self):
+    #     if self.description:
+    #         soup = BeautifulSoup(self.description, "html.parser")
+    #         return soup.get_text()
+
     class Meta:
         ordering = ("start_date",)
         verbose_name = "Veranstaltung"
@@ -653,6 +668,10 @@ class Event(BaseModel, HitCountMixin):
 
     def __str__(self):
         return f"{self.name} ({self.first_day})"
+
+    def get_meta_image(self):
+        if self.image:
+            return self.image.url
 
     def clean(self):
         """
