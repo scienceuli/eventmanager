@@ -313,3 +313,6 @@ def no_duplicate_check(email, event):
 def convert_html_to_text(html):
     soup = BeautifulSoup(html, "html.parser")
     return soup.get_text()
+
+def remove_linebreaks(text):
+    return text.replace('\n', ' ').replace('\r', '')
