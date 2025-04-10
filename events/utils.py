@@ -1,5 +1,6 @@
 import re
 import logging
+from bs4 import BeautifulSoup
 
 from smtplib import SMTPException
 
@@ -308,3 +309,7 @@ def no_duplicate_check(email, event):
     ):
         return False
     return True
+
+def convert_html_to_text(html):
+    soup = BeautifulSoup(html, "html.parser")
+    return soup.get_text()

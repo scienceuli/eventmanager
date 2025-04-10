@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.sites",
+    "django.contrib.sitemaps",
     "django_filters",
     "django_tables2",
     "django_countries",
@@ -84,6 +85,7 @@ INSTALLED_APPS = [
     "admin_export_action",
     "honeypot",
     # "newsletter",
+    "meta",
     # tailwind theme app
     "fobi_theme",
     "django_browser_reload",

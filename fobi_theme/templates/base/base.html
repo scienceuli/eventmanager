@@ -1,15 +1,14 @@
-{% load static auth_tags tailwind_tags %}
+{% load static auth_tags tailwind_tags meta %}
 <!DOCTYPE html>
 <html lang="en">
 
-<head>
+<head {% meta_namespaces %}>
+  {% include "meta/meta.html" %}
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta http-equiv="X-UA-Compatible" content="ie=edge">
 	<title>{% block title %}{% endblock title %}</title>
-	<meta name="description" content="">
-	<meta name="keywords" content="">
-	<meta name="author" content="">
+	
 	<!--	<script src="https://kit.fontawesome.com/23664e4bd4.js" crossorigin="anonymous"></script> -->
 	<link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
 	<link href="{% static 'fontawesomefree/css/brands.css' %}" rel="stylesheet" type="text/css">
@@ -23,6 +22,11 @@
 
 	<!-- tailwind generated -->
   <link rel='stylesheet' href="{% static 'css/output.css' %}">
+
+	{% if SHOW_DEV_RIBBON %}
+	<link rel='stylesheet' href="{% static 'css/dev_ribbon.css' %}">
+
+	{% endif %}
 
 	{% if SHOW_DEV_RIBBON %}
 	<link rel='stylesheet' href="{% static 'css/dev_ribbon.css' %}">

@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 from users.forms import EmailValidationOnForgotPassword
 
 from django.contrib.staticfiles.urls import static, staticfiles_urlpatterns
+from django.contrib.sitemaps.views import sitemap
 
 from django_otp.admin import AdminSite
 
@@ -13,11 +14,16 @@ import private_storage.urls
 
 # from .views import dashboard, login_page, logut_page
 from events.views import admin_event_pdf
+from events.sitemaps import EventSitemap
 
 # 2FA / OTP
 from django_otp.admin import OTPAdminSite
 
 # admin.site.__class__ = OTPAdminSite
+
+sitemaps = {
+    "events": EventSitemap,
+}
 
 
 urlpatterns = [
@@ -26,6 +32,12 @@ urlpatterns = [
     path("grappelli/", include("grappelli.urls")),  # grappelli URLS
     path("__reload__/", include("django_browser_reload.urls")),
     path("admin/", admin.site.urls),
+    path(
+        "sitemap.xml",
+        sitemap,
+        {"sitemaps": sitemaps},
+        name="django.contrib.sitemaps.views.sitemap",
+    ),
     # path("admin/", admin_site.urls),
     path("users/", include("users.urls")),
     # path(

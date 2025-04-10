@@ -1122,7 +1122,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     )
     fieldsets = (
         (
-            "Name, Kurztitel, Format, Status, Editierbarkeit",
+            "Name, Kurztitel, Format, Status, Editierbarkeit, SEO",
             {
                 "fields": (
                     "name",
@@ -1134,6 +1134,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "edit_in_frontend",
                     "visible_to_groups",
                     "show_date",
+                    "keywords",
                 )
             },
         ),
