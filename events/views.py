@@ -85,6 +85,7 @@ from events.utils import (
     convert_boolean_field,
     no_duplicate_check,
     convert_html_to_text,
+    remove_linebreaks,
 )
 
 # logging
@@ -729,7 +730,7 @@ class EventDetailView(HitCountDetailView):
 
         meta = Meta(
             title=self.get_object().name,
-            description=convert_html_to_text(self.get_object().description) if self.get_object().description else settings.DEFAULT_META_DESCRIPTION,
+            description=remove_linebreaks(convert_html_to_text(self.get_object().description) if self.get_object().description else settings.DEFAULT_META_DESCRIPTION),
             keywords=[kw.strip() for kw in self.get_object().keywords.split(",") ] if self.get_object().keywords else settings.DEFAULT_META_KEYWORDS,
         )
         context["meta"] = meta
