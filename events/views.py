@@ -727,10 +727,17 @@ class EventDetailView(HitCountDetailView):
         # context["show_action_button"] = show_action_button
 
         # meta
+        if self.get_object().meta_description:
+            description=self.get_object().meta_description
+        elif self.get_object().description:
+            description=convert_html_to_text(self.get_object().description)
+        else:
+            description = settings.DEFAULT_META_DESCRIPTION
+        description = remove_linebreaks(description)
 
         meta = Meta(
             title=self.get_object().name,
-            description=remove_linebreaks(convert_html_to_text(self.get_object().description) if self.get_object().description else settings.DEFAULT_META_DESCRIPTION),
+            description=description,
             keywords=[kw.strip() for kw in self.get_object().keywords.split(",") ] if self.get_object().keywords else settings.DEFAULT_META_KEYWORDS,
         )
         context["meta"] = meta

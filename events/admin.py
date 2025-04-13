@@ -1135,6 +1135,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "visible_to_groups",
                     "show_date",
                     "keywords",
+                    "meta_description",
                 )
             },
         ),
