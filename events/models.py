@@ -451,6 +451,9 @@ class Event(BaseModel, HitCountMixin):
     description = RichTextUploadingField(
         verbose_name="Teaser", blank=True, config_name="short"
     )
+    meta_description = models.CharField(
+        verbose_name="Meta Beschreibung", max_length=255, null=True, blank=True
+    )
     duration = models.CharField(
         verbose_name="Dauer", max_length=255, null=True, blank=True
     )
