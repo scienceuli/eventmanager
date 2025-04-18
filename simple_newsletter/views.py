@@ -67,7 +67,7 @@ def create_newsletter(request):
             return redirect("newsletter:newsletter-list")
         
     context['form']= form     
-    return render(request, "simple_newsletter/create_newsletter.html", context)
+    return render(request, "simple_newsletter/edit_newsletter.html", context)
 
 @login_required
 def newsletter_list(request):
