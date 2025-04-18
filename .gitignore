@@ -67,6 +67,7 @@ production.py
 development.py
 db.sqlite3
 db.sqlite3-journal
+db-dev.sqlite3
 manage.py
 media
 
@@ -151,5 +152,12 @@ ngrok
 
 # specific files
 orders_sent.csv
+
+# node modules
+node_modules/
+
+# old templates
+fobi_theme_legacy/
+
 
 

@@ -1,0 +1,44 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+
+{% block content %}
+
+<div class="max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:py-32 lg:px-8 lg:flex lg:items-center">
+    <div>
+        <div>
+        <a href="{% url 'newsletter:create-newsletter' %}" name="create-nl" id="create-nl" class="items-center justify-center py-3 px-5 border border-transparent text-base font-medium rounded-md text-white bg-vfllred hover:bg-vfllred focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            Email Template anlegen
+        </a>
+        </div>
+
+        <div class="sm:flex sm:items-center mt-6">
+          <div class="sm:flex-auto">
+            <h1 class="text-xl font-semibold text-gray-900">Newsletters</h1>
+          </div>
+          
+        </div>
+        <div class="mt-8 flow-root">
+          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+            
+                {% include 'simple_newsletter/_newsletter_table.html' %}
+            </div>
+          </div>
+        </div>
+    </div>   
+        
+</div>
+
+
+{% endblock %}
+
+{% block extrascript %}
+<script src="https://unpkg.com/htmx.org@1.1.0"></script>
+<script>
+    document.body.addEventListener('htmx:configRequest', (event) => {
+    event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    })
+</script>
+
+{% endblock %}

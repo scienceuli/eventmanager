@@ -21,8 +21,8 @@
 	-->
 	{% block extra_head %}{% endblock %}
 
-	{% tailwind_preload_css v='2.1' %}
-	{% tailwind_css v='2.1' %}
+	<!-- tailwind generated -->
+  <link rel='stylesheet' href="{% static 'css/output.css' %}">
 
 	{% if SHOW_DEV_RIBBON %}
 	<link rel='stylesheet' href="{% static 'css/dev_ribbon.css' %}">
@@ -101,6 +101,12 @@
 			{% endcomment %}
 			{% if user.is_authenticated %}
 			<a class='px-3 py-3' href="{% url 'event-list-internal' %}">E</a>
+
+      {% if user|has_group:"newsletter" %}
+			<a class='px-3 py-3' href="{% url 'newsletter:newsletter-list' %}">NL</a>
+
+      {% endif %}
+
 
 			{% if user|has_group:"mv_orga" %}
 			{% comment %}<a class='px-3 py-3' href="{% url 'members' event=event_in_frontend %}">TN</a>{% endcomment %}

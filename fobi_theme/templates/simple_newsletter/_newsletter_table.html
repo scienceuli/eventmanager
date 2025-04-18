@@ -1,0 +1,59 @@
+<table id="newsletters" hx-confirm="Are you sure you want to delete this task?"
+hx-target="#newsletters"
+hx-swap="outerHTML" class="min-w-full divide-y divide-gray-300">
+    <thead>
+      <tr>
+        <th scope="col" class="py-3.5 pr-3 pl-4 text-left text-sm font-semibold text-gray-900 sm:pl-0">Titel</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Subject</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">angelegt am</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">gesendet am</th>
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Aktionen</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200" >
+        {% for newsletter in newsletters %}
+      <tr>
+        <td class="py-4 pr-3 pl-4 text-sm font-medium whitespace-nowrap text-gray-900 sm:pl-0">{{newsletter.title}}</td>
+        <td class="px-3 py-4 text-sm whitespace-nowrap text-blue">{{newsletter.subject}}</td>
+        <td class="px-3 py-4 text-sm whitespace-nowrap text-gray">{{newsletter.created_at}}</td>
+        <td class="px-3 py-4 text-sm whitespace-nowrap text-gray">
+            {% if newsletter.sent_at %}
+            <span class='text-green-600'>{{newsletter.sent_at}}</span>
+            {% else %}
+            -
+            {% endif %}
+        </td>
+        <td class="relative py-4 pr-4 pl-3 text-left text-sm font-medium whitespace-nowrap sm:pr-0">
+            <div class="flex items-center space-x-2">
+            {% if not newsletter.sent_at %}
+            <form class='flex items-center' method="POST" action="{% url 'newsletter:send-newsletter' newsletter.id %}" onsubmit="return confirm('Wirklich senden?');">
+                {% csrf_token %}
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                    <i class="fa fa-envelope" aria-hidden="true"></i>
+                </button>
+            </form>
+           
+            {% endif %}   
+            <a href="{% url 'newsletter:edit-newsletter' newsletter.id %}" class=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2">
+                <i class="fas fa-edit"></i>
+            </a>  
+            <a href="{% url 'newsletter:copy-newsletter' newsletter.id %}" class=" bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                <i class="fa fa-copy" aria-hidden="true"></i>
+            </a>   
+            <button class="bg-vfllred hover:bg-gray-300 text-white font-bold py-2 px-4 rounded mr-2"
+                hx-delete="{% url 'newsletter:delete-newsletter' newsletter.id %}">
+                <i class="fa fa-trash" aria-hidden="true"></i>
+            </button>
+
+            <a  href="{% url 'newsletter:preview-newsletter' newsletter.pk %}" target='_blank'
+                class="bg-blue-600 hover:bg-gray-300 text-white font-bold py-2 px-4 rounded mr-2"><i class="fa fa-eye" aria-hidden="true"></i>
+            </a>
+            
+            </div>
+            
+        </td>
+      </tr>
+      {% endfor %}
+
+    </tbody>
+  </table>

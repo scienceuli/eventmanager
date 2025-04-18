@@ -74,7 +74,7 @@ urlpatterns = [
     path("paypal/", include("paypal.standard.ipn.urls")),
     path("mailings/", include("mailings.urls")),
     path("simple_newsletter/", include("simple_newsletter.urls")),
-    path("newsletter/", include("newsletter.urls")),
+    #path("newsletter/", include("newsletter.urls")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<int:event_id>/pdf/", admin_event_pdf, name="admin-event-pdf"),
     re_path(r"hitcount/", include(("hitcount.urls", "hitcount"), namespace="hitcount")),

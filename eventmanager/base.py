@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     "django_otp",
     "django_otp.plugins.otp_totp",
     # third party
+    "mjml",
     "mailqueue",
     "fontawesomefree",
     "crispy_forms",
@@ -82,7 +83,7 @@ INSTALLED_APPS = [
     "markdownify.apps.MarkdownifyConfig",
     "admin_export_action",
     "honeypot",
-    "newsletter",
+    # "newsletter",
     # tailwind theme app
     "fobi_theme",
     "django_browser_reload",
