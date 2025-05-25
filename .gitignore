@@ -159,5 +159,8 @@ node_modules/
 # old templates
 fobi_theme_legacy/
 
+# data
+eventmanager_data.json
+
 
 
