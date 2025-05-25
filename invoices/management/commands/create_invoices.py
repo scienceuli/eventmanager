@@ -16,6 +16,7 @@ class Command(BaseCommand):
         created_count = 0
         for order in Order.objects.all():
             invoice_name = f"Rechnung {order.lastname}, {order.firstname} ({', '.join([ev.label for ev in order.get_registered_items_events()])})"
+            invoice_name = invoice_name[:255]
 
             new_invoice = Invoice.objects.create(
                 invoice_date=get_invoice_date(order),
