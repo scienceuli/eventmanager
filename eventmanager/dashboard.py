@@ -41,7 +41,7 @@ class CustomIndexDashboard(Dashboard):
                         title="Rechnungen",
                         models=(
                             "shop.models.Order",
-                            "invoices.models.Invoice",
+                            "invoices.models.StandardInvoice",
                             "mailings.models.InvoiceMessage",
                             "invoices.models.StornoInvoice",
                         ),

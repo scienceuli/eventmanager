@@ -1,0 +1,12 @@
+{% extends "admin/change_list.html" %}
+
+{% block object-tools-items %}
+{% for button in filter_buttons %}
+<li>
+    <a href="{{ button.url }}"><i class="icon-tint icon-alpha75"></i>{{ button.label }}</a>
+</li>
+{% endfor %}
+
+
+{{ block.super }}
+{% endblock %}

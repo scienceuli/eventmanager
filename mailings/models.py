@@ -20,5 +20,5 @@ class InvoiceMessage(MailerMessage):
     mail_type = models.CharField(max_length=1, choices=MAIL_TYPE_CHOICES, default="i")
 
     class Meta:
-        verbose_name = "Rechnung Mail"
-        verbose_name_plural = "Rechnung Mails"
+        verbose_name = "Rechnungs-Mail"
+        verbose_name_plural = "Rechnungs-Mails"

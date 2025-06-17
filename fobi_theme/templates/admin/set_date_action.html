@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<div class="grp-container">
+  <h2>Eingangsdatum setzen für ausgewählte Rechnungen</h2>
+  <div class="form-row grp-row">
+  <form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    
+    {% for obj in items %}
+      <input type="hidden" name="_selected_action" value="{{ obj.pk }}" />
+    {% endfor %}
+    <input type="hidden" name="action" value="set_date_action" />
+    {% comment %} <p class="datetime">
+    <button class="ui-datepicker-trigger" type='button'></button>
+    </p> {% endcomment %}
+    <a class='grp-button mt-4' href="{{ request.META.HTTP_REFERER }}">Abbrechen</a>
+  </form>
+</div>
+</div>
+{% endblock %}

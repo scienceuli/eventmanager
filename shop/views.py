@@ -35,6 +35,12 @@ from shop.cart import Cart
 from shop.forms import CartAddEventForm
 from shop.models import Order, OrderItem
 from shop.tasks import order_created
+from shop.orders import (
+    create_order,
+    create_order_item,
+    create_invoice,
+    create_message
+)
 
 from utilities.pdf import render_to_pdf
 
@@ -204,101 +210,43 @@ class OrderCreateView(FormView):
         # Orders are created if there is something to pay
         if len(split_cart(cart)[0]) > 0:
             email = form.cleaned_data.get("email")
-            order = Order(
-                academic=form.cleaned_data["academic"],
-                firstname=form.cleaned_data["firstname"],
-                lastname=form.cleaned_data["lastname"],
-                address_line=form.cleaned_data["address_line"],
-                company=form.cleaned_data["company"],
-                street=form.cleaned_data["street"],
-                city=form.cleaned_data["city"],
-                state=form.cleaned_data["state"],
-                postcode=form.cleaned_data["postcode"],
-                email=email,
-                phone=form.cleaned_data["phone"],
-            )
-            vfll = form.cleaned_data["vfll"]
-            memberships = form.cleaned_data["memberships"]
-            # print("vfll:", vfll)
-            # print("ms:", memberships, len(memberships), vfll or (len(memberships) > 0))
-            order.discounted = vfll or (len(memberships) > 0)
-
-            # only cart items where payment is possible belong to order
-
-            order.save()
-            # print(order.payment_type)
-            order_saved = True
-
-            duplicate_list = []  # list of events with already existing registration
-            order_item_counter = 0
-            for item in split_cart(cart)[0]:
-                event = item["event"]
-                if no_duplicate_check(email, event):
-                    OrderItem.objects.create(
-                        order=order,
-                        event=event,
-                        price=item["price"],
-                        premium_price=item["premium_price"],
-                        quantity=item["quantity"],
-                        is_action_price=item["action_price"],
-                    )
-                    order_item_counter += 1
+            if settings.ONE_ORDER_ONE_INVOICE:
+                for item in split_cart(cart)[0]:
+                    order = create_order(form, email)
+                    order_saved = True
+                    order_item_counter, duplicate_list,duplicate_string, order_item = create_order_item(order, item, email)
+                    if order_saved:
+                        new_invoice_message, new_invoice = create_invoice(order)
+                        create_message(self.request, order, order_item_counter, duplicate_list, payment_cart, non_payment_cart)
+                    if not order_item_counter == 0:
+                        self.order_saved = order_saved
+                        self.order = order
+                    else:
+                        order.delete()
+                        self.order_saved = False
+            else:
+                order = create_order(form, email)
+                order_saved = True
+                for item in split_cart(cart)[0]:
+                    order_item_counter, duplicate_list, duplicate_string, order_item = create_order_item(order, item, email)
+                if order_saved:
+                    new_invoice_message, new_invoice = create_invoice(order)
+                    create_message(order)  
+                if not order_item_counter == 0:
+                    self.order_saved = order_saved
+                    self.order = order
                 else:
-                    duplicate_list.append(event.name)
-
-            duplicate_string = ", ".join(duplicate_list)
+                    order.delete()
+                    self.order_saved = False
 
         # create EventMemberInstances for ALL cart items
 
         for item in cart:
             new_member = handle_form_submission(self.request, form, item["event"])
-
-        # creating invoice
-        if order_saved:
-            invoice_name = f"Rechnung {order.lastname}, {order.firstname} ({', '.join([ev.label for ev in order.get_registered_items_events()])})"
-
-            new_invoice = Invoice.objects.create(
-                order=order,
-                invoice_number=order.get_order_number,
-                invoice_date=get_invoice_date(order),
-                invoice_type="i",
-                name=invoice_name,
-                amount=order.get_total_cost(),
-            )
-            if new_invoice:
-                new_invoice_message = new_invoice.create_invoice_message()
-
+            
         # clear the cart
         cart.clear()
 
-        if settings.PAYPAL_ENABLED:
-
-            if payment_cart and order_item_counter > 0 and len(duplicate_list) == 0:
-
-                message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Die Bestellnummer ist {order.get_order_number}. Bitte wählen Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
-                level = messages.SUCCESS
-            elif payment_cart and order_item_counter > 0 and len(duplicate_list) > 0:
-                message = f"Vielen Dank für Ihre Bestellung/Anmeldung. Für folgende Veranstaltungen waren Sie bereits angemeldet: {duplicate_string}. Diese werden aus Ihrer Bestellung entfernt. Für die anderen ist die Bestellnummer {order.get_order_number}. en Sie im nächsten Schritt Ihre bevorzugte Zahlungsmethode (PayPal oder Rechnung) aus."
-                level = messages.SUCCESS
-            elif payment_cart and order_item_counter == 0:
-                message = f"Für alle von Ihnen ausgewählten Veranstaltungen sind sie bereits angemeldet. Ihre Bestellung wird daher verworfen."
-                level = messages.ERROR
-            elif non_payment_cart:
-                message = f"Vielen Dank für Ihre Anmeldung."
-                level = messages.SUCCESS
-            else:
-                message = f"Sie haben noch keine Anmeldung vorgenommen."
-                level = messages.INFO
-
-            messages.add_message(self.request, level, message, fail_silently=True)
-
-        if order:
-            if not order_item_counter == 0:
-                self.order_saved = order_saved
-                self.order = order
-            else:
-                order.delete()
-                self.order_saved = False
 
         return super().form_valid(form)
 

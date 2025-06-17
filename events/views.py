@@ -255,7 +255,7 @@ def maintenance(request):
     return render(request, "events/maintenance.html", context)
 
 
-@login_required(login_url="login")
+@login_required(login_url="users:login")
 def dashboard(request):
     event_ctg_count = EventCategory.objects.count()
     event_count = Event.objects.count()

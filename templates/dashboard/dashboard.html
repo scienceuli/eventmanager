@@ -1,0 +1,78 @@
+{% extends 'base/base.html' %}
+{% block title %}Dashboard{% endblock title %}
+{% block breadcrumb %}Dashboard{% endblock breadcrumb %}
+
+{% load static %}
+
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="{% static 'css/dashboard_fe.css' %}">
+<!-- Select2 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% comment %} <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script> {% endcomment %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/js/select2.min.js" defer></script>
+<script src="{% static 'pdfjs-5.3.31-dist/build/pdf.mjs' %}" type="module"></script>
+{% endblock %}
+
+{% block content %}
+<div class="m-4">
+<h1 class="text-xl font-bold">Dashboard</h1>
+
+<h3 class="text-lg font-semibold">📊 Statistik</h3>
+<p>Gesamtzahl Teilnehmer: <span id="total-members">...</span></p>
+<div class="row mb-3">
+    <div class="col-md-3">
+        <label>nach Jahr filtern:</label>
+        <select id="year-filter" class="form-select">
+            <option value="">Alle Jahre</option>
+            {% for y in year_list %}
+                <option value="{{ y }}">{{ y }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="col-md-4">
+        <label>Veranstaltungsname:</label>
+        <input type="text" id="search-filter" class="form-control" placeholder="Type to search...">
+    </div>
+    <div class="col-md-3 ml-3">
+        <label>Anzeigen:</label>
+        <select id="metric-select" class="form-select" style="width: auto; display: inline-block;">
+          <option value="members">Teilnehmer</option>
+          <option value="cost">Kosten</option>
+        </select>
+    </div>
+</div>
+<div id="chart-container">
+    <canvas id="event-chart"></canvas>
+</div>
+
+<hr>
+<h3 class="text-lg font-semibold">👥 Teilnehmer</h3>
+<select id="event-filter" style="width: 100%"></select>
+<table class="table table-bordered">
+    <thead>
+        <tr><th>Name</th><th>E-Mail</th><th>Event</th><th>Rechnung</th></tr>
+    </thead>
+    <tbody id='members-list'>
+    </tbody>
+</table>
+
+<div>
+    <h4>🧾 Rechnung Vorschau</h4>
+    <div id="pdf-viewer" style="border:1px solid #ccc;"></div>
+</div>
+</div>
+
+{% endblock %}
+
+{% block extrascript %}
+<script>
+  const DASHBOARD_STATS_URL = "{% url 'dashboard-stats' %}";
+</script>
+<script src="{% static 'js/dashboard_events.js' %}"></script>
+<script src="{% static 'js/dashboard.js' %}"></script>
+
+
+{% endblock %}

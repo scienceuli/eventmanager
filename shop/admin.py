@@ -172,7 +172,7 @@ class OrderAdmin(admin.ModelAdmin):
 
     def invoices_button(self, obj):
         url = (
-            reverse("admin:invoices_invoice_changelist") + f"?order__id__exact={obj.id}"
+            reverse("admin:invoices_standardinvoice_changelist") + f"?order__id__exact={obj.id}"
         )
         return mark_safe(f"<a class='button' href='{url}'>Rechnung(en)</a>")
 

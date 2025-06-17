@@ -1,6 +1,8 @@
 from xhtml2pdf import pisa
 from io import BytesIO
 
+from datetime import datetime
+
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
@@ -15,7 +17,14 @@ from private_storage.fields import PrivateFileField
 
 from shop.models import Order, OrderItem
 from mailings.models import InvoiceMessage
-from invoices.utils import get_email_template, validate_email_template
+from invoices.utils import (
+    get_email_template,
+    validate_email_template,
+    create_mail, 
+    create_pdf,
+)
+
+from invoices.managers import StandardInvoiceManager, StornoInvoiceManager
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +55,13 @@ class Invoice(models.Model):
     mail_sent_date = models.DateTimeField(
         verbose_name="Rechnungsversand", null=True, blank=True
     )
+    invoice_export = models.DateTimeField(
+        verbose_name="Exportdatum", null=True, blank=True
+    )
     pdf = PrivateFileField(upload_to="invoices/", null=True, blank=True)
+    pdf_export = models.DateTimeField(
+        verbose_name="Pdf-Export", null=True, blank=True
+    )
     # these fields are for overwriting event name and event date
     replacement_event = models.CharField(
         "Ersatzangabe Event Name",
@@ -67,10 +82,19 @@ class Invoice(models.Model):
         default=False,
         help_text="Anklicken, um Ersatzangaben zu benutzen",
     )
+    storno_invoice = models.OneToOneField(
+        "self",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="original_invoice",
+        limit_choices_to={"invoice_type": "s"},
+    )
 
     class Meta:
         verbose_name = "Rechnung"
         verbose_name_plural = "Rechnungen"
+        ordering = ["-invoice_date"]
 
     def __str__(self):
         return self.name
@@ -81,40 +105,8 @@ class Invoice(models.Model):
 
     def create_invoice_pdf(self):
         invoice = self
-        pdf_template = "invoices/pdf_invoice.html"
-        context = {}
-        context["storno"] = False
-        context["invoice"] = invoice
-        context["order"] = invoice.order
-        context["order_items"] = OrderItem.objects.filter(
-            order=invoice.order, status="r"
-        )
-        context["contains_action_price"] = any(
-            [
-                item.is_action_price
-                for item in OrderItem.objects.filter(order=invoice.order, status="r")
-            ]
-        )
-
-        # delete existing pdf
-        # Delete old PDF file if it exists
-        if invoice.pdf and default_storage.exists(self.pdf.name):
-            default_storage.delete(self.pdf.name)
-
-        template = get_template(pdf_template)
-        html = template.render(context)
-
-        result = BytesIO()
-        pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result, encoding="utf-8")
-
-        if not pdf.err:
-            result.seek(0)
-            filename = f"Rechnung_{invoice.invoice_number}.pdf"
-            # Save PDF to Invoice model's FileField
-            self.pdf.save(filename, ContentFile(result.read()))
-            self.save()
-            return True
-        return False
+        return create_pdf(invoice)
+        
 
     def recreate_invoice_pdf_button(self):
         """Return a button for recreating the PDF in admin list view."""
@@ -127,57 +119,8 @@ class Invoice(models.Model):
 
     def create_invoice_message(self):
         invoice = self
-        invoice_email = InvoiceMessage()
-        invoice_email.subject = f"VFLL - Rechnung Nr. {invoice.invoice_number}"
-        invoice_email.from_address = settings.DEFAULT_FROM_EMAIL
-        invoice_email.to_address = invoice.order.email
-        invoice_email.reply_to = settings.REPLY_TO_EMAIL
-        invoice_email.bcc_address = settings.EMAIL_NOTIFY_BCC
-
-        # create mail content
-        event_string = ", ".join(
-            [item.event.name for item in invoice.order.items.all()]
-        )
-        formatting_dict = {
-            "academic": invoice.order.academic if invoice.order.academic else "",
-            "firstname": invoice.order.firstname,
-            "lastname": invoice.order.lastname,
-            "event_string": event_string,
-            "costs": invoice.amount,
-        }
-        template_name = "invoice"
-        template = get_email_template(template_name)
-        text_template = getattr(template, "text_template", "")
-        if not text_template:
-            logger.critical(
-                "Missing text template (required) for the input {}.".format(
-                    text_template
-                )
-            )
-            raise EmailTemplateError("Email template is not valid for the input.")
-
-        invoice_email.content = validate_email_template(text_template, formatting_dict)
-
-        pdf_created = invoice.create_invoice_pdf()
-
-        if pdf_created:
-            # with invoice.pdf.open("rb") as pdf_file:
-            # invoice_email.add_attachment(pdf_file)
-            invoice_email.add_attachment(invoice.pdf)
-            # if pdf:
-            #     # filename_prefix = "rechnung_%s" % (invoice.invoice_number)
-            #     filename = f"Rechnung_{invoice.invoice_number}.pdf"
-
-            # temp = NamedTemporaryFile(suffix=".pdf", prefix=filename_prefix)
-            # temp.write(pdf)
-            # temp.seek(0)
-            # invoice_email.add_attachment = temp
-            # invoice.pdf.save(filename, ContentFile(pdf.read()))
-            # invoice.save()
-
-        invoice_email.invoice = invoice
-        invoice_email.save()
-        return invoice_email
+        return create_mail(invoice)
+    
 
     def create_invoice_message_button(self):
         """Return a button for recreating the invoice message in admin list view."""
@@ -190,15 +133,24 @@ class Invoice(models.Model):
 
     def create_storno_invoice(self):
         invoice = self
-        if StornoInvoice.objects.filter(original_invoice=invoice).exists():
+        if invoice.invoice_type == "s":
+            return False
+        if Invoice.objects.filter(original_invoice=invoice).exists():
             return False
         storno_invoice_number = f"{invoice.invoice_number}S"
-        new_storno = StornoInvoice.objects.create(
-            original_invoice=invoice,
+        new_storno = Invoice.objects.create(
+            name = f"Storno {invoice.name}",
+            invoice_date=datetime.now(),
             invoice_number=storno_invoice_number,
             amount=invoice.amount,
+            order=invoice.order,
+            invoice_type="s",
         )
-        new_storno.create_storno_invoice_pdf()
+        invoice.storno_invoice = new_storno
+        invoice.save()
+
+        new_storno.create_invoice_pdf()
+        new_storno.create_invoice_message()
         return new_storno
 
     def create_storno_invoice_button(self):
@@ -211,78 +163,75 @@ class Invoice(models.Model):
     create_storno_invoice_button.allow_tags = True
 
 
-class StornoInvoice(models.Model):
+# class StornoInvoice(models.Model):
 
-    original_invoice = models.OneToOneField(
-        Invoice,
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="storno_invoice",
-    )
-    amount = models.DecimalField(
-        verbose_name="Betrag",
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        help_text="Der Betrag erscheint auf der Storno-Rechnung mit Minuszeichen.",
-    )
-    invoice_number = models.CharField(
-        verbose_name="Rechnungsnummer", max_length=255, null=True, blank=True
-    )
-    invoice_date = models.DateTimeField(
-        verbose_name="Rechnungsdatum", auto_now_add=True
-    )
-    paid = models.BooleanField(verbose_name="bezahlt", default=False)
-    invoice_receipt = models.DateTimeField(
-        verbose_name="Rechnungseingang", null=True, blank=True
-    )
-    pdf = PrivateFileField(upload_to="stornos/", null=True, blank=True)
+#     original_invoice = models.OneToOneField(
+#         Invoice,
+#         null=True,
+#         blank=True,
+#         on_delete=models.SET_NULL,
+#         related_name="storno_invoice",
+#     )
+#     amount = models.DecimalField(
+#         verbose_name="Betrag",
+#         max_digits=10,
+#         decimal_places=2,
+#         null=True,
+#         blank=True,
+#         help_text="Der Betrag erscheint auf der Storno-Rechnung mit Minuszeichen.",
+#     )
+#     invoice_number = models.CharField(
+#         verbose_name="Rechnungsnummer", max_length=255, null=True, blank=True
+#     )
+#     invoice_date = models.DateTimeField(
+#         verbose_name="Rechnungsdatum", auto_now_add=True
+#     )
+#     paid = models.BooleanField(verbose_name="bezahlt", default=False)
+#     invoice_receipt = models.DateTimeField(
+#         verbose_name="Rechnungseingang", null=True, blank=True
+#     )
+#     pdf = PrivateFileField(upload_to="stornos/", null=True, blank=True)
 
+#     class Meta:
+#         verbose_name = "Storno Rechnung"
+#         verbose_name_plural = "Storno Rechnungen"
+
+#     def save(self, *args, **kwargs):
+#         self.amount = self.original_invoice.amount
+#         super().save(*args, **kwargs)
+
+#     def create_storno_invoice_pdf(self):
+#         invoice = self
+#         return create_pdf(invoice)
+        
+
+#     def create_storno_invoice_mail(self):
+#         invoice = self
+#         return create_mail(invoice)
+
+
+
+
+
+
+class StandardInvoice(Invoice):
+
+    objects = StandardInvoiceManager()
     class Meta:
-        verbose_name = "Storno Rechnung"
-        verbose_name_plural = "Storno Rechnungen"
+        proxy = True
+        verbose_name = "Rechnung"
+        verbose_name_plural = "Rechnungen"
 
-    def save(self, *args, **kwargs):
-        self.amount = self.original_invoice.amount
-        super().save(*args, **kwargs)
 
-    def create_storno_invoice_pdf(self):
-        invoice = self
-        pdf_template = "invoices/pdf_invoice.html"
-        context = {}
-        context["storno"] = True
-        context["invoice"] = invoice
-        context["order"] = invoice.original_invoice.order
-        context["order_items"] = OrderItem.objects.filter(
-            order=invoice.original_invoice.order, status="r"
-        )
-        context["contains_action_price"] = any(
-            [
-                item.is_action_price
-                for item in OrderItem.objects.filter(
-                    order=invoice.original_invoice.order, status="r"
-                )
-            ]
-        )
+class StornoInvoice(Invoice):
 
-        # delete existing pdf
-        # Delete old PDF file if it exists
-        if invoice.pdf and default_storage.exists(self.pdf.name):
-            default_storage.delete(self.pdf.name)
 
-        template = get_template(pdf_template)
-        html = template.render(context)
+    objects = StornoInvoiceManager()
+    class Meta:
+        proxy = True
+        verbose_name = "Storno-Rechnung"
+        verbose_name_plural = "Storno-Rechnungen"
 
-        result = BytesIO()
-        pdf = pisa.pisaDocument(BytesIO(html.encode("utf-8")), result, encoding="utf-8")
-
-        if not pdf.err:
-            result.seek(0)
-            filename = f"Storno-Rechnung_{invoice.invoice_number}.pdf"
-            # Save PDF to Invoice model's FileField
-            self.pdf.save(filename, ContentFile(result.read()))
-            self.save()
-            return True
-        return False
+    @property
+    def get_storno_amount(self):
+        return self.amount * (-1)

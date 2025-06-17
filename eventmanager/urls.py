@@ -25,11 +25,16 @@ sitemaps = {
     "events": EventSitemap,
 }
 
+# admin settings
+admin.site.site_header = 'VFLL Veranstaltungskalender'                
+admin.site.index_title = 'Admin'                 
+admin.site.site_title = 'FOBI DEV' 
+
 
 urlpatterns = [
     # path('jet/', include('jet.urls', 'jet')),  # Django JET URLS
     # path('jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),  # Django JET dashboard URLS
-    path("grappelli/", include("grappelli.urls")),  # grappelli URLS
+    # path("grappelli/", include("grappelli.urls")),  # grappelli URLS
     path("__reload__/", include("django_browser_reload.urls")),
     path("admin/", admin.site.urls),
     path(
@@ -86,6 +91,7 @@ urlpatterns = [
     path("paypal/", include("paypal.standard.ipn.urls")),
     path("mailings/", include("mailings.urls")),
     path("simple_newsletter/", include("simple_newsletter.urls")),
+    path("dashboard/", include("dashboard.urls")),
     #path("newsletter/", include("newsletter.urls")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<int:event_id>/pdf/", admin_event_pdf, name="admin-event-pdf"),

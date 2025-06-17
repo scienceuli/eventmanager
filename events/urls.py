@@ -78,7 +78,7 @@ urlpatterns = [
     path("tinymce/", include("tinymce.urls")),
     path("", home, name="home"),
     path("maintenance/", maintenance, name="maintenance"),
-    path("dashboard/", dashboard, name="dashboard"),
+    #path("dashboard/", dashboard, name="dashboard"),
     path("event_list/", EventListView.as_view(), name="event-list"),
     path("event_filter/", FilteredEventListView.as_view(), name="event-filter"),
     path("event_create/", EventCreateView.as_view(), name="event-create"),

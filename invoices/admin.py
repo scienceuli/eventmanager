@@ -4,12 +4,32 @@ from django.urls import reverse, path
 from django.contrib import messages
 from django.shortcuts import redirect
 
-from invoices.models import Invoice, StornoInvoice
-from invoices.actions import export_to_excel_short
+from invoices.models import Invoice, StandardInvoice, StornoInvoice
+from invoices.actions import export_to_excel_short, export_pdfs_as_zip, set_date_action
+from invoices.filter import InvoiceEventListFilter, InvoicesYearQuarterFilter
 from mailings.models import InvoiceMessage
 
 
-class InvoiceAdmin(admin.ModelAdmin):
+#class InvoiceAdmin(admin.ModelAdmin):
+class StandardInvoiceAdmin(admin.ModelAdmin):
+
+    change_list_template = "admin/invoices/standardinvoice/change_list.html"
+
+    def changelist_view(self, request, extra_context=None):
+        extra_context = extra_context or {}
+
+        base_url = reverse('admin:invoices_standardinvoice_changelist')
+        buttons = [
+            {'label': 'Alle Filter aufhaben', 'url': base_url},
+        ]
+        extra_context['filter_buttons'] = buttons
+        return super().changelist_view(request, extra_context=extra_context)
+
+
+    def queryset(self, request):
+        qs = super(StandardInvoiceAdmin, self).queryset(request)
+        return qs.filter(invoice_type="i")
+    
     list_display = (
         "name",
         "order_button",
@@ -18,16 +38,44 @@ class InvoiceAdmin(admin.ModelAdmin):
         "invoice_date",
         "invoice_type",
         "invoice_mail",
+        "get_invoice_receipt_formatted",
         # "create_invoice_message_button",
         "mail_sent_date",
+        "invoice_export",
         "pdf",
+        "pdf_export",
         "recreate_invoice_pdf_button",
         "get_storno",
     )
     actions = [
-        export_to_excel_short,
+        export_to_excel_short, export_pdfs_as_zip, set_date_action
     ]
     export_to_excel_short.short_description = "Export -> Excel (St.)"
+    export_pdfs_as_zip.short_description = "Export PDFs -> ZIP"
+
+    list_filter = [
+        "invoice_type",
+        "invoice_date",
+        "invoice_receipt",
+        InvoiceEventListFilter,
+        InvoicesYearQuarterFilter
+        ]
+
+    search_fields = [
+        "name",
+        "invoice_number",
+        "order__items__event__name"
+    ]
+
+    def get_invoice_receipt_formatted(self, obj):
+        if obj:
+            if obj.invoice_receipt:
+                return obj.invoice_receipt.date().strftime("%d.%m.%Y")
+            return "-"
+        
+    get_invoice_receipt_formatted.admin_order_field = 'invoice_receipt'
+    get_invoice_receipt_formatted.short_description = 'Rechnungseingang'
+    
 
     def get_urls(self):
         urls = super().get_urls()
@@ -90,7 +138,7 @@ class InvoiceAdmin(admin.ModelAdmin):
 
         if hasattr(invoice, "message"):  # Prevent duplicate messages
             messages.warning(request, "Mail existiert bereits!")
-            return redirect(reverse("admin:invoices_invoice_change", args=[invoice_id]))
+            return redirect(reverse("admin:invoices_standardinvoice_change", args=[invoice_id]))
 
         message = invoice.create_invoice_message()
         messages.success(request, "Mail wurde angelegt!")
@@ -111,7 +159,7 @@ class InvoiceAdmin(admin.ModelAdmin):
                 f"PDF für Rechnung {invoice.invoice_number} konnte nicht erzeugt werden.",
             )
         return redirect(
-            request.META.get("HTTP_REFERER", "admin:invoices_invoice_changelist")
+            request.META.get("HTTP_REFERER", "admin:invoices_standardinvoice_changelist")
         )
 
     def get_storno(self, obj):
@@ -137,7 +185,7 @@ class InvoiceAdmin(admin.ModelAdmin):
             hasattr(invoice, "storno_invoice") and invoice.storno_invoice
         ):  # Prevent duplicate messages
             messages.warning(request, "Storno-Rechnung existiert bereits!")
-            return redirect(reverse("admin:invoices_invoice_change", args=[invoice_id]))
+            return redirect(reverse("admin:invoices_standardinvoice_change", args=[invoice_id]))
 
         storno = invoice.create_storno_invoice()
         messages.success(request, "Storno-Rechnung wurde angelegt!")
@@ -146,11 +194,49 @@ class InvoiceAdmin(admin.ModelAdmin):
         )
 
 
-admin.site.register(Invoice, InvoiceAdmin)
+admin.site.register(StandardInvoice, StandardInvoiceAdmin)
 
 
 class StornoInvoiceAdmin(admin.ModelAdmin):
-    model = StornoInvoice
+    def queryset(self, request):
+        qs = super(StornoInvoiceAdmin, self).queryset(request)
+        return qs.filter(invoice_type="s")
+
+    exclude = ('storno_invoice', 'invoice_receipt')
+    
+    list_display = (
+        "name",
+        "amount",
+        "invoice_number",
+        "invoice_date",
+        "invoice_type",
+        "pdf",
+        "pdf_export",
+        "get_original_invoice",
+    )
+    readonly_fields = ("order", "invoice_number", "pdf", "pdf_export", "invoice_type")
+
+    list_filter = (
+        InvoicesYearQuarterFilter,
+    )
+    actions = [
+        export_to_excel_short, export_pdfs_as_zip, set_date_action
+    ]
+    export_to_excel_short.short_description = "Export -> Excel (St.)"
+    export_pdfs_as_zip.short_description = "Export PDFs -> ZIP"
+
+    def get_original_invoice(self, obj):
+        if hasattr(obj, "original_invoice") and obj.original_invoice:
+            # if obj.storno_invoice:
+            url = reverse(
+                "admin:invoices_standardinvoice_change", args=[obj.original_invoice.id]
+            )
+            return mark_safe(f'<a href="{url}">zur Original-Rechnung</a>')
+        else:
+            return ""
+
+    get_original_invoice.short_description = "Original-Rechnung"
+    get_original_invoice.allow_tags = True
 
 
 admin.site.register(StornoInvoice, StornoInvoiceAdmin)
