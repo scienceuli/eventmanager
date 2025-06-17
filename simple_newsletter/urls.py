@@ -6,8 +6,10 @@ app_name = "newsletter"
 
 urlpatterns = [
     path("validate_email/", views.validate_email, name="validate-email"),
-    path("unsubscribe/<str:email>/", views.unsubscribe, name="unsubscribe"),
+    #path("unsubscribe/<str:email>/", views.unsubscribe, name="unsubscribe"),
     path("subscribe/", views.subscribe, name="subscribe"),
+    path('subscribe/confirm/', views.subscription_confirmation, name='subscription_confirmation'),
+    path('unsubscribe/', views.unsubscribe, name='unsubscribe'),
     path("create/", views.create_newsletter, name="create-newsletter"),
     path("send/<int:pk>/", views.send_newsletter, name="send-newsletter"),
     path('newsletters/', views.newsletter_list, name='newsletter-list'),

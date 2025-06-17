@@ -9,7 +9,7 @@ from .forms import EmailTemplateForm
 
 
 class NewsletterSubscriptionAdmin(admin.ModelAdmin):
-    list_display = ("email", "subscribed_at")
+    list_display = ("email", "status", "subscribed_at", "updated_at")
     list_filter = ["subscribed_at"]
     search_fields = ("email",)
     date_hierarchy = "subscribed_at"

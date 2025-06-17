@@ -2,9 +2,17 @@ from django.db import models
 from ckeditor.fields import RichTextField
 
 
+
+
 class NewsletterSubscription(models.Model):
     email = models.EmailField(unique=True)
+    status = models.CharField(max_length=64, null=False, blank=True)
     subscribed_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Newsletter Subscription"
+        verbose_name_plural = "Newsletter Subscriptions"
 
     def __str__(self):
         return self.email

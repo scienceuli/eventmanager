@@ -43,8 +43,13 @@ SITE_ID = 1
 INSTALLED_APPS = [
     #'jet.dashboard',
     #'jet',
-    "grappelli.dashboard",
-    "grappelli",
+    # "grappelli.dashboard",
+    #"grappelli",
+    'admin_confirm',
+    "admin_interface",
+    "colorfield",
+    "django_admin_index",
+    "ordered_model",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -116,6 +121,7 @@ MIDDLEWARE = [
     "events.middleware.MaintenanceModeMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
     "honeypot.middleware.HoneypotMiddleware",
+    "django.middleware.locale.LocaleMiddleware",
 ]
 
 ROOT_URLCONF = "eventmanager.urls"
@@ -246,6 +252,7 @@ TAILWIND_APP_NAME = "fobi_theme"
 
 # for JET WORKING PROPERLY
 X_FRAME_OPTIONS = "SAMEORIGIN"
+SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
 # GRAPPELLI setting
 
