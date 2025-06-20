@@ -1083,6 +1083,11 @@ class EventAgenda(BaseModel):
 
 
 EVENT_IMAGE_CHOICES = (("d", "Beschreibung"),)
+EVENT_IMAGE_FORM_CHOICES = (
+    ("r", "rechteckig"),
+    ("s", "quadratisch"),
+    ("c", "rund"),
+)
 
 
 class EventImage(BaseModel):
@@ -1090,6 +1095,7 @@ class EventImage(BaseModel):
         Event, related_name="eventimage", on_delete=models.CASCADE
     )
     image = models.ImageField(upload_to="event_image/")
+    image_form = models.CharField(max_length=1, choices=EVENT_IMAGE_FORM_CHOICES, default="r")
     category = models.CharField(max_length=1, choices=EVENT_IMAGE_CHOICES, default="d")
     description = models.CharField(max_length=255, blank=True, null=True)
     caption = models.CharField(max_length=255, blank=True, null=True)
