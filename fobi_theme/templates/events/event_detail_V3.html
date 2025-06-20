@@ -891,7 +891,7 @@
             <div class="invisible md:visible absolute top-0 right-4 w-2/5 ">
                 <div class="aspect-w-16 aspect-h-9">
                     <figure class="w-4/5 lg:w-2/3">
-                        <img class="h-auto max-w-full rounded-lg shadow-xl dark:shadow-gray-800" src="{{ event.eventimage.image.url }}" alt="{{ event.eventimage.description }}">
+                        <img class="h-auto max-w-full {% if event.eventimage.image_form == 'c'%}rounded-full{% else %}rounded-lg{% endif %} shadow-xl dark:shadow-gray-800" src="{{ event.eventimage.image.url }}" alt="{{ event.eventimage.description }}">
                         {% if event.eventimage.caption %}
                         <figcaption class="mt-2 text-sm text-center text-gray-500 dark:text-gray-400">{{ event.eventimage.caption }}</figcaption>
                         {% endif %}

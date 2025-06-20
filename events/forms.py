@@ -502,7 +502,7 @@ class EventMemberForm(forms.Form):
         required=False,
     )
 
-    check = forms.BooleanField(
+    agree = forms.BooleanField(
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}), required=False
     )
 

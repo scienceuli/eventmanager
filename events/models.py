@@ -1083,13 +1083,18 @@ class EventAgenda(BaseModel):
 
 
 EVENT_IMAGE_CHOICES = (("d", "Beschreibung"),)
-
+EVENT_IMAGE_FORM_CHOICES = (
+    ('r', 'rechteckig'),
+    ('s', 'quadratisch'),
+    ('c', 'rund'),
+)
 
 class EventImage(BaseModel):
     event = models.OneToOneField(
         Event, related_name="eventimage", on_delete=models.CASCADE
     )
     image = models.ImageField(upload_to="event_image/")
+    image_form = models.CharField(max_length=1, choices=EVENT_IMAGE_FORM_CHOICES, default="r")
     category = models.CharField(max_length=1, choices=EVENT_IMAGE_CHOICES, default="d")
     description = models.CharField(max_length=255, blank=True, null=True)
     caption = models.CharField(max_length=255, blank=True, null=True)
@@ -1144,7 +1149,7 @@ class EventMember(AddressModel):
     education_bonus = models.BooleanField("Bildungsprämie", default=False)
     message = models.TextField("Anmerkung", blank=True)
     free_text_field = models.TextField("Freitext", blank=True)
-    check = models.BooleanField("Einverständnis", default=False)
+    agree = models.BooleanField("Einverständnis", default=False)
 
     label = models.CharField(max_length=64)
     ATTEND_STATUS_CHOICES = (

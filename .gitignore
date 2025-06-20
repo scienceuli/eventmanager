@@ -67,8 +67,12 @@ production.py
 development.py
 db.sqlite3
 db.sqlite3-journal
+db-dev.sqlite3
 manage.py
 media
+
+# dumpdata
+eventmanager_data.json
 
 # Flask stuff:
 instance/
@@ -153,3 +157,5 @@ ngrok
 orders_sent.csv
 
 
+# node modules
+node_modules
