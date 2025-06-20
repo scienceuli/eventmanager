@@ -109,7 +109,7 @@ class MVMembersFilter(django_filters.FilterSet):
             "member_type",
             "vote_transfer",
             "vote_transfer_check",
-            "check",
+            "agree",
         ]
 
 
