@@ -2,8 +2,6 @@ from django.db import models
 from ckeditor.fields import RichTextField
 
 
-
-
 class NewsletterSubscription(models.Model):
     email = models.EmailField(unique=True)
     status = models.CharField(max_length=64, null=False, blank=True)
