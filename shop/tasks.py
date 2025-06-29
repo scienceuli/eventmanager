@@ -23,7 +23,7 @@ def order_created(order_id):
         if settings.SEND_INVOICE_AFTER_ORDER_CREATION:
             message += f"In einer weiteren Mail wird Ihnen die Rechnung zugestellt. Bitte überweisen Sie den Betrag auf das in der Rechnung angegebene Konto.\n\n Vielen Dank!"
         else:
-            message += f"Kurz vor Veranstaltungsbeginn wird Ihnen die Rechnung zugestellt. Bitte überweisen Sie dann den Betrag auf das in der Rechnung angegebene Konto.\n\n Vielen Dank!"
+            message += f"Per E-Mail wird Ihnen die Rechnung zugestellt. Bitte überweisen Sie dann den Betrag auf das in der Rechnung angegebene Konto.\n\n Vielen Dank!"
 
     if settings.SEND_EMAIL_AFTER_ORDER_CREATION:
         mail_sent = send_mail(

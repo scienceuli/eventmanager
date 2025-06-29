@@ -1,0 +1,42 @@
+{% extends 'base/base.html' %}
+
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto mt-10 bg-white p-8 rounded-2xl shadow-lg">
+    <div class="p-6">
+  <h2 class="text-2xl font-bold mb-4 text-gray-800">Zusätzliche Informationen zur Veranstaltung "{{ eventmember.event.name }}"</h2>
+  <p class="mb-6 text-gray-600">Hallo {{ eventmember.firstname }} {{ eventmember.lastname }}, wir bräuchten zur Vorbereitung der Veranstaltung 
+    noch folgende Informationen von dir:</p>
+
+  <form method="post" class="space-y-6">
+    {% csrf_token %}
+    {% for field in form %}
+      <div>
+        <label for="{{ field.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">
+          {{ field.label }}
+        </label>
+        {% if field.field.widget.input_type == 'select' %}
+          {{ field|add_class:"w-full border-gray-300 rounded-md shadow-sm p-2" }}
+        {% else %}
+          {{ field|add_class:"w-full h-24 border-gray-300 rounded-md shadow-sm p-1" }}
+        {% endif %}
+
+        {% if field.help_text %}
+          <p class="text-sm text-gray-500 mt-1">{{ field.help_text }}</p>
+        {% endif %}
+        {% if field.errors %}
+          <p class="text-sm text-red-600 mt-1">{{ field.errors }}</p>
+        {% endif %}
+      </div>
+    {% endfor %}
+    <div>
+      <button type="submit"
+              class="w-full bg-blue-600 text-white py-2 px-4 rounded-xl hover:bg-blue-700 transition">
+        Abschicken
+      </button>
+    </div>
+  </form>
+</div>
+</div>
+{% endblock %}

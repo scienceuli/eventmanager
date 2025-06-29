@@ -12,11 +12,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name="eventmember",
-            old_name="check",
-            new_name="agree",
-        ),
+        # migrations.RenameField(
+        #     model_name="eventmember",
+        #     old_name="check",
+        #     new_name="agree",
+        # ),
         migrations.AddField(
             model_name="eventimage",
             name="image_form",
