@@ -19,6 +19,7 @@ from django.template.defaultfilters import slugify
 from django.core.exceptions import ValidationError
 from django.template.defaultfilters import truncatechars
 from django.contrib.contenttypes.fields import GenericRelation
+from django.core.signing import TimestampSigner
 
 from ckeditor_uploader.fields import RichTextUploadingField
 from ckeditor.fields import RichTextField
@@ -1203,6 +1204,11 @@ class EventMember(AddressModel):
 
     def get_absolute_url(self):
         return reverse("member-detail", kwargs={"pk": self.pk})
+
+    def get_secure_url(self):
+        signer = TimestampSigner()
+        signed_uuid = signer.sign(str(self.uuid))
+        return reverse('additional-info', args=[signed_uuid])
 
     def get_registration_date(self):
         return self.date_created.strftime("%d.%m.%Y %H:%M")

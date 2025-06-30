@@ -157,7 +157,7 @@ import itertools
 
 from wkhtmltopdf.views import PDFTemplateResponse
 
-from simple_newsletter.models import NewsletterSubscription
+from vfllnl.models import NewsletterSubscription
 
 import locale
 
@@ -885,6 +885,20 @@ def get_mail_to_member_template_name(registration_form, attend_status):
     return mail_to_member_template_name
 
 
+def get_question_link(eventmember):
+    full_url = f"{settings.EMAIL_LINK_DOMAIN}{eventmember.get_secure_url()}"
+    number_of_questions = eventmember.event.questions.count()
+    print("number_of_questions:", number_of_questions)
+    if number_of_questions == 0:
+        return ""
+    elif number_of_questions == 1:
+        question_string = "eine Frage"
+    else:
+        question_string = "einige Fragen"
+    additional_message = f"Zur Vorbereitung der Veranstaltung wollten wir dich bitten, unter dem Link {full_url} {question_string} zu beantworten."
+    return additional_message
+
+
 def get_form_template(registration_form):
     if registration_form == "s":
         form_template = "events/add_event_member_tw.html"
@@ -1087,6 +1101,11 @@ def make_event_registration(request, form, event):
 
     # set the right attend status in the formatting_dict
     formatting_dict["attend_status"] = attend_status
+
+    if event.registration_form == "s" :
+        formatting_dict["question_link"] = get_question_link(new_member)
+
+    print("question link:", formatting_dict["question_link"])
 
     vfll_mail_sent = send_email_after_registration(
         "vfll", event, form, mail_to_admin_template_name, formatting_dict

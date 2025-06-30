@@ -65,6 +65,8 @@ INSTALLED_APPS = [
     # 2FA
     "django_otp",
     "django_otp.plugins.otp_totp",
+    # 'two_factor',
+    # 'two_factor.plugins.phonenumber',
     # third party
     "mjml",
     "mailqueue",
@@ -103,7 +105,8 @@ INSTALLED_APPS = [
     "payment.apps.PaymentConfig",
     "faqs.apps.FaqsConfig",
     "reports.apps.ReportsConfig",
-    "simple_newsletter.apps.NewsletterConfig",
+    # "simple_newsletter",
+    "vfllnl",
     "mailings.apps.MailingsConfig",
     "invoices.apps.InvoicesConfig",
     "utilities.apps.UtilitiesConfig",
@@ -140,6 +143,7 @@ TEMPLATES = [
                 "events.custom_context_processor.category_renderer",
                 "events.custom_context_processor.event_in_frontend_context",
                 "events.custom_context_processor.events_in_frontend_context",
+                "events.custom_context_processor.show_newsletter_signup",
                 "events.custom_context_processor.dev_ribbon",
                 "shop.context_processors.cart",
             ],

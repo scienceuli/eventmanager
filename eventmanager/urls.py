@@ -90,7 +90,7 @@ urlpatterns = [
     path("reports/", include("reports.urls")),
     path("paypal/", include("paypal.standard.ipn.urls")),
     path("mailings/", include("mailings.urls")),
-    path("simple_newsletter/", include("simple_newsletter.urls")),
+    path("vfllnl/", include("vfllnl.urls")),
     path("dashboard/", include("dashboard.urls")),
     #path("newsletter/", include("newsletter.urls")),
     path("ckeditor/", include("ckeditor_uploader.urls")),

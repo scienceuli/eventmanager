@@ -50,10 +50,13 @@ def create_order_item(order, item, email):
         order_item_counter += 1
     else:
         duplicate_list.append(event.name)
+        order_item = None
 
     duplicate_string = ", ".join(duplicate_list)
 
+    
     return order_item_counter, duplicate_list,duplicate_string, order_item
+
 
 def create_invoice(order):
     invoice_name = f"Rechnung {order.lastname}, {order.firstname} ({', '.join([ev.label for ev in order.get_registered_items_events()])})"
