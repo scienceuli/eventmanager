@@ -205,7 +205,10 @@
 	{% block content %}
 	{% endblock %}
 
+	{% if SHOW_NEWSLETTER_SIGNUP %}
+
 	{% include "simple_newsletter/mailing_signup.html" %}
+	{% endif %}
 
 
 	{% include 'base/js.html' %}
