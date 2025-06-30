@@ -19,6 +19,9 @@ def event_in_frontend_context(request):
     event_in_frontend = settings.EVENT_SHOWN_IN_FRONTEND
     return {"event_in_frontend": event_in_frontend}
 
+def show_newsletter_signup(request):
+    return {"SHOW_NEWSLETTER_SIGNUP": settings.SHOW_NEWSLETTER_SIGNUP}
+
 
 def events_in_frontend_context(request):
     user = request.user
