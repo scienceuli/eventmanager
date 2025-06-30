@@ -45,10 +45,20 @@ class InvoiceMessageAdmin(AdminConfirmMixin, MailerAdmin):
     send_failed_with_confirm.short_description = "Versenden fehlgeschlagen"
     resend_emails_with_confirm.short_description = "E-Mails senden"
 
+    @confirm_action
+    def set_mails_to_sent_with_confirm(self, request, queryset):
+        for invoice_mail in queryset.select_related('invoice'):
+            invoice_mail.sent = True
+            invoice_mail.last_attempt = invoice_mail.invoice.invoice_date
+            invoice_mail.save()
+
+    set_mails_to_sent_with_confirm.short_description = "Markieren als gesendet"
+
     actions = [
         'send_failed_with_confirm',
         'resend_emails_with_confirm',
-        'mark_unsent_with_confirm'
+        'mark_unsent_with_confirm',
+        'set_mails_to_sent_with_confirm',
     ]
     
     
