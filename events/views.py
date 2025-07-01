@@ -895,7 +895,7 @@ def get_question_link(eventmember):
         question_string = "eine Frage"
     else:
         question_string = "einige Fragen"
-    additional_message = f"Zur Vorbereitung der Veranstaltung wollten wir dich bitten, unter dem Link {full_url} {question_string} zu beantworten."
+    additional_message = f"Zur Vorbereitung der Veranstaltung möchten wir Sie bitten, unter dem Link {full_url} {question_string} zu beantworten. Der Link ist drei Tage lang gültig."
     return additional_message
 
 

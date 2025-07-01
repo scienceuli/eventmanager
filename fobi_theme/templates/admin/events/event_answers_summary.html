@@ -1,0 +1,15 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<h1>Antworten zur Veranstaltung {{ event.name }}</h1>
+{% for member in eventmembers %}
+<h3>{{ member.lastname }}, {{ member.firstname }} ({{ member.email }})</h3>
+<ul>
+    {% for answer in member.answers.all %}
+    <li><strong>{{ answer.question.text }}</strong>: {{ answer.answer_text }}</li>
+    {% empty %}
+    <li>Keine Antworten.</li>
+    {% endfor %}
+</ul>
+{% endfor %}
+{% endblock %}

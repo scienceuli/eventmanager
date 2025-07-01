@@ -67,6 +67,8 @@ from .models import (
     EventHighlight,
 )
 
+from .event_q_and_a import EventQuestion
+
 from events.filter import PeriodFilter, DateRangeFilter
 
 from shop.models import Order, OrderItem
@@ -372,6 +374,12 @@ class EventDayAdmin(admin.ModelAdmin):
 
 
 admin.register(EventDay, EventDayAdmin)
+
+class EventQuestionInline(admin.StackedInline):
+    model = EventQuestion
+    extra = 0
+    verbose_name = "Zusatzinfo"
+    verbose_name_plural = "Zusatzinfos"
 
 
 class EventDayInline(admin.StackedInline):
@@ -1113,6 +1121,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "moodle_course_created",
         "date_created",
         "date_modified",
+        "answers_summary_link",
     )
     # readonly_fields = ('uuid', 'label', 'slug', 'date_created', 'date_modified')
 
@@ -1232,6 +1241,12 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         #     },
         # ),
         (
+            "Zusatzinfos",
+            {
+                "fields": ("answers_summary_link",),
+            },
+        ),
+        (
             "Intern",
             {
                 "fields": ("slug", "uuid", "date_created", "date_modified"),
@@ -1239,6 +1254,15 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
     )
+
+    def answers_summary_link(self, obj):
+        if obj.questions.exists():
+            url = reverse('admin-event-answers-summary', args=[obj.id])
+            return format_html(
+                '<a class="button" href="{}" target="_blank">Antworten</a>', url
+            )
+        return "Keine Fragen"
+    answers_summary_link.short_description = "Alle Antworten"
 
     def get_balance_colored(self, obj):
         if obj.get_balance() == 0:
@@ -1273,6 +1297,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     full_price.short_description = "Voller Preis"
 
     inlines = (
+        EventQuestionInline,
         EventDayInline,
         EventSpeakerThroughInline,
         EventSponsorThroughInline,

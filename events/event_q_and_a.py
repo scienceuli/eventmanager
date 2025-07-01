@@ -6,6 +6,8 @@ from django.http import HttpResponse
 
 from .models import Event, EventMember
 
+signer = TimestampSigner()
+
 class EventQuestion(models.Model):
     event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='questions')
     text = models.CharField(max_length=255)
