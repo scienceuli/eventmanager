@@ -8,10 +8,6 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        (
-            "events",
-            "0171_rename_check_eventmember_agree_eventimage_image_form_and_more",
-        ),
     ]
 
     operations = [
