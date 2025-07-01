@@ -49,11 +49,7 @@ def build_dynamic_answer_form(event, eventmember):
     return DynamicAnswerForm
 
 
-signer = TimestampSigner()
 
-def generate_secure_link(participant):
-    signed_uuid = signer.sign(str(participant.uuid))  # UUID + timestamp + signature
-    return f'https://yourdomain.com/optional-info/{signed_uuid}/'
 
 def additional_info_view(request, signed_uuid):
     try:

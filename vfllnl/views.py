@@ -45,14 +45,14 @@ def subscribe(request):
         error_msg = validate_email(email)
         if error_msg:
             messages.error(request, error_msg)
-            return HttpResponseRedirect(reverse('newsletter:subscribe'))
+            return HttpResponseRedirect(reverse('vfllnl:subscribe'))
         
         save_status = save_email(email)
         
         if save_status:
             token = encrypt(email + SEPARATOR + str(time.time()))
             subscription_confirmation_url = request.build_absolute_uri(
-                reverse('newsletter:subscription_confirmation')) + "?token=" + token
+                reverse('vfllnl:subscription_confirmation')) + "?token=" + token
             status = send_subscription_email(email, subscription_confirmation_url)
             if not status:
                 NewsletterSubscription.objects.get(email=email).delete()
@@ -68,7 +68,7 @@ def subscribe(request):
             msg = "Es trat ein Fehler auf. Wir kümmern ums drum."
             messages.error(request, msg)
 
-        return HttpResponseRedirect(reverse('newsletter:subscribe'))
+        return HttpResponseRedirect(reverse('vfllnl:subscribe'))
 
         
     return redirect("home")
@@ -83,7 +83,7 @@ def subscription_confirmation(request):
     if not token:
         logging.getLogger("warning").warning("Invalid Link ")
         messages.error(request, "Invalid Link")
-        return HttpResponseRedirect(reverse('newsletter:subscribe'))
+        return HttpResponseRedirect(reverse('vfllnl:subscribe'))
 
     token = decrypt(token)
     if token:
@@ -103,7 +103,7 @@ def subscription_confirmation(request):
         logging.getLogger("warning").warning("Invalid token ")
         messages.error(request, "Ungültiger Link")
 
-    return HttpResponseRedirect(reverse('newsletter:subscribe'))
+    return HttpResponseRedirect(reverse('vfllnl:subscribe'))
 
 
 # def validate_email(request):
@@ -127,7 +127,7 @@ def create_newsletter(request):
         if form.is_valid():
             form.instance.created_by = request.user
             form.save()
-            return redirect("newsletter:newsletter-list")
+            return redirect("vfllnl:newsletter-list")
         
     context['form']= form     
     return render(request, "vfllnl/edit_newsletter.html", context)
@@ -180,7 +180,7 @@ def send_newsletter(request, pk):
     obj.sent_at = obj.created_at
     obj.save()
 
-    return redirect("newsletter:newsletter-list")
+    return redirect("vfllnl:newsletter-list")
 
 ALL_RECIPIENTS_ID = "__all__"
 
@@ -198,7 +198,7 @@ def edit_newsletter(request, pk):
             
             nl_instance.recipients.set(recipients)
 
-            return redirect("newsletter:newsletter-list")
+            return redirect("vfllnl:newsletter-list")
     else:
         form = EmailTemplateForm(instance=obj)
 
@@ -224,11 +224,11 @@ def copy_newsletter(request, pk):
 
         messages.success(request, "Newsletter wurde kopiert.")
         
-        return redirect("newsletter:edit-newsletter", pk=new_template.pk)
+        return redirect("vfllnl:edit-newsletter", pk=new_template.pk)
     
     messages.error(request, "Newsletter konnte nicht kopiert werden.")
 
-    return redirect("newsletter:newsletter-list")
+    return redirect("vfllnl:newsletter-list")
 
 @login_required
 def delete_newsletter(request, pk):

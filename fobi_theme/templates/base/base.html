@@ -112,7 +112,7 @@
 			<a class='px-3 py-3' href="{% url 'event-list-internal' %}">E</a>
 
       {% if user|has_group:"newsletter" %}
-			<a class='px-3 py-3' href="{% url 'newsletter:newsletter-list' %}">NL</a>
+			<a class='px-3 py-3' href="{% url 'vfllnl:newsletter-list' %}">NL</a>
 
       {% endif %}
 
@@ -207,7 +207,7 @@
 
 	{% if SHOW_NEWSLETTER_SIGNUP %}
 
-	{% include "simple_newsletter/mailing_signup.html" %}
+	{% include "vfllnl/mailing_signup.html" %}
 	{% endif %}
 
 

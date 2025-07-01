@@ -63,6 +63,10 @@ from .views import (
     documentation_view,
 )
 
+from .event_q_and_a import (
+    additional_info_view,
+)
+
 
 # sentry test
 def trigger_error(request):
@@ -239,4 +243,5 @@ urlpatterns = [
         name="export-moodle-participants",
     ),
     path("admin/documentation/", documentation_view, name="documentation-view"),
+    path('additional-info/<str:signed_uuid>/', additional_info_view, name='additional-info')
 ]

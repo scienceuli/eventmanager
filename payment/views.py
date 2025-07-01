@@ -144,6 +144,6 @@ def payment_by_invoice_success(request):
     if settings.SEND_INVOICE_AFTER_ORDER_CREATION:
         message = "Die Rechnung geht Ihnen per E-Mail zu."
     else:
-        message = "Die Rechnung geht Ihnen wenige Tage vor Veranstaltungsbeginn per E-Mail zu."
+        message = "Die Rechnung geht Ihnen per E-Mail zu."
     context = {"message": message}
     return render(request, "payment/payment_by_invoice.html", context)
