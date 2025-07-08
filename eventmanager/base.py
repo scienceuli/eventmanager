@@ -41,10 +41,6 @@ SITE_ID = 1
 # Application definition
 
 INSTALLED_APPS = [
-    #'jet.dashboard',
-    #'jet',
-    # "grappelli.dashboard",
-    #"grappelli",
     'admin_confirm',
     "admin_interface",
     "colorfield",
@@ -63,10 +59,13 @@ INSTALLED_APPS = [
     "django_countries",
     "rest_framework",
     # 2FA
-    "django_otp",
-    "django_otp.plugins.otp_totp",
-    # 'two_factor',
-    # 'two_factor.plugins.phonenumber',
+    'django_otp',
+    'django_otp.plugins.otp_static',
+    'django_otp.plugins.otp_totp',
+    'django_otp.plugins.otp_email',
+    'two_factor',
+    'two_factor.plugins.phonenumber',
+    'two_factor.plugins.email',
     # third party
     "mjml",
     "mailqueue",
@@ -190,8 +189,10 @@ USE_L10N = True
 USE_TZ = True
 
 # login
-# LOGIN_URL = "login"
-LOGIN_URL = "users:login"
+LOGIN_URL = "two_factor:login"
+# LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "home"
+LOGOUT_REDIRECT_URL = "home"
 
 
 # Static files (CSS, JavaScript, Images)

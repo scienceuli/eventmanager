@@ -1,0 +1,28 @@
+{% load i18n %}
+
+<div class="flex items-center justify-between mt-6">
+  {% if cancel_url %}
+    <a href="{{ cancel_url }}"
+       class="text-sm text-blue-600 hover:underline">{% trans "Cancel" %}</a>
+  {% endif %}
+</div>
+
+<div class="mt-4 flex space-x-2">
+  {% if wizard.steps.prev %}
+    <button name="wizard_goto_step" type="submit"
+            value="{{ wizard.steps.prev }}"
+            class="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-800 rounded">
+      {% trans "Back" %}
+    </button>
+  {% else %}
+    <button disabled name="" type="button"
+            class="px-4 py-2 bg-gray-100 text-gray-400 rounded cursor-not-allowed">
+      {% trans "Back" %}
+    </button>
+  {% endif %}
+
+  <button type="submit"
+          class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+    {% trans "Next" %}
+  </button>
+</div>
