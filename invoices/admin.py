@@ -5,7 +5,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 
 from invoices.models import Invoice, StandardInvoice, StornoInvoice
-from invoices.actions import export_to_excel_short, export_pdfs_as_zip, set_date_action
+from invoices.actions import export_to_excel_short, export_pdfs_as_zip, set_date_action, set_paid_action
 from invoices.filter import InvoiceEventListFilter, InvoicesYearQuarterFilter
 from mailings.models import InvoiceMessage
 
@@ -38,17 +38,19 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
         "invoice_date",
         "invoice_type",
         "invoice_mail",
+        "is_paid",
         "get_invoice_receipt_formatted",
         # "create_invoice_message_button",
         "mail_sent_date",
         "invoice_export",
         "pdf",
+        "pdf_exported",
         "pdf_export",
         "recreate_invoice_pdf_button",
         "get_storno",
     )
     actions = [
-        export_to_excel_short, export_pdfs_as_zip, set_date_action
+        export_to_excel_short, export_pdfs_as_zip, set_date_action, set_paid_action
     ]
     export_to_excel_short.short_description = "Export -> Excel (St.)"
     export_pdfs_as_zip.short_description = "Export PDFs -> ZIP"
@@ -76,6 +78,13 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
     get_invoice_receipt_formatted.admin_order_field = 'invoice_receipt'
     get_invoice_receipt_formatted.short_description = 'Rechnungseingang'
     
+    @admin.display(boolean=True, description='bez.')
+    def is_paid(self, obj):
+        return obj.invoice_receipt is not None
+    
+    @admin.display(boolean=True, description='↓')
+    def pdf_exported(self, obj):
+        return obj.pdf and obj.pdf_export is not None
 
     def get_urls(self):
         urls = super().get_urls()
@@ -192,6 +201,8 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
         return redirect(
             reverse("admin:invoices_stornoinvoice_change", args=[storno.pk])
         )
+
+    
 
 
 admin.site.register(StandardInvoice, StandardInvoiceAdmin)

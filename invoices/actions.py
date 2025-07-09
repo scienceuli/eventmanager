@@ -192,3 +192,19 @@ def set_date_action(modeladmin, request, queryset):
     })
 
 set_date_action.short_description = "Rechnungseingang setzen"
+
+
+def set_paid_action(modeladmin, request, queryset):
+    """
+    An action that allows the user to set a given queryset of objects as paid.
+
+    The user is presented with a form that allows them to select a date. If the form is valid,
+    the selected date is applied to all objects in the queryset.
+    """
+    now_date = now().date()
+    updated =queryset.update(invoice_receipt=now_date)
+    
+    modeladmin.message_user(request, f"{updated} Rechnungen wurden aktualisiert.")
+    return redirect(request.get_full_path())
+
+set_paid_action.short_description = "Bezahlstatus setzen"
