@@ -24,6 +24,8 @@ from .filter import EventListFilter, YearQuarterFilter
 
 from events.filter import DateRangeFilter
 
+from invoices.models import Invoice
+
 
 class OrderItemInline(admin.TabularInline):
     model = OrderItem
@@ -108,6 +110,7 @@ class OrderAdmin(admin.ModelAdmin):
         "date_modified",
         # "paid",
         # "payment_receipt",
+        "invoice_paid",
         # "download_marker",
         order_detail,
         "invoices_button",
@@ -236,6 +239,12 @@ class OrderAdmin(admin.ModelAdmin):
     payment_date_html.short_description = "Rechnungsdatum"
 
     change_list_template = "admin/daterange/change_list.html"
+
+    @admin.display(boolean=True, description='bez.')
+    def invoice_paid(self, instance):
+        return Invoice.objects.filter(order=instance).first().invoice_receipt is not None
+    
+    
 
 
 @admin.register(OrderItem)
