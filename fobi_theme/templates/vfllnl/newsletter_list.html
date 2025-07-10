@@ -7,7 +7,7 @@
 <div class="max-w-7xl mx-auto py-24 px-4 sm:px-6 lg:py-32 lg:px-8 lg:flex lg:items-center">
     <div>
         <div>
-        <a href="{% url 'newsletter:create-newsletter' %}" name="create-nl" id="create-nl" class="items-center justify-center py-3 px-5 border border-transparent text-base font-medium rounded-md text-white bg-vfllred hover:bg-vfllred focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <a href="{% url 'vfllnl:create-newsletter' %}" name="create-nl" id="create-nl" class="items-center justify-center py-3 px-5 border border-transparent text-base font-medium rounded-md text-white bg-vfllred hover:bg-vfllred focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
             Email Template anlegen
         </a>
         </div>
@@ -22,7 +22,7 @@
           <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             
-                {% include 'simple_newsletter/_newsletter_table.html' %}
+                {% include 'vfllnl/_newsletter_table.html' %}
             </div>
           </div>
         </div>

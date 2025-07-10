@@ -1,4 +1,4 @@
-const validateEmail = function(email) {
+const validateEmail = function (email) {
     var formData = new FormData();
     formData.append('email', email)
     $.ajaxSetup({
@@ -7,7 +7,7 @@ const validateEmail = function(email) {
         }
     });
     $.ajax({
-        url: "{% url 'newsletter:validate-email' %}",
+        url: "{% url 'vfllnl:validate-email' %}",
         type: 'POST',
         dataType: 'json',
         cache: false,
@@ -23,7 +23,7 @@ const validateEmail = function(email) {
     });
 };
 
-const subscribeUser = function(email) {
+const subscribeUser = function (email) {
     var formData = new FormData();
     formData.append('email', email);
     $.ajaxSetup({
@@ -32,7 +32,7 @@ const subscribeUser = function(email) {
         }
     });
     $.ajax({
-        url: "{% url 'newsletter:subscribe' %}",
+        url: "{% url 'vfllnl:subscribe' %}",
         type: 'POST',
         dataType: 'json',
         cache: false,
