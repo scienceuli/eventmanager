@@ -1,7 +1,7 @@
 from xhtml2pdf import pisa
 from io import BytesIO
 
-from datetime import datetime
+from datetime import datetime, date
 
 from django.db import models
 from django.conf import settings
@@ -161,6 +161,11 @@ class Invoice(models.Model):
 
     create_storno_invoice_button.short_description = "Storno"
     create_storno_invoice_button.allow_tags = True
+
+    def set_paid(self):
+        today = date.today()
+        self.invoice_receipt = today
+        self.save()
 
 
 # class StornoInvoice(models.Model):

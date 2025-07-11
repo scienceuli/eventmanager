@@ -122,7 +122,8 @@ def create_mail(invoice):
     invoice_email.from_address = settings.DEFAULT_FROM_EMAIL
     invoice_email.to_address = order.email
     invoice_email.reply_to = settings.REPLY_TO_EMAIL
-    invoice_email.bcc_address = settings.EMAIL_NOTIFY_BCC
+    if len(settings.EMAIL_NOTIFY_BCC) > 0:
+        invoice_email.bcc_address = settings.EMAIL_NOTIFY_BCC
 
     invoice_email.mail_type = invoice_type
 

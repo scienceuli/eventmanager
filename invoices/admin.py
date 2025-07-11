@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.utils.html import mark_safe
+from django.utils.html import mark_safe, format_html
 from django.urls import reverse, path
 from django.contrib import messages
 from django.shortcuts import redirect
@@ -38,7 +38,8 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
         "invoice_date",
         "invoice_type",
         "invoice_mail",
-        "is_paid",
+        # "is_paid",
+        "paid_button",
         "get_invoice_receipt_formatted",
         # "create_invoice_message_button",
         "mail_sent_date",
@@ -81,6 +82,8 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
     @admin.display(boolean=True, description='bez.')
     def is_paid(self, obj):
         return obj.invoice_receipt is not None
+
+    
     
     @admin.display(boolean=True, description='↓')
     def pdf_exported(self, obj):
@@ -104,8 +107,35 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
                 self.admin_site.admin_view(self.create_storno_invoice),
                 name="create-storno-invoice",
             ),
+            path(
+                "set_paid/<int:invoice_id>/",
+                self.admin_site.admin_view(self.set_paid_view),
+                name="set-invoice-paid",
+            ),
         ]
         return custom_urls + urls
+    
+    def set_paid_view(self, request, invoice_id):
+        invoice = self.get_object(request, invoice_id)
+        if invoice and not invoice.invoice_receipt:
+            invoice.set_paid()
+            self.message_user(request, f"Rechnung {invoice.invoice_number} als bez. markiert.", messages.SUCCESS)
+        else:
+            self.message_user(request, f"Rechnung bereits bezahlt.", messages.INFO)
+        return redirect(request.META.get("HTTP_REFERER", "/admin/"))
+    
+    def paid_button(self, obj):
+        if obj.invoice_receipt:
+            return format_html('✅')
+        if not obj.invoice_receipt and not obj.mail_sent_date:
+            return format_html('❌')
+        
+        url = reverse("admin:set-invoice-paid", args=[obj.pk])
+        return mark_safe(
+            f"<a  href='{url}'>💰</a>"
+        )
+
+    paid_button.short_description = "bez."
 
     def order_button(self, obj):
         if obj.order:
