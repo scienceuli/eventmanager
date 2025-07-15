@@ -387,7 +387,7 @@ class FilteredEventListView(ListView):
     def get_queryset(self):
         search = self.request.GET.get("search")
         cat = self.request.GET.get("cat", None)
-        show_in_all = self.request.GET.get("show_in_all", None)
+        sia = self.request.GET.get("sia", None)
         # qs of published events without cancelled events
         queryset = (
             super()
@@ -405,7 +405,7 @@ class FilteredEventListView(ListView):
         if cat and cat == "onlyvfll":
             queryset = queryset.filter(category__belongs_to_all_events=True)
 
-        if show_in_all and show_in_all == 'yes':
+        if sia and sia == 'yes':
             queryset = queryset.filter(show_in_all_events=True)
 
         # Then use the query parameters and the queryset to
@@ -434,7 +434,7 @@ class FilteredEventListView(ListView):
             "category": "Kategorie",
             "search": search,  # without this there is a key error
             "cat": cat,  # without this there is a key error
-            "show_in_all": show_in_all, # without this there is a key error
+            "sia": sia, # without this there is a key error
         }
 
         def get_value_in_readable_form(key, value):
