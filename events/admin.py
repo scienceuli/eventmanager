@@ -1142,6 +1142,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "pub_status",
                     "edit_in_frontend",
                     "visible_to_groups",
+                    "show_in_all_events",
                     "show_date",
                     "keywords",
                     "meta_description",

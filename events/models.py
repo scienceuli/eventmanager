@@ -443,6 +443,9 @@ class Event(BaseModel, HitCountMixin):
     edit_in_frontend = models.BooleanField(
         verbose_name="editierbar im Frontend?", default=False
     )
+    show_in_all_events = models.BooleanField(
+        verbose_name="in Gesamtübersicht zeigen?", default=True
+    )
     label = models.CharField(
         max_length=64,
         verbose_name="Kurzname",
