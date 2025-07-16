@@ -8,6 +8,9 @@ from invoices.models import Invoice, StandardInvoice, StornoInvoice
 from invoices.actions import export_to_excel_short, export_pdfs_as_zip, set_date_action, set_paid_action
 from invoices.filter import InvoiceEventListFilter, InvoicesYearQuarterFilter
 from mailings.models import InvoiceMessage
+from shop.models import OrderNote
+
+
 
 
 #class InvoiceAdmin(admin.ModelAdmin):
@@ -49,6 +52,10 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
         "pdf_export",
         "recreate_invoice_pdf_button",
         "get_storno",
+        # "view_notes_button",
+        # 'note_preview',
+        'notes_popup_icon',
+        'add_note_link',
     )
     actions = [
         export_to_excel_short, export_pdfs_as_zip, set_date_action, set_paid_action
@@ -69,6 +76,44 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
         "invoice_number",
         "order__items__event__name"
     ]
+
+    def add_note_link(self, obj):
+        url = reverse('admin:shop_ordernote_add') + f'?order={obj.order.id}&next={reverse("admin:invoices_standardinvoice_changelist")}'
+        return format_html(
+            '<a href="{}" onclick="window.open(this.href, \'addNote\', \'width=600,height=400\'); return false;" title="Add Note">📝 Add</a>',
+            url
+        )
+        
+    add_note_link.short_description = format_html('🔖')
+
+    def view_notes_button(self, obj):
+        note_count = obj.order.notes.count()
+        if note_count == 0:
+            return "—"
+        url = reverse('admin:shop_ordernote_changelist') + f'?order__id__exact={obj.order.id}'
+        return format_html(
+            '<a class="button" href="{}" target="_blank">View Notes ({})</a>',
+            url,
+            note_count
+        )
+    view_notes_button.short_description = "Notes"
+    view_notes_button.allow_tags = True
+
+    def note_preview(self, obj):
+        notes = obj.order.notes.all()
+        return format_html('<br>'.join(note.note[:30] for note in notes))
+
+    def notes_popup_icon(self, obj):
+        notes = obj.order.notes.all()
+        if not notes:
+            return ""
+        url = reverse('admin:shop_ordernote_changelist') + f'?order__id__exact={obj.order.id}'
+        return format_html(
+            '<a href="{}" onclick="window.open(this.href, \'notesPopup\', \'width=600,height=400\'); return false;" title="Notizen">📝 ({})</a>',
+            url,
+            notes.count()
+        )
+    notes_popup_icon.short_description = "Notes"
 
     def get_invoice_receipt_formatted(self, obj):
         if obj:

@@ -53,6 +53,17 @@ class OrderNoteInline(admin.TabularInline):
         formset = super().get_formset(request, obj, **kwargs)
         formset.request = request  # Pass the request to formset
         return formset
+    
+class OrderNoteAdmin(admin.ModelAdmin):
+    list_display = ["order", "title", "note", "created_by", "date_created", "date_modified"]
+    readonly_fields = ["created_by", "date_created", "date_modified"]
+
+    def save_model(self, request, obj, form, change):
+        if not obj.pk:  # only set on creation
+            obj.created_by = request.user
+        super().save_model(request, obj, form, change)
+
+admin.site.register(OrderNote, OrderNoteAdmin)
 
 
 def order_pdf_and_mail(obj):
