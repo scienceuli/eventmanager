@@ -55,7 +55,7 @@ class OrderNoteInline(admin.TabularInline):
         return formset
     
 class OrderNoteAdmin(admin.ModelAdmin):
-    list_display = ["order", "title", "note", "created_by", "date_created", "date_modified"]
+    list_display = ["title", "order", "note", "created_by", "date_created", "date_modified"]
     readonly_fields = ["created_by", "date_created", "date_modified"]
 
     def save_model(self, request, obj, form, change):

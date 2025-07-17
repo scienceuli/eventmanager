@@ -104,6 +104,8 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
         return format_html('<br>'.join(note.note[:30] for note in notes))
 
     def notes_popup_icon(self, obj):
+        if not obj.order:
+            return ""
         notes = obj.order.notes.all()
         if not notes:
             return ""
