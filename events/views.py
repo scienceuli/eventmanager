@@ -126,6 +126,7 @@ from .forms import (
     Symposium2024Form,
     SymposiumForm,
     MV2023Form,
+    MV2025Form,
     AddMemberForm,
     MemberForm,
     EventUpdateCapacityForm,
@@ -925,6 +926,16 @@ def get_personal_form_data(form):
     data_dict["email"] = form.cleaned_data["email"]
     return data_dict
 
+def get_additional_mv_form_data(form):
+    data_dict = {}
+    data_dict["takes_part_in_mv"] = boolean_translate(
+        form.cleaned_data.get("takes_part_in_mv")
+    )
+    data_dict["takes_part_in_ft"] = boolean_translate(
+        form.cleaned_data.get("takes_part_in_ft")
+    )
+    return data_dict
+
 
 def get_additional_form_data(form, event, form_type):
     data_dict = {}
@@ -983,7 +994,7 @@ def get_mv_form_data(form):
     vote_transfer = form.cleaned_data.get("vote_transfer")
     data_dict["vote_transfer"] = vote_transfer
     data_dict["vote_transfer_check"] = form.cleaned_data.get("vote_transfer_check")
-    data_dict["check"] = form.cleaned_data.get("mv_check")
+    data_dict["agree"] = form.cleaned_data.get("mv_check")
     data_dict["member_type"] = form.cleaned_data.get("member_type")
     data_dict["attend_status"] = "registered"
     return data_dict
@@ -1037,8 +1048,9 @@ def make_event_registration(request, form, event):
         )
     elif event.registration_form == "m":
         m_data_dict = get_mv_form_data(form)
+        m_additional_data_dict = get_additional_mv_form_data(form)
         new_member = EventMember.objects.create(
-            event=event, **personal_data_dict, **m_data_dict
+            data=m_additional_data_dict, event=event, **personal_data_dict, **m_data_dict
         )
     elif event.registration_form == "f24":
         f24_additional_data = get_additional_form_data(form, event, "f24")
@@ -1110,7 +1122,6 @@ def make_event_registration(request, form, event):
     if event.registration_form == "s" :
         formatting_dict["question_link"] = get_question_link(new_member)
 
-    print("question link:", formatting_dict["question_link"])
 
     vfll_mail_sent = send_email_after_registration(
         "vfll", event, form, mail_to_admin_template_name, formatting_dict
@@ -1221,7 +1232,7 @@ def event_add_member(request, slug):
         elif event.registration_form == "m":
             # print(f"event label: {event.label}")
             # form = SymposiumForm(event_label=event.label)
-            form = MV2023Form(event_label=event.label)
+            form = MV2025Form(event_label=event.label)
         elif event.registration_form == "f":
             # print("ws to form:", ws_utilisations)
             form = Symposium2022Form(
@@ -1241,7 +1252,7 @@ def event_add_member(request, slug):
         elif event.registration_form == "w":
             form = WelcomeMemberForm(request.POST)
         elif event.registration_form == "m":
-            form = MV2023Form(request.POST, event_label=event.label)
+            form = MV2025Form(request.POST, event_label=event.label)
         elif event.registration_form == "f":
             form = Symposium2022Form(
                 request.POST,
@@ -1514,8 +1525,9 @@ class MVEventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
     template_name = "events/mv_members_list.html"
 
     def get_queryset(self):
+        label = self.kwargs['event']
         event_members = EventMember.objects.filter(
-            event__name="Digitale Mitgliederversammlung 2023"
+            event__label=label
         )
         query_ln = self.request.GET.get("member_lastname")
         query_fn = self.request.GET.get("member_firstname")
@@ -2149,7 +2161,7 @@ def export_participants(request, event_id, version):
             for field in field_names:
                 is_admin_field = hasattr(admin_cls, field)
                 if (
-                    is_admin_field and not field == "check"
+                    is_admin_field and not field == "agree"
                 ):  # check is also admin_field, but we need model field
                     # if field == "get_order":
                     #     get_order = getattr(admin_cls_instance, field)

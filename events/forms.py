@@ -979,6 +979,176 @@ class MV2023Form(forms.Form):
         return data
 
 
+class MV2025Form(forms.Form):
+    def member_type_label(self):
+        return [
+            label
+            for value, label in self.fields["member_type"].choices
+            if value in self["member_type"].value()
+        ]
+
+    firstname = forms.CharField(
+        label="Vorname", widget=forms.TextInput(attrs={"placeholder": "Vorname"})
+    )
+    lastname = forms.CharField(
+        label="Nachname", widget=forms.TextInput(attrs={"placeholder": "Nachname"})
+    )
+    email = forms.CharField(
+        label="E-Mail",
+        widget=forms.TextInput(attrs={"placeholder": "E-Mail"}),
+    )
+
+    member_type = forms.ChoiceField(label="Ich bin", choices=MEMBER_TYPE_CHOICES)
+
+    takes_part_in_ft = forms.BooleanField(
+        label="Ich nehme am Tagesprogramm teil.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio mb-0"}),
+        required=False,
+        help_text="(Kostenfrei; nur für VFLL-Mitglieder)",
+    )
+
+    takes_part_in_mv = forms.BooleanField(
+        label="Ich nehme an der MV teil.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+        help_text="(Kostenfrei; nur für VFLL-Mitglieder)",
+    )
+    
+    vote_transfer = forms.CharField(
+        label="Ich nehme an der Mitgliederversammlung nicht teil und übertrage als ordentliches Mitglied meine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an:",
+        widget=forms.TextInput(attrs={"placeholder": "Stimmübertragung an"}),
+        required=False,
+    )
+
+    vote_transfer_check = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+        label="Ich habe mich rückversichert, dass die Person, der ich meine Stimme übertrage, ordentliches Mitglied im VFLL ist und an der virtuellen Mitgliederversammlung teilnehmen wird.",
+    )
+
+    mv_check = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+        label=mark_safe(
+            "Ich bin damit einverstanden, das meine Daten (E-Mail-Adresse, Vor- und Nachname, Status der Stimmberechtigung) auf der internen Teilnahmeliste der Mitgliederversammlung stehen, die an Vorstand, Wahlleitung, Geschäftsstelle und an Lindmanns – Lebendige Online-Veranstaltungen weitergegeben werden. Ich habe zur Kenntnis genommen, dass diese Daten zum Versand der digitalen Stimmzettel sowie zur Durchführung der Wahlen und Abstimmungen mit dem Wahltool benötigt und nach Abschluss der Veranstaltung gelöscht werden."
+        ),
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.event_label = kwargs.pop("event_label", "")
+        super(MV2025Form, self).__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_error_title = "Fehler im Formular"
+        self.error_text_inline = False
+        self.helper.layout = Layout(
+            Fieldset(
+                "Persönliche Daten",
+                "firstname",
+                "lastname",
+                "email",
+                HTML(
+                    """
+                    <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse 
+                    ist Voraussetzung für die Zusendung eines Zugangscodes für das digitale Wahltool und des Links für die Videokonferenz. 
+                    </p>
+                    """
+                ),
+                css_class="border-b-2 border-gray-900 pb-2 mb-4",
+            ),
+            Fieldset(
+                "Teilnahme",
+                InlineRadios(
+                    "member_type",
+                    required=True,
+                ),
+                "takes_part_in_ft",
+                "takes_part_in_mv",
+                "vote_transfer",
+                "vote_transfer_check",
+            ),
+            Fieldset(
+                "Einverständniserklärung",
+                HTML(
+                    """
+                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig, 
+                    um den technisch-organisatorischen Zugang zur Veranstaltung zu 
+                    gewährleisten.</i></p>
+                    """
+                ),
+                "mv_check",
+                HTML(
+                    """
+                    <hr class="my-12 pt-4"/>
+                    """
+                ),
+                css_class="border-b-2 border-gray-900 pb-2 mb-4",
+            ),
+            Fieldset(
+                HTML(
+                    """
+                    <p class="mt-4"><b>Datenschutzhinweis:</b><br/>
+                    Wir verwenden deine Angaben ausschließlich zur Durchführung 
+                    der Veranstaltungen des Verbands der Freien Lektorinnen und 
+                    Lektoren e.V. Deine Daten werden nicht an unbefugte Dritte 
+                    weitergegeben. Verantwortlich im Sinne der DSGVO ist der 
+                    Vorstand des Verbands der Freien Lektorinnen und Lektoren e.V.,
+                    Geschäftsstelle, Büro Seehausen + Sandberg, 
+                    Merseburger Straße 5, 10823 Berlin.</p>                    
+                    """
+                ),
+                css_class="border-b-2 border-gray-900 pb-2 mb-4",
+            ),
+            ButtonHolder(
+                Submit(
+                    "submit",
+                    "Anmelden",
+                    css_class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full",
+                )
+            ),
+        )
+        # self.helper.add_input(Submit("submit", "Anmelden"))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        vote_transfer = cleaned_data.get("vote_transfer")
+        vote_transfer_check = cleaned_data.get("vote_transfer_check")
+        mv_check = cleaned_data.get("mv_check")
+        member_type = cleaned_data.get("member_type")
+
+        if vote_transfer_check and not vote_transfer:
+            self.add_error("vote_transfer", "Bitte ordentliches VFLL-Mitglied angeben")
+
+        if vote_transfer and not vote_transfer_check:
+            self.add_error(
+                "vote_transfer_check", "Bitte für Stimmübertragung bestätigen"
+            )
+        if vote_transfer and member_type != "o":
+            self.add_error(
+                "vote_transfer",
+                "Stimmübertragung nur für ordentliche Mitglieder möglich",
+            )
+
+        if not mv_check:
+            self.add_error(
+                "mv_check",
+                "Bestätigung der Einverständniserklärung notwendig für Teilnahme",
+            )
+
+    def clean_email(self):
+        data = self.cleaned_data["email"]
+        if (
+            EventMember.objects.filter(
+                email=data, event__label=self.event_label
+            ).count()
+            > 0
+        ):
+            raise forms.ValidationError(
+                "Es gibt bereits eine Anmeldung mit dieser E-Mail-Adresse.",
+                code="email_already_registered",
+            )
+        return data
+
+
 class AddMemberForm(forms.ModelForm):
     class Meta:
         model = EventMember
