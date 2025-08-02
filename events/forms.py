@@ -1001,14 +1001,14 @@ class MV2025Form(forms.Form):
     member_type = forms.ChoiceField(label="Ich bin", choices=MEMBER_TYPE_CHOICES)
 
     takes_part_in_ft = forms.BooleanField(
-        label="Ich nehme am Tagesprogramm teil.",
+        label="Ich nehme an der gesamten Tagung teil.",
         widget=forms.CheckboxInput(attrs={"class": "form-radio mb-0"}),
         required=False,
         help_text="(Kostenfrei; nur für VFLL-Mitglieder)",
     )
 
     takes_part_in_mv = forms.BooleanField(
-        label="Ich nehme an der MV teil.",
+        label="Ich nehme nur an der Mitgliederversammlung teil.",
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
         required=False,
         help_text="(Kostenfrei; nur für VFLL-Mitglieder)",
@@ -1030,7 +1030,7 @@ class MV2025Form(forms.Form):
         widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
         required=False,
         label=mark_safe(
-            "Ich bin damit einverstanden, das meine Daten (E-Mail-Adresse, Vor- und Nachname, Status der Stimmberechtigung) auf der internen Teilnahmeliste der Mitgliederversammlung stehen, die an Vorstand, Wahlleitung, Geschäftsstelle und an Lindmanns – Lebendige Online-Veranstaltungen weitergegeben werden. Ich habe zur Kenntnis genommen, dass diese Daten zum Versand der digitalen Stimmzettel sowie zur Durchführung der Wahlen und Abstimmungen mit dem Wahltool benötigt und nach Abschluss der Veranstaltung gelöscht werden."
+            "Ich bin damit einverstanden, das meine Daten (E-Mail-Adresse, Vor- und Nachname, Status der Stimmberechtigung) auf der internen Teilnahmeliste der Mitgliederversammlung stehen, die an Vorstand, Wahlleitung, Geschäftsstelle und an Votingtech GmbH weitergegeben werden. Ich habe zur Kenntnis genommen, dass diese Daten zum Versand der digitalen Stimmzettel sowie zur Durchführung der Wahlen und Abstimmungen mit dem Wahltool benötigt und nach Abschluss der Veranstaltung gelöscht werden."
         ),
     )
 
@@ -1049,7 +1049,8 @@ class MV2025Form(forms.Form):
                 HTML(
                     """
                     <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse 
-                    ist Voraussetzung für die Zusendung eines Zugangscodes für das digitale Wahltool und des Links für die Videokonferenz. 
+                    ist Voraussetzung für die Zusendung 
+                    der Einwahldaten zur Tagung und zum digitalen Wahltool der Mitgliederversammlung. 
                     </p>
                     """
                 ),
@@ -1110,10 +1111,24 @@ class MV2025Form(forms.Form):
 
     def clean(self):
         cleaned_data = super().clean()
+        takes_part_in_ft = cleaned_data.get("takes_part_in_ft")
+        takes_part_in_mv = cleaned_data.get("takes_part_in_mv")
         vote_transfer = cleaned_data.get("vote_transfer")
         vote_transfer_check = cleaned_data.get("vote_transfer_check")
         mv_check = cleaned_data.get("mv_check")
         member_type = cleaned_data.get("member_type")
+
+        if not takes_part_in_ft and not takes_part_in_mv:
+            self.add_error(
+                "takes_part_in_ft",
+                "Bitte mindestens eine Option wählen.",
+            )
+
+        if takes_part_in_mv and takes_part_in_mv:
+            self.add_error(
+                "takes_part_in_mv",
+                "Bitte nur eine Option auswählen.",
+            )
 
         if vote_transfer_check and not vote_transfer:
             self.add_error("vote_transfer", "Bitte ordentliches VFLL-Mitglied angeben")
