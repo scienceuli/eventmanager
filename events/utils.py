@@ -123,6 +123,7 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
     formatting_dict.update(
         {
             "event": event.name,
+            "date": event.first_day.strftime("%d.%m.%Y"),
         }
     )
 
@@ -130,7 +131,7 @@ def send_email_after_registration(to, event, form, template, formatting_dict):
         subject = f"Anmeldung am Kurs {event.name}"
         reply_to = [settings.REPLY_TO_EMAIL]
     elif event.registration_form == "m":
-        subject = f"Anmeldung zur Digitalen Mitgliederversammlung"
+        subject = f"Anmeldung zu {event.name}"
         reply_to = [settings.MV_REPLY_TO_EMAIL]
     elif event.registration_form == "f24":
         subject = f"Anmeldung zur Fachtagung 2024 / Mitgliederversammlung"
