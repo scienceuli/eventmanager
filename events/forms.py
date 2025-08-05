@@ -1124,7 +1124,7 @@ class MV2025Form(forms.Form):
                 "Bitte mindestens eine Option wählen.",
             )
 
-        if takes_part_in_mv and takes_part_in_mv:
+        if takes_part_in_ft and takes_part_in_mv:
             self.add_error(
                 "takes_part_in_mv",
                 "Bitte nur eine Option auswählen.",
