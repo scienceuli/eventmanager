@@ -1757,22 +1757,22 @@ def export_mv_members_csv(request, event):
     if query_vote_transfer_no:
         members_mv = members_mv.filter(vote_transfer__exact="")
 
-    members_mv = members_mv.values_list(
+    base_fields = [
         "firstname",
         "lastname",
         "email",
         "attend_status",
         "date_created",
         "member_type",
+    ]
+
+    members_mv = members_mv.values_list(
+        *base_fields
     )
     if has_vote_transfer.get(event, None):
-        members_mv.extend(
-            members_mv.values_list(
-                "vote_transfer",
-                "vote_transfer_check",
-                "agree",
-            )
-        )
+        extra_fields = ["vote_transfer", "vote_transfer_check", "agree"]
+        members_mv = members_mv.values_list(*(base_fields + extra_fields))
+
 
     for member in members_mv:
         member = list(member)
@@ -1825,6 +1825,7 @@ def members_dashboard_view(request):
         "zw_event_id": Event.objects.get(label="zukunft2021").id,
     }
     return render(request, "events/members_dashboard.html", context)
+
 
 
 @login_required
