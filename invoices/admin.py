@@ -78,11 +78,14 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
     ]
 
     def add_note_link(self, obj):
-        url = reverse('admin:shop_ordernote_add') + f'?order={obj.order.id}&next={reverse("admin:invoices_standardinvoice_changelist")}'
-        return format_html(
-            '<a href="{}" onclick="window.open(this.href, \'addNote\', \'width=600,height=400\'); return false;" title="Add Note">📝 Add</a>',
-            url
-        )
+        if obj.order:
+            url = reverse('admin:shop_ordernote_add') + f'?order={obj.order.id}&next={reverse("admin:invoices_standardinvoice_changelist")}'
+            return format_html(
+                '<a href="{}" onclick="window.open(this.href, \'addNote\', \'width=600,height=400\'); return false;" title="Add Note">📝 Add</a>',
+                url
+            )
+        else:
+            return "kB"
         
     add_note_link.short_description = format_html('🔖')
 
