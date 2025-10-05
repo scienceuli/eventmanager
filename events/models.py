@@ -49,8 +49,16 @@ class Home(BaseModel):
     name = models.CharField("Name", max_length=40)
     title = models.CharField("Titel", max_length=255, null=True, blank=True)
     text = models.TextField("Haupttext", blank=True)
-    image = models.ImageField(default='images/vfll_logo_rot_Bild.jpg', upload_to='home/')
-    keywords = models.CharField("Keywords", max_length=255, null=True, blank=True, help_text="Keywords für SEO, bitte mit Komma getrennt angeben.")    
+    image = models.ImageField(
+        default="images/vfll_logo_rot_Bild.jpg", upload_to="home/"
+    )
+    keywords = models.CharField(
+        "Keywords",
+        max_length=255,
+        null=True,
+        blank=True,
+        help_text="Keywords für SEO, bitte mit Komma getrennt angeben.",
+    )
 
     class Meta:
         verbose_name = "Home"
@@ -64,17 +72,27 @@ class HeroSliderImage(BaseModel):
     """
     Model for hero slider images that appear on the homepage
     """
-    title = models.CharField("Titel", max_length=255, blank=True)
+
+    title = models.CharField("Titel", max_length=255)
+    show_title = models.BooleanField("Titel zeigen", default=False)
     subtitle = models.CharField("Untertitel", max_length=255, blank=True)
-    image = models.ImageField("Bild", upload_to='hero_slider/')
-    order = models.PositiveIntegerField("Reihenfolge", default=1, help_text="Niedrigere Zahlen werden zuerst angezeigt")
-    is_active = models.BooleanField("Aktiv", default=True, help_text="Gibt an, ob das Bild im Slider angezeigt werden soll")
-    link_url = models.URLField("Link URL", blank=True, help_text="Optionale URL, zu der der Slider verlinkt")
-    
+    image = models.ImageField("Bild", upload_to="hero_slider/")
+    order = models.PositiveIntegerField(
+        "Reihenfolge", default=1, help_text="Niedrigere Zahlen werden zuerst angezeigt"
+    )
+    is_active = models.BooleanField(
+        "Aktiv",
+        default=True,
+        help_text="Gibt an, ob das Bild im Slider angezeigt werden soll",
+    )
+    link_url = models.URLField(
+        "Link URL", blank=True, help_text="Optionale URL, zu der der Slider verlinkt"
+    )
+
     class Meta:
         verbose_name = "Hero Slider Bild"
         verbose_name_plural = "Hero Slider Bilder"
-        ordering = ['order']
+        ordering = ["order"]
 
     def __str__(self):
         return f"Slider Bild: {self.title or f'Bild {self.id}'}"
@@ -359,14 +377,14 @@ class EventCollection(BaseModel):
         if EventCollection.objects.exists():
             last_id = EventCollection.objects.latest("id").id
         if not self.id:
-            self.slug = slugify(f"{self.name}-{str(last_id+1)}")[:max_length]
+            self.slug = slugify(f"{self.name}-{str(last_id + 1)}")[:max_length]
         add = not self.pk
         # super(Event, self).save(*args, **kwargs)
         if add:
             # if not self.slug:
             #    self.slug = slugify(self.name)[:max_length]
             if not self.label:
-                self.label = f"{self.name.partition(' ')[0]}-{date.today().year}-{str(last_id+1)}"
+                self.label = f"{self.name.partition(' ')[0]}-{date.today().year}-{str(last_id + 1)}"
             kwargs["force_insert"] = False  # create() uses this, which causes error.
 
         self.first_day = self.get_first_day_start_date()
@@ -442,7 +460,11 @@ class Event(BaseModel, HitCountMixin):
     slug = models.SlugField(max_length=255, null=False, unique=True, editable=True)
     eventurl = models.URLField(null=True, blank=True)
     image = models.ImageField(default="images/vfll_logo_rot_Bild.jpg")
-    keywords = models.CharField(max_length=255, blank=True, help_text="Keywords für SEO, bitte mit Komma getrennt angeben.")
+    keywords = models.CharField(
+        max_length=255,
+        blank=True,
+        help_text="Keywords für SEO, bitte mit Komma getrennt angeben.",
+    )
     pub_status = models.CharField(
         max_length=8,
         choices=PUB_STATUS_CHOICES,
@@ -906,9 +928,7 @@ class Event(BaseModel, HitCountMixin):
             event=self.id,
             order__email__in=EventMember.objects.filter(
                 event=self.id, attend_status="registered"
-            ).values_list(
-                "email", flat=True
-            ),  # Get only registered emails
+            ).values_list("email", flat=True),  # Get only registered emails
         ).aggregate(total=Sum("cost"))["total"]
 
         return total_income or 0
@@ -921,7 +941,7 @@ class Event(BaseModel, HitCountMixin):
             last_id = Event.objects.latest("id").id
         if not self.id:
             self.slug = slugify(
-                f"{self.name.replace('Kopie von ', '')}-{str(last_id+1)}"
+                f"{self.name.replace('Kopie von ', '')}-{str(last_id + 1)}"
             )[:max_length]
         if not self.uuid:
             self.uuid = uuid.uuid4()
@@ -931,7 +951,7 @@ class Event(BaseModel, HitCountMixin):
             # if not self.slug:
             #    self.slug = slugify(self.name)[:max_length]
             if not self.label:
-                self.label = f"{self.name.replace('Kopie von ', '').partition(' ')[0]}-{date.today().year}-{str(last_id+1)}"
+                self.label = f"{self.name.replace('Kopie von ', '').partition(' ')[0]}-{date.today().year}-{str(last_id + 1)}"
             kwargs["force_insert"] = False  # create() uses this, which causes error.
 
         self.first_day = self.get_first_day_start_date()
@@ -1119,7 +1139,9 @@ class EventImage(BaseModel):
         Event, related_name="eventimage", on_delete=models.CASCADE
     )
     image = models.ImageField(upload_to="event_image/")
-    image_form = models.CharField(max_length=1, choices=EVENT_IMAGE_FORM_CHOICES, default="r")
+    image_form = models.CharField(
+        max_length=1, choices=EVENT_IMAGE_FORM_CHOICES, default="r"
+    )
     category = models.CharField(max_length=1, choices=EVENT_IMAGE_CHOICES, default="d")
     description = models.CharField(max_length=255, blank=True, null=True)
     caption = models.CharField(max_length=255, blank=True, null=True)
@@ -1231,7 +1253,7 @@ class EventMember(AddressModel):
     def get_secure_url(self):
         signer = TimestampSigner()
         signed_uuid = signer.sign(str(self.uuid))
-        return reverse('additional-info', args=[signed_uuid])
+        return reverse("additional-info", args=[signed_uuid])
 
     def get_registration_date(self):
         return self.date_created.strftime("%d.%m.%Y %H:%M")

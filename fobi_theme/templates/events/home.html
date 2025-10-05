@@ -54,7 +54,7 @@
             class="w-full h-full object-cover"
           />
 
-          {% if image.title %}
+          {% if image.title and image.show_title %}
           <!-- Overlay -->
           <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
             <h2 class="text-white text-3xl md:text-5xl font-semibold text-center px-4">
