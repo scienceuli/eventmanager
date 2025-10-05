@@ -3,12 +3,13 @@ import io, csv
 from datetime import date, datetime
 
 from django.contrib import admin, messages
+from django.contrib.admin.models import LogEntry, DELETION
 from django.conf import settings
 from django.http import HttpResponseRedirect
 from django.template.response import TemplateResponse
 from django.utils.safestring import mark_safe
 from django.utils.http import urlencode
-from django.utils.html import format_html
+from django.utils.html import format_html, escape
 from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse, path
 from django import forms
@@ -64,7 +65,7 @@ from .models import (
     EventMemberChangeDate,
     EventMemberRole,
     MemberRole,
-    EventHighlight,
+    HeroSliderImage,
 )
 
 from .event_q_and_a import EventQuestion
@@ -374,6 +375,7 @@ class EventDayAdmin(admin.ModelAdmin):
 
 
 admin.register(EventDay, EventDayAdmin)
+
 
 class EventQuestionInline(admin.StackedInline):
     model = EventQuestion
@@ -701,7 +703,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
             if "exception" in response or "errorcode" in response:
                 messages.error(
                     request,
-                    f"Teilnehmer*in konnte nicht eingeschrieben werden: {response.get('exception', '')}, {response.get('errorcode','')}, {response.get('message','')}",
+                    f"Teilnehmer*in konnte nicht eingeschrieben werden: {response.get('exception', '')}, {response.get('errorcode', '')}, {response.get('message', '')}",
                 )
         else:
             messages.success(
@@ -1258,11 +1260,12 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     def answers_summary_link(self, obj):
         if obj.questions.exists():
-            url = reverse('admin-event-answers-summary', args=[obj.id])
+            url = reverse("admin-event-answers-summary", args=[obj.id])
             return format_html(
                 '<a class="button" href="{}" target="_blank">Antworten</a>', url
             )
         return "Keine Fragen"
+
     answers_summary_link.short_description = "Alle Antworten"
 
     def get_balance_colored(self, obj):
@@ -1549,7 +1552,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             if "exception" in response or "errorcode" in response:
                 self.message_user(
                     request,
-                    f"Moodle-Kurs konnte nicht angelegt werden: {response.get('exception', '')}, {response.get('errorcode','')}, {response.get('message','')}",
+                    f"Moodle-Kurs konnte nicht angelegt werden: {response.get('exception', '')}, {response.get('errorcode', '')}, {response.get('message', '')}",
                     messages.ERROR,
                 )
         else:
@@ -1597,7 +1600,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             if "exception" in response or "errorcode" in response:
                 self.message_user(
                     request,
-                    f"Moodle-Kurs konnte nicht gelöscht werden: {response.get('exception', '')}, {response.get('errorcode','')}, {response.get('message','')}",
+                    f"Moodle-Kurs konnte nicht gelöscht werden: {response.get('exception', '')}, {response.get('errorcode', '')}, {response.get('message', '')}",
                     messages.ERROR,
                 )
         else:
@@ -1794,11 +1797,15 @@ class EventHighlightAdmin(admin.ModelAdmin):
 
 admin.site.register(EventHighlight, EventHighlightAdmin)
 
-from django.contrib import admin
-from django.contrib.admin.models import LogEntry, DELETION
-from django.utils.html import escape
-from django.urls import reverse
-from django.utils.safestring import mark_safe
+
+class HeroSliderImageAdmin(admin.ModelAdmin):
+    list_display = ("title", "subtitle", "order", "is_active", "date_created")
+    list_filter = ("is_active", "date_created")
+    ordering = ("order",)
+    readonly_fields = ("date_created", "date_modified")
+
+
+admin.site.register(HeroSliderImage, HeroSliderImageAdmin)
 
 
 @admin.register(LogEntry)

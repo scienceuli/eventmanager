@@ -60,6 +60,26 @@ class Home(BaseModel):
         return self.name
 
 
+class HeroSliderImage(BaseModel):
+    """
+    Model for hero slider images that appear on the homepage
+    """
+    title = models.CharField("Titel", max_length=255, blank=True)
+    subtitle = models.CharField("Untertitel", max_length=255, blank=True)
+    image = models.ImageField("Bild", upload_to='hero_slider/')
+    order = models.PositiveIntegerField("Reihenfolge", default=1, help_text="Niedrigere Zahlen werden zuerst angezeigt")
+    is_active = models.BooleanField("Aktiv", default=True, help_text="Gibt an, ob das Bild im Slider angezeigt werden soll")
+    link_url = models.URLField("Link URL", blank=True, help_text="Optionale URL, zu der der Slider verlinkt")
+    
+    class Meta:
+        verbose_name = "Hero Slider Bild"
+        verbose_name_plural = "Hero Slider Bilder"
+        ordering = ['order']
+
+    def __str__(self):
+        return f"Slider Bild: {self.title or f'Bild {self.id}'}"
+
+
 class PayLessAction(models.Model):
     TYPE_CHOICES = (("n", "n für m"), ("p", "Prozente"))
     name = models.CharField(max_length=255)

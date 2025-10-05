@@ -1,5 +1,9 @@
 {% extends 'base/base.html' %}
 
+{% block extra_head %}
+<script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+{% endblock %}
+
 
 {% block searchfield %}
 <div class="toggle hidden md:flex w-full md:w-auto">
@@ -18,7 +22,87 @@
 
 {% block content %}
 
-<section class="py-20 bg-white">
+
+<!-- HERO SLIDER -->
+{% if hero_slider_images %}
+<section
+  class="w-full bg-gray-100"
+  x-data="{
+    active: 0,
+    total: {{ hero_slider_images|length }},
+    init() {
+      setInterval(() => this.active = (this.active + 1) % this.total, 5000)
+    }
+  }"
+>
+  <div class="container mx-auto max-w-6xl relative overflow-hidden aspect-[2/1]">
+
+    <!-- Slides wrapper -->
+    <div
+      class="flex transition-transform duration-700 ease-in-out"
+      :style="`transform: translateX(-${active * 100}%);`"
+    >
+      {% for image in hero_slider_images %}
+      <div class="w-full flex-shrink-0 relative">
+        {% if image.link_url %}
+        <a href="{{ image.link_url }}" class="block w-full h-full">
+        {% endif %}
+
+          <img
+            src="{{ image.image.url }}"
+            alt="{{ image.image.alt|default:'Jetzt anmelden!' }}"
+            class="w-full h-full object-cover"
+          />
+
+          {% if image.title %}
+          <!-- Overlay -->
+          <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <h2 class="text-white text-3xl md:text-5xl font-semibold text-center px-4">
+              {{ image.title }}
+            </h2>
+          </div>
+          {% endif %}
+
+        {% if image.link_url %}
+        </a>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Navigation arrows -->
+    <button
+      @click="active = (active - 1 + total) % total"
+      class="absolute left-3 top-1/2 -translate-y-1/2 bg-black/40 text-white p-3 rounded-full hover:bg-black/60"
+    >
+      ‹
+    </button>
+    <button
+      @click="active = (active + 1) % total"
+      class="absolute right-3 top-1/2 -translate-y-1/2 bg-black/40 text-white p-3 rounded-full hover:bg-black/60"
+    >
+      ›
+    </button>
+
+    <!-- Pagination dots -->
+    <div class="absolute bottom-4 w-full flex justify-center space-x-2">
+      <template x-for="i in total">
+        <button
+          @click="active = i - 1"
+          :class="{'bg-white': active === (i - 1), 'bg-gray-400': active !== (i - 1)}"
+          class="w-3 h-3 rounded-full transition-colors"
+        ></button>
+      </template>
+    </div>
+
+  </div>
+</section>
+{% endif %}
+
+<!-- end of Hero Section -->
+
+
+<section class="{% if hero_slider_images %}py-20 pb-20{% else %}py-20{% endif %} bg-white">
     <div class="container max-w-6xl mx-auto">
         <h1 class="text-xl md:text-4xl font-bold tracking-tight text-center text-vfllred">{{ home.title }}</h1>
 
@@ -86,5 +170,9 @@
         </div>
     </div>
 </section>
+
+{% endblock %}
+
+{% block extrascript %}
 
 {% endblock %}

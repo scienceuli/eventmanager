@@ -107,6 +107,7 @@ from .models import (
     EventMember,
     EventHighlight,
     EventSponsor,
+    HeroSliderImage,
 )
 
 from shop.models import OrderItem
@@ -217,10 +218,10 @@ def registration_possible_for_this_event(label):
 def home(request):
     home = Home.objects.all().first()
     if not home:
-        home = Home.objects.create(name=settings.HOME_NAME,
-            title=settings.HOME_TITLE,
-            text=settings.HOME_TEXT)
-                            
+        home = Home.objects.create(
+            name=settings.HOME_NAME, title=settings.HOME_TITLE, text=settings.HOME_TEXT
+        )
+
     event_highlight_query = EventHighlight.objects.filter(id=1).filter(
         event__first_day__gte=date.today()
     )
@@ -229,23 +230,32 @@ def home(request):
     else:
         event_highlight = None
 
+    # Get active hero slider images ordered by sequence
+    hero_slider_images = HeroSliderImage.objects.filter(is_active=True).order_by(
+        "order"
+    )
+    print("hero images:", hero_slider_images)
+
     _metadata = {
-        'title': 'title',
-        'description': 'text',
-        'image': 'get_meta_image',
+        "title": "title",
+        "description": "text",
+        "image": "get_meta_image",
     }
 
     meta = Meta(
         title=home.title,
         description=home.text if home.text else settings.DEFAULT_META_DESCRIPTION,
-        keywords=[kw.strip() for kw in home.keywords.split(",") ] if home.keywords else settings.DEFAULT_META_KEYWORDS,
+        keywords=[kw.strip() for kw in home.keywords.split(",")]
+        if home.keywords
+        else settings.DEFAULT_META_KEYWORDS,
     )
 
     context = {
         "event_highlight": event_highlight,
         "home": home,
+        "hero_slider_images": hero_slider_images,
         "all_events_headline": settings.ALL_EVENTS_HEADLINE,
-        'meta': meta
+        "meta": meta,
     }
 
     return render(request, "events/home.html", context)
@@ -406,7 +416,7 @@ class FilteredEventListView(ListView):
         if cat and cat == "onlyvfll":
             queryset = queryset.filter(category__belongs_to_all_events=True)
 
-        if sia and sia == 'yes':
+        if sia and sia == "yes":
             queryset = queryset.filter(show_in_all_events=True)
 
         # Then use the query parameters and the queryset to
@@ -435,7 +445,7 @@ class FilteredEventListView(ListView):
             "category": "Kategorie",
             "search": search,  # without this there is a key error
             "cat": cat,  # without this there is a key error
-            "sia": sia, # without this there is a key error
+            "sia": sia,  # without this there is a key error
         }
 
         def get_value_in_readable_form(key, value):
@@ -734,9 +744,9 @@ class EventDetailView(HitCountDetailView):
 
         # meta
         if self.get_object().meta_description:
-            description=self.get_object().meta_description
+            description = self.get_object().meta_description
         elif self.get_object().description:
-            description=convert_html_to_text(self.get_object().description)
+            description = convert_html_to_text(self.get_object().description)
         else:
             description = settings.DEFAULT_META_DESCRIPTION
         description = remove_linebreaks(description)
@@ -744,7 +754,9 @@ class EventDetailView(HitCountDetailView):
         meta = Meta(
             title=self.get_object().name,
             description=description,
-            keywords=[kw.strip() for kw in self.get_object().keywords.split(",") ] if self.get_object().keywords else settings.DEFAULT_META_KEYWORDS,
+            keywords=[kw.strip() for kw in self.get_object().keywords.split(",")]
+            if self.get_object().keywords
+            else settings.DEFAULT_META_KEYWORDS,
         )
         context["meta"] = meta
         return context
@@ -926,6 +938,7 @@ def get_personal_form_data(form):
     data_dict["email"] = form.cleaned_data["email"]
     return data_dict
 
+
 def get_additional_mv_form_data(form):
     data_dict = {}
     data_dict["takes_part_in_mv"] = boolean_translate(
@@ -974,7 +987,9 @@ def get_additional_form_data(form, event, form_type):
         data_dict["member_type"] = (
             "o"
             if "vv" in form.cleaned_data["memberships_full"]
-            else "k" if "vk" in form.cleaned_data["memberships_full"] else None
+            else "k"
+            if "vk" in form.cleaned_data["memberships_full"]
+            else None
         )
         if data_dict["member_type"]:
             data_dict["vfll"] = True
@@ -1050,7 +1065,10 @@ def make_event_registration(request, form, event):
         m_data_dict = get_mv_form_data(form)
         m_additional_data_dict = get_additional_mv_form_data(form)
         new_member = EventMember.objects.create(
-            data=m_additional_data_dict, event=event, **personal_data_dict, **m_data_dict
+            data=m_additional_data_dict,
+            event=event,
+            **personal_data_dict,
+            **m_data_dict,
         )
     elif event.registration_form == "f24":
         f24_additional_data = get_additional_form_data(form, event, "f24")
@@ -1119,9 +1137,8 @@ def make_event_registration(request, form, event):
     # set the right attend status in the formatting_dict
     formatting_dict["attend_status"] = attend_status
 
-    if event.registration_form == "s" :
+    if event.registration_form == "s":
         formatting_dict["question_link"] = get_question_link(new_member)
-
 
     vfll_mail_sent = send_email_after_registration(
         "vfll", event, form, mail_to_admin_template_name, formatting_dict
@@ -1176,7 +1193,6 @@ def handle_form_submission(request, form, event):
         newsletter = form.cleaned_data.get("newsletter", None)
         personal_data_dict = get_personal_form_data(form)
         if no_duplicate_check(personal_data_dict.get("email"), event):
-
             if newsletter:
                 add_to_newsletter(personal_data_dict.get("email"))
             make_event_registration(request, form, event)
@@ -1525,10 +1541,8 @@ class MVEventMembersListView(MVOrgaGroupTestMixin, SingleTableView):
     template_name = "events/mv_members_list.html"
 
     def get_queryset(self):
-        label = self.kwargs['event']
-        event_members = EventMember.objects.filter(
-            event__label=label
-        )
+        label = self.kwargs["event"]
+        event_members = EventMember.objects.filter(event__label=label)
         query_ln = self.request.GET.get("member_lastname")
         query_fn = self.request.GET.get("member_firstname")
         query_email = self.request.GET.get("member_email")
@@ -1766,13 +1780,10 @@ def export_mv_members_csv(request, event):
         "member_type",
     ]
 
-    members_mv = members_mv.values_list(
-        *base_fields
-    )
+    members_mv = members_mv.values_list(*base_fields)
     if has_vote_transfer.get(event, None):
         extra_fields = ["vote_transfer", "vote_transfer_check", "agree"]
         members_mv = members_mv.values_list(*(base_fields + extra_fields))
-
 
     for member in members_mv:
         member = list(member)
@@ -1825,7 +1836,6 @@ def members_dashboard_view(request):
         "zw_event_id": Event.objects.get(label="zukunft2021").id,
     }
     return render(request, "events/members_dashboard.html", context)
-
 
 
 @login_required
