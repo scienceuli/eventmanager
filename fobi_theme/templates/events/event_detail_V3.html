@@ -437,11 +437,13 @@
                     <p class="leading-1 md:leading-relaxed">
 
                         {% if event.price %}
-                        {{ event.price }}&nbsp;€ für Mitglieder*
+                        {{ event.price }}&nbsp;€ für Mitglieder{% if not event.vfll_only %}*{% endif %}
                         {% if event.premium_price and not event.vfll_only %}
                         /&nbsp;{{ event.premium_price }}&nbsp;€ für Nichtmitglieder
                         {% endif %}
+                        {% if not event.vfll_only %}
                         <br><small>*VFLL, VdÜ, BDÜ, BücherFrauen, Illustratoren Organisation, Berufsverband Text und Konzept, Selfpublisher-Verband, Junge Verlags- und Medienmenschen, texttreff.de</small>
+                        {% endif %}
                         {% else %}
                         {{ event.fees|safe }}
                         {% endif %}
