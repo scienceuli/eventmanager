@@ -59,6 +59,11 @@ class Home(BaseModel):
         blank=True,
         help_text="Keywords für SEO, bitte mit Komma getrennt angeben.",
     )
+    hero_slider_length = models.IntegerField(
+        "Slider Dauer pro Bild",
+        default=10000,
+        help_text="Anzeigedauer pro Bild im Slider in Millisekunden",
+    )
 
     class Meta:
         verbose_name = "Home"

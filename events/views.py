@@ -234,7 +234,6 @@ def home(request):
     hero_slider_images = HeroSliderImage.objects.filter(is_active=True).order_by(
         "order"
     )
-    print("hero images:", hero_slider_images)
 
     _metadata = {
         "title": "title",
