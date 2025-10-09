@@ -10,16 +10,20 @@ from .models import NewsletterSubscription
 
 from .constants import SUBSCRIBE_STATUS_SUBSCRIBED
 
-def validate_email(email):    
+
+def validate_email(email):
     if email is None:
         return "Email is required."
     elif not re.match(r"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$", email):
         return "Invalid Email Address."
-    elif email.split('@')[-1].lower() in blocklist:
+    elif email.split("@")[-1].lower() in blocklist:
         return "Temporäre E-Mail-Adressen werden nicht akzeptiert."
+    elif NewsletterSubscription.objects.filter(email=email).exists():
+        return "E-Mail-Adresse exitiert bereits"
     else:
         return None
-    
+
+
 def save_email(email):
     try:
         subscribe_model_instance = NewsletterSubscription.objects.get(email=email)

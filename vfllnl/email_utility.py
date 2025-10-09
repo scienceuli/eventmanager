@@ -12,13 +12,17 @@ def send_email(data):
         status = requests.post(
             url,
             auth=("api", settings.MAILGUN_API_KEY),
-            data={"from": "VFLL <postmaster@mg.vfll.de>",
-                  "to": [data["email"]],
-                  "subject": data["subject"],
-                  "text": data["plain_text"],
-                  "html": data["html_text"]}
+            data={
+                "from": "VFLL <postmaster@mg.vfll.de>",
+                "to": [data["email"]],
+                "subject": data["subject"],
+                "text": data["plain_text"],
+                "html": data["html_text"],
+            },
         )
-        logging.getLogger("info").info("Mail sent to " + data["email"] + ". status: " + str(status))
+        logging.getLogger("info").info(
+            "Mail sent to " + data["email"] + ". status: " + str(status)
+        )
         return status
     except Exception as e:
         logging.getLogger("error").error(traceback.format_exc())

@@ -206,8 +206,9 @@
 	{% endblock %}
 
 	{% if SHOW_NEWSLETTER_SIGNUP %}
-
-	{% include "vfllnl/mailing_signup.html" %}
+	<section class="newsletter-section">
+		{% include "vfllnl/mailing_signup.html" %}
+	</section>
 	{% endif %}
 
 
