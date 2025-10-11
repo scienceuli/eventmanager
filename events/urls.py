@@ -84,7 +84,7 @@ urlpatterns = [
     path("sentry-debug/", trigger_error),  # sentry test
     path("tinymce/", include("tinymce.urls")),
     path("", home, name="home"),
-    path("<slug:page>/", flatpage_view, name="flatpage"),
+    path("pages/<slug:page>/", flatpage_view, name="flatpage"),
     path("maintenance/", maintenance, name="maintenance"),
     # path("dashboard/", dashboard, name="dashboard"),
     path("event_list/", EventListView.as_view(), name="event-list"),
