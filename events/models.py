@@ -64,6 +64,10 @@ class Home(BaseModel):
         default=10000,
         help_text="Anzeigedauer pro Bild im Slider in Millisekunden",
     )
+    contact = RichTextField("Kontakt", blank=True, config_name="short")
+    impressum = RichTextField("Impressum", blank=True, config_name="short")
+    legals = RichTextField("Rechtliche Hinweise", blank=True, config_name="short")
+    privacy = RichTextField("Datenschutz", blank=True, config_name="short")
 
     class Meta:
         verbose_name = "Home"

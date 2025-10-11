@@ -260,6 +260,27 @@ def home(request):
     return render(request, "events/home.html", context)
 
 
+def flatpage_view(request, page):
+    home = Home.objects.first()
+    content_map = {
+        "contact": home.contact,
+        "impressum": home.impressum,
+        "legals": home.legals,
+        "privacy": home.privacy,
+    }
+    title_map = {
+        "contact": "Kontakt",
+        "impressum": "Impressum",
+        "legals": "Rechtliche Hinweise",
+        "privacy": "Datenschutz",
+    }
+    content = content_map.get(page)
+    title = title_map.get(page)
+    if not content:
+        raise Http404("Page not found")
+    return render(request, "events/flatpage.html", {"content": content, "title": title})
+
+
 def maintenance(request):
     context = {"maintenance_end_date": settings.MAINTENANCE_END_DATE}
     return render(request, "events/maintenance.html", context)

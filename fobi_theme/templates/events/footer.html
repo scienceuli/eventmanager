@@ -1,0 +1,34 @@
+<div class="bg-vfllred text-white pb-4">
+    <div
+        class="md:flex mx-auto max-w-3xl mb-4 px-6 py-10 sm:px-12 lg:p-20 justify-between"
+    >
+        {% if home.contact %}
+        <a
+            href="{% url 'flatpage' page='contact' %}"
+            class="text-white"
+            >Kontakt</a
+        >
+        {% endif %}
+        {% if home.impressum %}
+        <a
+            href="{% url 'flatpage' page='impressum' %}"
+            class="text-white"
+            >Impressum</a
+        >
+        {% endif %}
+        {% if home.legals %}
+        <a
+            href="{% url 'flatpage' page='legals' %}"
+            class="text-white"
+            >Rechtliche Hinweise</a
+        >
+        {% endif %}
+            {% if home.privacy %}
+            <a
+                href="{% url 'flatpage' page='privacy' %}"
+                class="text-white"
+                >Datenschutz</a
+            >
+            {% endif %}
+    </div>
+</div>

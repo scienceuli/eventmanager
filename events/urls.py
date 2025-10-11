@@ -33,6 +33,7 @@ from .views import (
     search_event,
     moodle,
     home,
+    flatpage_view,
     maintenance,
     dashboard,
     event_add_member,
@@ -70,7 +71,6 @@ from .event_q_and_a import (
 from .admin_views import event_answers_summary
 
 
-
 # sentry test
 def trigger_error(request):
     division_by_zero = 1 / 0
@@ -84,8 +84,9 @@ urlpatterns = [
     path("sentry-debug/", trigger_error),  # sentry test
     path("tinymce/", include("tinymce.urls")),
     path("", home, name="home"),
+    path("<slug:page>/", flatpage_view, name="flatpage"),
     path("maintenance/", maintenance, name="maintenance"),
-    #path("dashboard/", dashboard, name="dashboard"),
+    # path("dashboard/", dashboard, name="dashboard"),
     path("event_list/", EventListView.as_view(), name="event-list"),
     path("event_filter/", FilteredEventListView.as_view(), name="event-filter"),
     path("event_create/", EventCreateView.as_view(), name="event-create"),
@@ -246,6 +247,14 @@ urlpatterns = [
         name="export-moodle-participants",
     ),
     path("admin/documentation/", documentation_view, name="documentation-view"),
-    path('additional-info/<str:signed_uuid>/', additional_info_view, name='additional-info'),
-    path('events/answers/<int:event_id>/', event_answers_summary, name='admin-event-answers-summary'),
+    path(
+        "additional-info/<str:signed_uuid>/",
+        additional_info_view,
+        name="additional-info",
+    ),
+    path(
+        "events/answers/<int:event_id>/",
+        event_answers_summary,
+        name="admin-event-answers-summary",
+    ),
 ]

@@ -1,0 +1,18 @@
+{% extends 'base/base.html' %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+
+
+
+<div class="bg-white px-6 py-32 lg:px-8 dark:bg-gray-900">
+  <div class="mx-auto max-w-3xl text-base/7 text-gray-700 dark:text-gray-300">
+    <h1 class="mt-2 text-pretty text-4xl font-semibold tracking-tight text-gray-900 sm:text-5xl dark:text-white">{{ title }}</h1>
+    <div class="mt-10 max-w-2xl text-gray-600 dark:text-gray-400">
+      {{ content|safe }}
+    </div>
+
+  </div>
+</div>
+
+
+{% endblock %}
