@@ -2,7 +2,7 @@ from datetime import date, datetime
 
 from django.db.models import Count
 from django.conf import settings
-from .models import Event, EventCategory
+from .models import Event, EventCategory, Home
 
 
 def category_renderer(request):
@@ -18,6 +18,7 @@ def category_renderer(request):
 def event_in_frontend_context(request):
     event_in_frontend = settings.EVENT_SHOWN_IN_FRONTEND
     return {"event_in_frontend": event_in_frontend}
+
 
 def show_newsletter_signup(request):
     return {"SHOW_NEWSLETTER_SIGNUP": settings.SHOW_NEWSLETTER_SIGNUP}
@@ -42,3 +43,8 @@ def events_in_frontend_context(request):
 
 def dev_ribbon(request):
     return {"SHOW_DEV_RIBBON": settings.DEBUG}
+
+
+def site_settings(request):
+    home = Home.objects.first()  # or however you identify it
+    return {"home": home}

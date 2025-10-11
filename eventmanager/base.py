@@ -41,7 +41,7 @@ SITE_ID = 1
 # Application definition
 
 INSTALLED_APPS = [
-    'admin_confirm',
+    "admin_confirm",
     "admin_interface",
     "colorfield",
     "django_admin_index",
@@ -59,13 +59,13 @@ INSTALLED_APPS = [
     "django_countries",
     "rest_framework",
     # 2FA
-    'django_otp',
-    'django_otp.plugins.otp_static',
-    'django_otp.plugins.otp_totp',
-    'django_otp.plugins.otp_email',
-    'two_factor',
-    'two_factor.plugins.phonenumber',
-    'two_factor.plugins.email',
+    "django_otp",
+    "django_otp.plugins.otp_static",
+    "django_otp.plugins.otp_totp",
+    "django_otp.plugins.otp_email",
+    "two_factor",
+    "two_factor.plugins.phonenumber",
+    "two_factor.plugins.email",
     # third party
     "mjml",
     "mailqueue",
@@ -144,6 +144,7 @@ TEMPLATES = [
                 "events.custom_context_processor.events_in_frontend_context",
                 "events.custom_context_processor.show_newsletter_signup",
                 "events.custom_context_processor.dev_ribbon",
+                "events.custom_context_processor.site_settings",
                 "shop.context_processors.cart",
             ],
         },
