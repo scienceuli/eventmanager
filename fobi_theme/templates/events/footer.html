@@ -5,30 +5,27 @@
         {% if home.contact %}
         <a
             href="{% url 'flatpage' page='contact' %}"
-            class="text-white"
+            class="text-white hover:text-white"
             >Kontakt</a
         >
-        {% endif %}
-        {% if home.impressum %}
+        {% endif %} {% if home.impressum %}
         <a
             href="{% url 'flatpage' page='impressum' %}"
-            class="text-white"
+            class="text-white hover:text-white"
             >Impressum</a
         >
-        {% endif %}
-        {% if home.legals %}
+        {% endif %} {% if home.legals %}
         <a
             href="{% url 'flatpage' page='legals' %}"
-            class="text-white"
+            class="text-white hover:text-white"
             >Rechtliche Hinweise</a
         >
+        {% endif %} {% if home.privacy %}
+        <a
+            href="{% url 'flatpage' page='privacy' %}"
+            class="text-white hover:text-white"
+            >Datenschutz</a
+        >
         {% endif %}
-            {% if home.privacy %}
-            <a
-                href="{% url 'flatpage' page='privacy' %}"
-                class="text-white"
-                >Datenschutz</a
-            >
-            {% endif %}
     </div>
 </div>
