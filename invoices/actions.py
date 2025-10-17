@@ -35,8 +35,12 @@ def export_to_excel(modeladmin, request, queryset, short=False):
     if "decimal_style" not in wb.named_styles:
         wb.add_named_style(decimal_style)
     ws = wb.active
-    ws.title = "Rechnungen Export" if model_name == "standardinvoice" else "Stornorechnungen Export"
-    
+    ws.title = (
+        "Rechnungen Export"
+        if model_name == "standardinvoice"
+        else "Stornorechnungen Export"
+    )
+
     fields_no_export = [
         "uuid",
     ]
@@ -53,7 +57,8 @@ def export_to_excel(modeladmin, request, queryset, short=False):
             fields = [
                 "invoice_number",
                 "get_full_name_and_events",
-                "get_storno_amount",
+                #  "get_storno_amount",
+                "amount",
                 "invoice_date",
             ]
     else:
@@ -105,7 +110,10 @@ def export_to_excel(modeladmin, request, queryset, short=False):
                         )  # Convert to float
                         numeric_columns.append(col_idx)
                     data_row.append(value)
-            data_row.extend(["10000", "8000", "4", "S"])
+            if model_name == "standardinvoice":
+                data_row.extend(["100000", "41070", "4", "S"])
+            elif model_name == "stornoinvoice":
+                data_row.extend(["100000", "41070", "4", "H"])
         else:
             for field in fields:
                 value = getattr(obj, field.name)
@@ -140,32 +148,33 @@ def export_to_excel(modeladmin, request, queryset, short=False):
 def export_pdfs_as_zip(modeladmin, request, queryset):
     # Create in-memory ZIP file
     from io import BytesIO
+
     zip_buffer = BytesIO()
-    
-    with zipfile.ZipFile(zip_buffer, 'w') as zip_file:
+
+    with zipfile.ZipFile(zip_buffer, "w") as zip_file:
         for invoice in queryset:
             if invoice.pdf:
                 file_path = invoice.pdf.name
                 file_name = os.path.basename(file_path)
 
                 # Read file from storage
-                with default_storage.open(file_path, 'rb') as f:
+                with default_storage.open(file_path, "rb") as f:
                     file_data = f.read()
                     zip_file.writestr(file_name, file_data)
-                    
+
                 invoice.pdf_export = datetime.now()
                 invoice.save()
-    
+
     zip_buffer.seek(0)
 
     model_name = modeladmin.model._meta.model_name
 
-    storno_prefix = 'Storno-' if model_name == 'stornoinvoice' else ''
+    storno_prefix = "Storno-" if model_name == "stornoinvoice" else ""
 
     filename = f"{storno_prefix}invoices_{datetime.today():%Y-%m-%d}.zip"
-    
-    response = HttpResponse(zip_buffer, content_type='application/zip')
-    response['Content-Disposition'] = f'attachment; filename={filename}'
+
+    response = HttpResponse(zip_buffer, content_type="application/zip")
+    response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
 
@@ -176,20 +185,27 @@ def set_date_action(modeladmin, request, queryset):
     The user is presented with a form that allows them to select a date. If the form is valid,
     the selected date is applied to all objects in the queryset.
     """
-    if 'apply' in request.POST:
+    if "apply" in request.POST:
         form = SetDateForm(request.POST)
         if form.is_valid():
-            selected_date = form.cleaned_data['date']
+            selected_date = form.cleaned_data["date"]
             updated = queryset.update(invoice_receipt=selected_date)
-            modeladmin.message_user(request, f"{updated} Rechnungen wurden aktualisiert.")
+            modeladmin.message_user(
+                request, f"{updated} Rechnungen wurden aktualisiert."
+            )
             return redirect(request.get_full_path())
     else:
-        form = SetDateForm(initial={'date': now().date()})
+        form = SetDateForm(initial={"date": now().date()})
 
-    return render(request, 'admin/set_date_action.html', {
-        'items': queryset,
-        'form': form,
-    })
+    return render(
+        request,
+        "admin/set_date_action.html",
+        {
+            "items": queryset,
+            "form": form,
+        },
+    )
+
 
 set_date_action.short_description = "Rechnungseingang setzen"
 
@@ -202,9 +218,10 @@ def set_paid_action(modeladmin, request, queryset):
     the selected date is applied to all objects in the queryset.
     """
     now_date = now().date()
-    updated =queryset.update(invoice_receipt=now_date)
-    
+    updated = queryset.update(invoice_receipt=now_date)
+
     modeladmin.message_user(request, f"{updated} Rechnungen wurden aktualisiert.")
     return redirect(request.get_full_path())
+
 
 set_paid_action.short_description = "Bezahlstatus setzen"
