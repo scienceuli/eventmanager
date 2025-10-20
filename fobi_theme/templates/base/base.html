@@ -37,18 +37,21 @@
         {% if SHOW_DEV_RIBBON %}
         <link rel="stylesheet" href="{% static 'css/dev_ribbon.css' %}" />
 
-        {% endif %} {% if SHOW_DEV_RIBBON %}
+        {% endif %}
+        {% if SHOW_DEV_RIBBON %}
         <link rel="stylesheet" href="{% static 'css/dev_ribbon.css' %}" />
 
-        {% endif %} {% if SHOW_DEV_RIBBON %}
+        {% endif %}
+        {% if SHOW_DEV_RIBBON %}
         <link rel="stylesheet" href="{% static 'css/dev_ribbon.css' %}" />
 
         {% endif %}
     </head>
 
     <body class="bg-grey-lightest font-sans leading-normal tracking-normal">
-        {% if SHOW_DEV_RIBBON %} {% include 'base/dev_ribbon.html' %} {% endif
-        %}
+        {% if SHOW_DEV_RIBBON %}
+        {% include 'base/dev_ribbon.html' %}
+        {% endif %}
 
         <nav
             class="flex flex-wrap items-center justify-between p-5 bg-white border-b-2 border-vfllred"
@@ -149,7 +152,8 @@
                     >
                     {% endif %} {% endwith %}
                 </span>
-                {% endcomment %} {% if user.is_authenticated %}
+                {% endcomment %}
+                {% if user.is_authenticated %}
                 <a class="px-3 py-3" href="{% url 'event-list-internal' %}"
                     >E</a
                 >
@@ -159,7 +163,9 @@
                     >NL</a
                 >
 
-                {% endif %} {% if user|has_group:"mv_orga" %} {% comment %}<a
+                {% endif %}
+                {% if user|has_group:"mv_orga" %}
+                {% comment %}<a
                     class="px-3 py-3"
                     href="{% url 'members' event=event_in_frontend %}"
                     >TN</a
@@ -181,8 +187,8 @@
                         style="min-width: 12rem"
                         id="events-in-frontend-id"
                     >
-                        {% for e in events_in_frontend %} {% if e.label ==
-                        'jubi-tagung_mv_2025' %}
+                        {% for e in events_in_frontend %}
+                        {% if e.label == 'jubi-tagung_mv_2025' %}
                         <a
                             href="{% url 'mv-members' event='jubi-tagung_mv_2025' %}"
                             class="text-sm py-2 px-4 font-normal block w-full whitespace-no-wrap bg-transparent text-gray-800"
@@ -196,7 +202,8 @@
                         >
                             {{ e.name }} ({{ e.label }})
                         </a>
-                        {% endif %} {% endfor %}
+                        {% endif %}
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -214,7 +221,8 @@
                 >
                     Login</a
                 >
-                {% endif %} {% if user.is_superuser %}
+                {% endif %}
+                {% if user.is_superuser %}
 
                 <a
                     class="block md:inline-block text-vfllred hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none"
@@ -232,17 +240,20 @@
                 class="md:flex w-full md:w-auto text-right text-bold mt-2 md:mt-0 md:border-none"
             >
                 <span class="cart px-3 py-3">
-                    {% with total_items=cart|length %} {% if total_items > 0 %}
+                    {% with total_items=cart|length %}
+                    {% if total_items > 0 %}
                     <i class="fa fa-shopping-cart" aria-hidden="true"></i>
                     <a href="{% url 'shop:cart-detail' %}">
                         <span
                             class="inline-flex items-center rounded-full bg-vfllred px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-600/20"
                             >{{ total_items }}</span
                         >
-                        {% if cart.get_discounted_total_price %}€&thinsp; {{
-                        cart.get_discounted_total_price }} {% endif %} {% if
-                        cart.get_total_price %}&thinsp;/&thinsp;€&thinsp; {{
-                        cart.get_total_price }} {% endif %}
+                        {% if cart.get_discounted_total_price %}€&thinsp;
+                        {{ cart.get_discounted_total_price }}
+                        {% endif %}
+                        {% if cart.get_total_price %}&thinsp;/&thinsp;€&thinsp;
+                        {{ cart.get_total_price }}
+                        {% endif %}
                     </a>
                     {% else %}
                     <i class="fa fa-shopping-cart" aria-hidden="true"></i>
@@ -250,7 +261,8 @@
                         class="inline-flex items-center rounded-full bg-vfllred px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-600/20"
                         >0</span
                     >
-                    {% endif %} {% endwith %}
+                    {% endif %}
+                    {% endwith %}
                 </span>
             </div>
 
@@ -259,20 +271,28 @@
 
         <!-- Messages-->
 
-        {% if messages %} {% for message in messages %}
+        {% if messages %}
+        {% for message in messages %}
         <!-- simple message -->
-        {% comment %} {% include 'messages/simple_messages.html' %} {%
-        endcomment %}
+        {% comment %} {% include 'messages/simple_messages.html' %}
+        {% endcomment %}
         <!-- modal message -->
-        {% include 'messages/modal_messages.html' %} {% endfor %} {% endif %}
+        {% include 'messages/modal_messages.html' %}
+        {% endfor %}
+        {% endif %}
 
         <!-- Main -->
 
-        {% block content %} {% endblock %} {% if SHOW_NEWSLETTER_SIGNUP %}
+        {% block content %}
+        {% endblock %}
+        {% if SHOW_NEWSLETTER_SIGNUP %}
         <section class="newsletter-section">
             {% include "vfllnl/mailing_signup.html" %}
         </section>
-        {% endif %} {% include "events/footer.html" %} {% include
-        'base/js.html'%} {% block extrascript %} {% endblock extrascript %}
+        {% endif %}
+        {% include "events/footer.html" %}
+        {% include 'base/js.html'%}
+        {% block extrascript %}
+        {% endblock extrascript %}
     </body>
 </html>
