@@ -17,6 +17,8 @@ from events.email_template import EmailTemplate
 
 from events.parameters import ws_limits
 
+from events.core_models import EmailBlacklist
+
 
 logger = logging.getLogger(__name__)
 
@@ -317,3 +319,8 @@ def convert_html_to_text(html):
 
 def remove_linebreaks(text):
     return text.replace('\n', ' ').replace('\r', '')
+
+def on_blacklist_check(email):
+    if EmailBlacklist.objects.filter(email=email).exists():
+        return True
+    return False

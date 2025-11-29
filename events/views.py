@@ -86,6 +86,7 @@ from events.utils import (
     no_duplicate_check,
     convert_html_to_text,
     remove_linebreaks,
+    on_blacklist_check
 )
 
 # logging
@@ -109,6 +110,8 @@ from .models import (
     EventSponsor,
     HeroSliderImage,
 )
+
+from .core_models import SiteSettings
 
 from shop.models import OrderItem
 
@@ -1212,6 +1215,14 @@ def handle_form_submission(request, form, event):
     if form.is_valid():
         newsletter = form.cleaned_data.get("newsletter", None)
         personal_data_dict = get_personal_form_data(form)
+        if on_blacklist_check(personal_data_dict.get("email")):
+            settings = SiteSettings.load()
+            messages.error(
+                request,
+                settings.blacklist_message,
+                fail_silently=True,
+            )
+            return redirect("event-detail", event.slug)
         if no_duplicate_check(personal_data_dict.get("email"), event):
             if newsletter:
                 add_to_newsletter(personal_data_dict.get("email"))

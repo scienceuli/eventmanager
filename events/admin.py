@@ -68,7 +68,7 @@ from .models import (
     HeroSliderImage,
 )
 
-from .core_models import SiteSettings
+from .core_models import SiteSettings, EmailBlacklist
 
 from .event_q_and_a import EventQuestion
 
@@ -128,6 +128,11 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Never allow deletion
         return False
+    
+@admin.register(EmailBlacklist)
+class EmailBlacklistAdmin(admin.ModelAdmin):
+    list_display = ("email", "reason")
+    search_fields = ("email",)
 
 
 class HomeAdmin(admin.ModelAdmin):
