@@ -43,7 +43,7 @@ class Home(BaseModel):
     """
     Model for start page title and text
     Only one record is allowed
-    Restriction ist made in ModelAdmin
+    Restriction is made in ModelAdmin
     """
 
     name = models.CharField("Name", max_length=40)

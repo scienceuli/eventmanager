@@ -68,6 +68,8 @@ from .models import (
     HeroSliderImage,
 )
 
+from .core_models import SiteSettings
+
 from .event_q_and_a import EventQuestion
 
 from events.filter import PeriodFilter, DateRangeFilter
@@ -115,6 +117,17 @@ class MyAdminSite(admin.AdminSite):
             }
         ]
         return app_list
+    
+@admin.register(SiteSettings)
+class SiteSettingsAdmin(admin.ModelAdmin):
+
+    def has_add_permission(self, request):
+        # Block adding more than one instance
+        return not SiteSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        # Never allow deletion
+        return False
 
 
 class HomeAdmin(admin.ModelAdmin):

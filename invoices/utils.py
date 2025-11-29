@@ -28,6 +28,8 @@ from mailings.models import InvoiceMessage
 from shop.models import OrderItem
 from utilities.pdf import render_to_pdf_directly
 
+from events.core_models import SiteSettings
+
 logger = logging.getLogger(__name__)
 
 
@@ -178,6 +180,7 @@ def create_mail(invoice):
 
 def create_pdf(invoice):
     #invoice_type = get_invoice_type(invoice)
+    site_settings = SiteSettings.load()
     invoice_type = invoice.invoice_type
     invoice_dict = {
         "i": {
@@ -192,6 +195,8 @@ def create_pdf(invoice):
     context = {}
     context["storno"] = invoice_type == "s"
     context["invoice"] = invoice
+    context["vfll_recipient_payment"] = site_settings.vfll_recipient_payment
+    context["vfll_bank_account"] = site_settings.vfll_bank_account
     # if invoice_type == 'i':
     #     order = invoice.order
     # elif invoice_type == 's':

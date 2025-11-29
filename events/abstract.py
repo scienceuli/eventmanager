@@ -30,3 +30,21 @@ class AddressModel(BaseModel):
     state = models.CharField("Bundesland", max_length=255, blank=True, null=True)
     postcode = models.CharField("PLZ", max_length=64, blank=True, null=True)
     country = CountryField("Land", default="DE")
+
+
+class SingletonModel(models.Model):
+    """
+    Ensures only one row exists.
+    """
+
+    class Meta:
+        abstract = True
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        return cls.objects.get_or_create(pk=1)[0]
+
