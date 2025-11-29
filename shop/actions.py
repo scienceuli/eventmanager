@@ -10,6 +10,8 @@ from django.db.models import DecimalField, FloatField, IntegerField
 from decimal import Decimal
 
 from shop.models import OrderItem
+from events.core_models import SiteSettings
+
 
 from utilities.pdf import render_to_pdf_directly
 
@@ -147,6 +149,8 @@ def export_to_excel(modeladmin, request, queryset, short=False):
 
 
 def download_invoices_as_zipfile(modeladmin, request, queryset):
+    site_settings = SiteSettings.load()
+
     zipfile_name = f"rechnungen_{datetime.today().strftime('%Y-%m-%d')}.zip"
 
     template_path = "shop/pdf_invoice.html"
@@ -163,6 +167,8 @@ def download_invoices_as_zipfile(modeladmin, request, queryset):
                 for item in OrderItem.objects.filter(order=q, status="r")
             ]
         )
+        context["vfll_recipient_payment"] = site_settings.vfll_recipient_payment
+        context["vfll_bank_account"] = site_settings.vfll_bank_account
         pdf = render_to_pdf_directly(template_path, context)
         filename = "rechnung_%s" % (q.get_order_number)
         files.append((filename + ".pdf", pdf))

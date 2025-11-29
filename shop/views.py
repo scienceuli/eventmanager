@@ -53,6 +53,8 @@ from payment.tasks import payment_completed
 from invoices.models import Invoice
 from invoices.utils import get_invoice_date
 from mailings.models import InvoiceMessage
+from events.core_models import SiteSettings
+
 
 
 def split_cart(cart):
@@ -474,6 +476,7 @@ class OrderCreateView(FormView):
 
 @staff_member_required
 def admin_order_pdf(request, order_id, process):
+    site_settings = SiteSettings.load()
     context = {}
     order = get_object_or_404(Order, id=order_id)
     template_path = "shop/pdf_invoice.html"
@@ -482,6 +485,8 @@ def admin_order_pdf(request, order_id, process):
     #     update_order(order)
 
     context["order"] = order
+    context["vfll_recipient_payment"] = site_settings.vfll_recipient_payment
+    context["vfll_bank_account"] = site_settings.vfll_bank_account
     context["process"] = process
     if process == "storno":
         context["label"] = "Storno-Rechnung"

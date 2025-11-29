@@ -12,6 +12,7 @@ from django.shortcuts import HttpResponse
 from tempfile import NamedTemporaryFile
 
 from shop.models import Order, OrderItem
+from events.core_models import SiteSettings
 
 from utilities.pdf import render_to_pdf_directly
 
@@ -39,6 +40,8 @@ def generate_qr():
 
 # @shared_task
 def payment_completed(order_id):
+    site_settings = SiteSettings.load()
+
     """
     Task to send an e-mail notification when an order is
     successfully paid.
@@ -89,6 +92,8 @@ def payment_completed(order_id):
             for item in OrderItem.objects.filter(order=order, status="r")
         ]
     )
+    context["vfll_recipient_payment"] = site_settings.vfll_recipient_payment
+    context["vfll_bank_account"] = site_settings.vfll_bank_account
     pdf = render_to_pdf_directly(template, context)
     if pdf:
         filename_prefix = "rechnung_%s" % (order.get_order_number)
