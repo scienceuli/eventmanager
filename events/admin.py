@@ -78,7 +78,7 @@ from shop.models import Order, OrderItem
 
 from payment.utils import update_order, check_order_date_in_future
 from payment.views import get_payment_date
-from events.utils import send_email
+from events.utils import send_email, format_memberships
 
 from .admin_views import hitcount_view
 
@@ -613,11 +613,14 @@ class EventMemberAdmin(admin.ModelAdmin):
 
     def changelist_view(self, request, extra_context=None):
         response = super().changelist_view(request, extra_context=extra_context)
-        print(f"response: {response.context_data}")
         if hasattr(response, "context_data"):
             stats = dict(membership_statistics())
-            print("stats: ", stats)
-            response.context_data["eventmember_membership_stats"] = list(stats.items())
+            stats_list = []
+            for key, count in stats.items():
+                translated_key = format_memberships(key)
+                stats_list.append((translated_key, count))
+
+            response.context_data["eventmember_membership_stats"] = stats_list
 
         return response
 

@@ -345,3 +345,17 @@ def parse_memberships(raw):
         pass
 
     return []  # fallback
+
+
+def format_memberships(code):
+    translator = {
+        "sp": "Selfpublisher-Verband",
+        "bf": "BücherFrauen",
+        "jv": "Junge Verlags- und Medienmenschen",
+        "vdu": "Verband deutschsprachiger Übersetzer/innen literarischer und wissenschaftlicher Werke (VdÜ)",
+        "tv": "Berufsverband Text und Konzept (alt: Texterverband)",
+        "tt": "Texttreff",
+        "at": "Unbekannt (at)",
+        "bd": "Bundesverband der Dolmetscher und Übersetzer (BdÜ)",
+    }
+    return translator.get(code, "unbekannt")
