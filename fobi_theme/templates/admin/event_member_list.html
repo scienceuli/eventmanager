@@ -8,10 +8,12 @@
 {% block content %}
 <div class="module">
     <h2>Membership Statistics</h2>
-    test {{ eventmember_membership_stats.bf }}
+    test
+    <ul>
         {% for key, count in eventmember_membership_stats %}
-        <p><strong>{{ key }}</strong>: {{ count }}</p>
+        <li><strong>{{ key }}</strong>: {{ count }}</li>
         {% endfor %}
+    </ul>
 </div>
 {{ block.super }}
 {% endblock %}
