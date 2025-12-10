@@ -14,6 +14,8 @@ from events.forms import DateRangeForm
 
 from events.models import Event, EventCategory, EventMember
 
+from events.utils import parse_memberships
+
 
 # admin filter: per default only future events
 class PeriodFilter(SimpleListFilter):
@@ -168,3 +170,27 @@ class DateRangeFilter(FormFilter):
             ("%s-start" % name, "%s__gte" % name),
             ("%s-until" % name, "%s__lt" % name),
         )
+
+
+from django.contrib import admin
+import ast
+from .models import EventMember
+
+
+class MembershipFilter(admin.SimpleListFilter):
+    title = "Membership"
+    parameter_name = "membership"
+
+    def lookups(self, request, model_admin):
+        acronyms = set()
+        for raw in EventMember.objects.values_list("memberships", flat=True):
+            for item in parse_memberships(raw):
+                acronyms.add(item)
+        return [(a, a) for a in sorted(acronyms)]
+
+    def queryset(self, request, queryset):
+        value = self.value()
+        if value:
+            # safest search since DB stores strings, not real lists
+            return queryset.filter(memberships__icontains=f"'{value}'")
+        return queryset

@@ -1,7 +1,17 @@
 {% extends 'admin/change_list.html' %}
-
 {% block object-tools %}
 <a href="import-csv/">Import CSV</a>
 <br />
+{{ block.super }}
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <h2>Membership Statistics</h2>
+    test {{ eventmember_membership_stats.bf }}
+        {% for key, count in eventmember_membership_stats %}
+        <p><strong>{{ key }}</strong>: {{ count }}</p>
+        {% endfor %}
+</div>
 {{ block.super }}
 {% endblock %}

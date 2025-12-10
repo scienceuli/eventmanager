@@ -72,7 +72,7 @@ from .core_models import SiteSettings, EmailBlacklist
 
 from .event_q_and_a import EventQuestion
 
-from events.filter import PeriodFilter, DateRangeFilter
+from events.filter import PeriodFilter, DateRangeFilter, MembershipFilter
 
 from shop.models import Order, OrderItem
 
@@ -91,6 +91,8 @@ from moodle.management.commands.moodle import (
     delete_moodle_course,
     assign_roles_to_enroled_user,
 )
+
+from .statistics import membership_statistics
 
 # setting date format in admin page
 from django.conf.locale.de import formats as de_formats
@@ -117,10 +119,10 @@ class MyAdminSite(admin.AdminSite):
             }
         ]
         return app_list
-    
+
+
 @admin.register(SiteSettings)
 class SiteSettingsAdmin(admin.ModelAdmin):
-
     def has_add_permission(self, request):
         # Block adding more than one instance
         return not SiteSettings.objects.exists()
@@ -128,7 +130,8 @@ class SiteSettingsAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         # Never allow deletion
         return False
-    
+
+
 @admin.register(EmailBlacklist)
 class EmailBlacklistAdmin(admin.ModelAdmin):
     list_display = ("email", "reason")
@@ -440,9 +443,7 @@ class EventMemberAdmin(admin.ModelAdmin):
         "mail_to_admin",
         "get_order_nr",
     ]
-    list_filter = [
-        "event",
-    ]
+    list_filter = ["event", MembershipFilter]
     search_fields = ("lastname", "firstname", "email", "event__name")
     readonly_fields = ["name", "label", "mail_to_admin", "via_form"]
     inlines = [
@@ -609,6 +610,16 @@ class EventMemberAdmin(admin.ModelAdmin):
             "message": "CSV-Datei MIT Kopfzeile, Bezeichnung und Reihenfolge der Spalten in der CSV-Datei: firstname; lastname; email",
         }
         return render(request, "admin/csv_form.html", context)
+
+    def changelist_view(self, request, extra_context=None):
+        response = super().changelist_view(request, extra_context=extra_context)
+        print(f"response: {response.context_data}")
+        if hasattr(response, "context_data"):
+            stats = dict(membership_statistics())
+            print("stats: ", stats)
+            response.context_data["eventmember_membership_stats"] = list(stats.items())
+
+        return response
 
 
 admin.site.register(EventMember, EventMemberAdmin)

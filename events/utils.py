@@ -1,6 +1,7 @@
 import re
 import logging
 from bs4 import BeautifulSoup
+import ast
 
 from smtplib import SMTPException
 
@@ -18,7 +19,6 @@ from events.email_template import EmailTemplate
 from events.parameters import ws_limits
 
 from events.core_models import EmailBlacklist
-
 
 logger = logging.getLogger(__name__)
 
@@ -313,14 +313,35 @@ def no_duplicate_check(email, event):
         return False
     return True
 
+
 def convert_html_to_text(html):
     soup = BeautifulSoup(html, "html.parser")
     return soup.get_text()
 
+
 def remove_linebreaks(text):
-    return text.replace('\n', ' ').replace('\r', '')
+    return text.replace("\n", " ").replace("\r", "")
+
 
 def on_blacklist_check(email):
     if EmailBlacklist.objects.filter(email=email).exists():
         return True
     return False
+
+
+def parse_memberships(raw):
+    """
+    Converts the stored string into a Python list.
+    Handles: '', '[]', "['ab']", malformed values.
+    """
+    if not raw or raw.strip() in ("", "[]"):
+        return []
+
+    try:
+        value = ast.literal_eval(raw)
+        if isinstance(value, list):
+            return value
+    except Exception:
+        pass
+
+    return []  # fallback
