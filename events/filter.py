@@ -183,7 +183,9 @@ class MembershipFilter(admin.SimpleListFilter):
 
     def lookups(self, request, model_admin):
         acronyms = set()
-        for raw in EventMember.objects.values_list("memberships", flat=True):
+        for raw in EventMember.objects.exclude(attend_status="cancelled").values_list(
+            "memberships", flat=True
+        ):
             for item in parse_memberships(raw):
                 acronyms.add(item)
         return [(a, a) for a in sorted(acronyms)]
