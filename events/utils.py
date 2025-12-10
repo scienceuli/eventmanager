@@ -357,5 +357,6 @@ def format_memberships(code):
         "tt": "Texttreff",
         "at": "Unbekannt (at)",
         "bd": "Bundesverband der Dolmetscher und Übersetzer (BdÜ)",
+        "vfll": "VFLL",
     }
     return translator.get(code, "unbekannt")
