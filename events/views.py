@@ -86,7 +86,7 @@ from events.utils import (
     no_duplicate_check,
     convert_html_to_text,
     remove_linebreaks,
-    on_blacklist_check
+    on_blacklist_check,
 )
 
 # logging
@@ -270,12 +270,14 @@ def flatpage_view(request, page):
         "impressum": home.impressum,
         "legals": home.legals,
         "privacy": home.privacy,
+        "about_us": home.about_us,
     }
     title_map = {
         "contact": "Kontakt",
         "impressum": "Impressum",
         "legals": "Rechtliche Hinweise",
         "privacy": "Datenschutz",
+        "about_us": "Über die Akademie",
     }
     content = content_map.get(page)
     title = title_map.get(page)
