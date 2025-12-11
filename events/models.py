@@ -517,11 +517,10 @@ class Event(BaseModel, HitCountMixin):
     duration = models.CharField(
         verbose_name="Dauer", max_length=255, null=True, blank=True
     )
-    target_group = models.CharField(
+    target_group = RichTextField(
         verbose_name="Zielgruppe",
         null=True,
         blank=True,
-        max_length=255,
     )
     prerequisites = RichTextUploadingField(
         verbose_name="Voraussetzungen", null=True, blank=True, config_name="short"
