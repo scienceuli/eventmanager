@@ -53,7 +53,7 @@ class OrderNoteInline(admin.TabularInline):
         formset = super().get_formset(request, obj, **kwargs)
         formset.request = request  # Pass the request to formset
         return formset
-    
+
 class OrderNoteAdmin(admin.ModelAdmin):
     list_display = ["title", "order", "note", "created_by", "date_created", "date_modified"]
     readonly_fields = ["created_by", "date_created", "date_modified"]
@@ -253,9 +253,11 @@ class OrderAdmin(admin.ModelAdmin):
 
     @admin.display(boolean=True, description='bez.')
     def invoice_paid(self, instance):
+        if not Invoice.objects.filter(order=instance).first():
+            return False
         return Invoice.objects.filter(order=instance).first().invoice_receipt is not None
-    
-    
+
+
 
 
 @admin.register(OrderItem)
