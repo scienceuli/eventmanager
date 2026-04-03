@@ -358,5 +358,7 @@ def format_memberships(code):
         "at": "Unbekannt (at)",
         "bd": "Bundesverband der Dolmetscher und Übersetzer (BdÜ)",
         "vfll": "VFLL",
+        "bv": "Börsenverein des deutschen Buchhandels, LV Bayern",
+        "gt": "Goldegg Training (Alumni und Absolvent*innen)"
     }
     return translator.get(code, "unbekannt")
