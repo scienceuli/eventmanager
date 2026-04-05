@@ -29,7 +29,6 @@ def link_callback(uri, rel):
     resources
     """
     result = finders.find(uri)
-    print("result: ", result)
     if result:
         if not isinstance(result, (list, tuple)):
             result = [result]

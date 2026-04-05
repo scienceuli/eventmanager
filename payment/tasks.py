@@ -20,8 +20,7 @@ from payment.utils import (
     update_order,
     check_order_date_in_future,
 )
-from events.utils import get_email_template, validate_email_template, send_email
-
+from events.utils.email_utils import get_email_template, validate_email_template, send_email
 
 def generate_qr():
     qr = qrcode.QRCode(

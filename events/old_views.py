@@ -62,7 +62,7 @@ from rest_framework.response import Response
 
 from events.filter import EventFilter
 
-from .utils import yes_no_to_boolean, make_bar_plot_from_dict, get_utilisations
+from events.utils.utils import yes_no_to_boolean, make_bar_plot_from_dict, get_utilisations
 
 # import the logging library
 import logging
@@ -114,7 +114,7 @@ from .serializers import EventSerializer
 
 from .choices import MEMBERSHIP_CHOICES, FOOD_PREFERENCE_CHOICES
 
-from .utils import send_email, boolean_translate
+from events.utils.utils import send_email, boolean_translate
 
 import itertools
 

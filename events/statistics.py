@@ -2,7 +2,7 @@ from collections import Counter
 import ast
 from .models import EventMember
 
-from .utils import parse_memberships
+from events.utils.utils import parse_memberships
 
 
 def membership_statistics():

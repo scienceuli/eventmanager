@@ -33,7 +33,7 @@ from .managers import ShownEventCategoriesManager
 
 from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
 
-from events.utils import find_duplicates_in_list
+from events.utils.utils import find_duplicates_in_list
 
 from shop.models import OrderItem
 from shop.utils import premium_price

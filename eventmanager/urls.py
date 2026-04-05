@@ -32,9 +32,9 @@ sitemaps = {
 }
 
 # admin settings
-admin.site.site_header = 'VFLL Veranstaltungskalender'                
-admin.site.index_title = 'Admin'                 
-admin.site.site_title = 'FOBI DEV' 
+admin.site.site_header = 'VFLL Veranstaltungskalender'
+admin.site.index_title = 'Admin'
+admin.site.site_title = 'FOBI DEV'
 
 
 urlpatterns = [
@@ -87,7 +87,7 @@ urlpatterns = [
     #     ),
     #     name="password_reset_complete",
     # ),
-    
+
 
     path("private-media/", include(private_storage.urls)),
     path("faqs/", include("faqs.urls")),

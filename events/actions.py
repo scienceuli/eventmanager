@@ -11,7 +11,7 @@ from unidecode import unidecode
 from django.contrib import messages
 
 
-from .utils import convert_data_date, convert_boolean_field
+from events.utils.utils import convert_data_date, convert_boolean_field
 
 from .models import Event, EventMember
 

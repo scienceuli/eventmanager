@@ -262,13 +262,14 @@
         </nav>
 
         <!-- Messages-->
-
+        {% block messages %}
         {% if messages %} {% for message in messages %}
         <!-- simple message -->
         {% comment %} {% include 'messages/simple_messages.html' %}
         {% endcomment %}
         <!-- modal message -->
         {% include 'messages/modal_messages.html' %} {% endfor %} {% endif %}
+        {% endblock %}
 
         <!-- Main -->
 

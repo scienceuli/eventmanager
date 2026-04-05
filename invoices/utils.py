@@ -21,7 +21,7 @@ from django.core.files.storage import default_storage
 from tempfile import NamedTemporaryFile
 
 from events.email_template import EmailTemplate
-from events.utils import EmailTemplateError
+from events.utils.email_utils import EmailTemplateError
 from events.parameters import ws_limits
 
 from mailings.models import InvoiceMessage
@@ -90,9 +90,6 @@ def get_invoice_date(order):
             return calculated_date
 
 
-class EmailTemplateError(Exception):
-    pass
-
 def get_invoice_type(invoice):
     if invoice.__class__.__name__ == "StandardInvoice":
         return 'i'
@@ -104,15 +101,15 @@ def create_mail(invoice):
     invoice_type = invoice.invoice_type
     invoice_dict = {
         "i": {
-            "subject": "Rechnung", 
+            "subject": "Rechnung",
             "name": "Rechnung",
             "template": "invoice"
         },
         "s": {
-            "subject": "Storno-Rechnung",  
+            "subject": "Storno-Rechnung",
             "name": "Storno-Rechnung",
             "template": "storno"
-        }      
+        }
     }
     # if invoice_type == 'i':
     #     order = invoice.order
@@ -184,13 +181,13 @@ def create_pdf(invoice):
     invoice_type = invoice.invoice_type
     invoice_dict = {
         "i": {
-            "subject": "Rechnung", 
+            "subject": "Rechnung",
         },
         "s": {
-            "subject": "Storno-Rechnung",  
-        }      
+            "subject": "Storno-Rechnung",
+        }
     }
-    
+
     pdf_template = "invoices/pdf_invoice.html"
     context = {}
     context["storno"] = invoice_type == "s"

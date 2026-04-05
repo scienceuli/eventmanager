@@ -14,7 +14,7 @@ from events.forms import DateRangeForm
 
 from events.models import Event, EventCategory, EventMember
 
-from events.utils import parse_memberships
+from events.utils.utils import parse_memberships
 
 
 # admin filter: per default only future events

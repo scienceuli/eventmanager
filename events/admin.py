@@ -78,7 +78,8 @@ from shop.models import Order, OrderItem
 
 from payment.utils import update_order, check_order_date_in_future
 from payment.views import get_payment_date
-from events.utils import send_email, format_memberships
+from events.utils.utils import format_memberships
+from events.utils.email_utils import send_email
 
 from .admin_views import hitcount_view
 

@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("mailqueue", "0009_alter_attachment_file_attachment"),
+        ("mailqueue", "0008_alter_attachment_file_attachment_and_more"),
         ("invoices", "0001_initial"),
     ]
 

@@ -1,0 +1,89 @@
+{% extends 'base/base.html' %}
+
+
+{% block messages %}
+{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div class="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
+
+        <!-- Status Icon -->
+        <div class="mb-4">
+        {% if status == "success" %}
+            <div class="text-green-500 text-5xl">✔</div>
+        {% elif status == "blacklist" %}
+            <div class="text-red-500 text-5xl">✖</div>
+        {% elif status == "error" %}
+            <div class="text-red-500 text-5xl">!</div>
+        {% else %}
+            <div class="text-gray-400 text-5xl">i</div>
+        {% endif %}
+        </div>
+
+        <!-- Title -->
+        <h1 class="text-2xl font-semibold mb-2">
+        {% if status == "success" %}
+            Bestellung erledigt
+        {% elif status == "blacklist" %}
+        Keine Anmeldung möglich
+        {% elif status == "error" %}
+        Etwas ist schiefgelaufen
+        {% else %}
+            Information
+        {% endif %}
+        </h1>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="mt-4 space-y-2">
+            {% for message in messages %}
+            <div class="px-4 py-3 rounded-lg text-sm
+                {% if message.tags == 'error' %}
+                bg-red-100 text-red-700
+                {% elif message.tags == 'success' %}
+                bg-green-100 text-green-700
+                {% elif message.tags == 'warning' %}
+                bg-yellow-100 text-yellow-700
+                {% else %}
+                bg-gray-100 text-gray-700
+                {% endif %}
+            ">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="mt-6 flex flex-col gap-3">
+        {% if status == "success" %}
+            <a href="{% url 'home' %}"
+            class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+                Zur Startseite
+            </a>
+
+        {% elif status == "blacklist" %}
+            <div
+            class="w-full bg-red-600 text-white py-2 rounded-lg">
+                Bitte kontaktiere das Fobi-Team.
+            </div>
+
+        {% elif status == "error" %}
+            <div
+            class="w-full bg-red-600 text-white py-2 rounded-lg">
+                Bitte kontaktiere das Fobi-Team.
+            </div>
+
+        {% else %}
+            <a href="{% url 'home' %}"
+            class="w-full bg-gray-600 text-white py-2 rounded-lg hover:bg-gray-700 transition">
+                Zur Startseite
+            </a>
+        {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}
