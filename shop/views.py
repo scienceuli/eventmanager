@@ -36,7 +36,7 @@ from events.utils.email_utils import send_email
 from events.core_models import SiteSettings
 
 
-from shop.cart import Cart
+from shop.cart import Cart, split_cart
 from shop.forms import CartAddEventForm
 from shop.models import Order, OrderItem
 from shop.tasks import order_created
@@ -53,15 +53,8 @@ from invoices.models import Invoice
 from mailings.models import InvoiceMessage
 from events.core_models import SiteSettings
 
-from events.services.registration import EventRegistrationService
-from shop.services.order_service import OrderService
-from events.utils import messages_utils
-
-def split_cart(cart):
-    payment, non_payment = [], []
-    for item in cart:
-        (non_payment, payment)[not item["event"].is_full()].append(item)
-    return payment, non_payment
+from shop.services.checkout_service import CheckoutService
+from events.utils.messages_utils import add_success, add_error
 
 
 @require_POST
@@ -231,66 +224,78 @@ class OrderCreateView(FormView):
 
         return redirect("shop:order-result", status=status)
 
-
     def form_valid(self, form):
-        email = form.cleaned_data.get("email")
-        registration_service = EventRegistrationService()
+        checkout = CheckoutService(form, self.cart)
+        result = checkout.execute()
 
-        has_error = False
-        has_success = False
-        order_created = None
-        collected_success = []
-        collected_errors = []
+        # apply messages
+        for msg in result.successes:
+            add_success(self.request, msg)
 
-        # Process all cart items
-        paid_items, free_items = split_cart(self.cart)
+        for msg in result.errors:
+            add_error(self.request, msg)
 
-        try:
-            with transaction.atomic():
-                for item in paid_items + free_items:
-                    event = item["event"]
+        return self.finalize_response(result.success, result.has_error)
 
-                    # 1a. Register member for the event
-                    result = registration_service.register(form, event)
-                    order_service = OrderService(form, email)
+    # def form_valid(self, form):
+    #     email = form.cleaned_data.get("email")
+    #     registration_service = EventRegistrationService()
 
-                    if result.success:
-                        has_success = True
-                        collected_success.extend(result.successes)
-                    if result.errors:
-                        has_error = True
-                        collected_errors.extend(result.errors)
-                    # If event is paid, create order + invoice
-                    if not event.direct_payment or item not in paid_items:
-                        continue  # skip free events
+    #     has_error = False
+    #     has_success = False
+    #     order_created = None
+    #     collected_success = []
+    #     collected_errors = []
 
-                    if item in paid_items and result.success:
-                        # Create order if not yet created
-                        order_service.add_item(item)
+    #     # Process all cart items
+    #     paid_items, free_items = split_cart(self.cart)
 
-                # finalize
-                order_service.finalize()
+    #     try:
+    #         with transaction.atomic():
+    #             for item in paid_items + free_items:
+    #                 event = item["event"]
 
-                # Clear cart
-                self.cart.clear()
-        except Exception as e:
-            # rollback happens automatically
-            has_error = True
+    #                 # 1a. Register member for the event
+    #                 result = registration_service.register(form, event)
+    #                 order_service = OrderService(form, email)
 
-            # optional: log the error
+    #                 if result.success:
+    #                     has_success = True
+    #                     collected_success.extend(result.successes)
+    #                 if result.errors:
+    #                     has_error = True
+    #                     collected_errors.extend(result.errors)
+    #                 # If event is paid, create order + invoice
+    #                 if not event.direct_payment or item not in paid_items:
+    #                     continue  # skip free events
 
-            _logger.exception("Order processing failed")
-            collected_errors.extend("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.")
+    #                 if item in paid_items and result.success:
+    #                     # Create order if not yet created
+    #                     order_service.add_item(item)
 
-        # error and success messages
-        for msg in collected_success:
-            self.add_success(msg)
+    #             # finalize
+    #             order_service.finalize()
 
-        for msg in collected_errors:
-            self.add_error(msg)
+    #             # Clear cart
+    #             self.cart.clear()
+    #     except Exception as e:
+    #         # rollback happens automatically
+    #         has_error = True
 
-        # Redirect to result page based on collected outcome
-        return self.finalize_response(has_success, has_error)
+    #         # optional: log the error
+
+    #         _logger.exception("Order processing failed")
+    #         collected_errors.extend("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.")
+
+    #     # error and success messages
+    #     for msg in collected_success:
+    #         self.add_success(msg)
+
+    #     for msg in collected_errors:
+    #         self.add_error(msg)
+
+    #     # Redirect to result page based on collected outcome
+    #     return self.finalize_response(has_success, has_error)
 
     def get_success_url(self):
         return reverse("shop:order-result", kwargs={"status": "ready"})
