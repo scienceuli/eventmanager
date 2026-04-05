@@ -35,7 +35,6 @@ from events.forms import EventMemberForm
 from events.utils.email_utils import send_email
 from events.core_models import SiteSettings
 
-
 from shop.cart import Cart, split_cart
 from shop.forms import CartAddEventForm
 from shop.models import Order, OrderItem
@@ -237,65 +236,6 @@ class OrderCreateView(FormView):
 
         return self.finalize_response(result.success, result.has_error)
 
-    # def form_valid(self, form):
-    #     email = form.cleaned_data.get("email")
-    #     registration_service = EventRegistrationService()
-
-    #     has_error = False
-    #     has_success = False
-    #     order_created = None
-    #     collected_success = []
-    #     collected_errors = []
-
-    #     # Process all cart items
-    #     paid_items, free_items = split_cart(self.cart)
-
-    #     try:
-    #         with transaction.atomic():
-    #             for item in paid_items + free_items:
-    #                 event = item["event"]
-
-    #                 # 1a. Register member for the event
-    #                 result = registration_service.register(form, event)
-    #                 order_service = OrderService(form, email)
-
-    #                 if result.success:
-    #                     has_success = True
-    #                     collected_success.extend(result.successes)
-    #                 if result.errors:
-    #                     has_error = True
-    #                     collected_errors.extend(result.errors)
-    #                 # If event is paid, create order + invoice
-    #                 if not event.direct_payment or item not in paid_items:
-    #                     continue  # skip free events
-
-    #                 if item in paid_items and result.success:
-    #                     # Create order if not yet created
-    #                     order_service.add_item(item)
-
-    #             # finalize
-    #             order_service.finalize()
-
-    #             # Clear cart
-    #             self.cart.clear()
-    #     except Exception as e:
-    #         # rollback happens automatically
-    #         has_error = True
-
-    #         # optional: log the error
-
-    #         _logger.exception("Order processing failed")
-    #         collected_errors.extend("Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut.")
-
-    #     # error and success messages
-    #     for msg in collected_success:
-    #         self.add_success(msg)
-
-    #     for msg in collected_errors:
-    #         self.add_error(msg)
-
-    #     # Redirect to result page based on collected outcome
-    #     return self.finalize_response(has_success, has_error)
 
     def get_success_url(self):
         return reverse("shop:order-result", kwargs={"status": "ready"})
