@@ -8,13 +8,13 @@ from datetime import datetime, date
 from .export_excel import ExportExcelAction
 from openpyxl.styles import Font
 from unidecode import unidecode
-from django.contrib import messages
+from django.contrib import messages, admin
 
 
 from events.utils.utils import convert_data_date, convert_boolean_field
+from event_feedback.services.feedback_service import SurveyService
 
 from .models import Event, EventMember
-
 
 def style_output_file(file):
     black_font = Font(color="000000", bold=True)
@@ -186,3 +186,11 @@ def export_members_to_csv(modeladmin, request, queryset):
 
 
 export_members_to_csv.short_description = "Export > CSV (Vorname, Nachname, Email)"
+
+
+def create_surveys(modeladmin, request, queryset):
+    service = SurveyService()
+    for event in queryset:
+        service.create_survey(event)
+
+create_surveys.short_description = "Create Surveys"

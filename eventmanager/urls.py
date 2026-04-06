@@ -97,6 +97,7 @@ urlpatterns = [
     path("paypal/", include("paypal.standard.ipn.urls")),
     path("mailings/", include("mailings.urls")),
     path("vfllnl/", include("vfllnl.urls")),
+    path("feedback/", include("event_feedback.urls")),
     path("dashboard/", include("dashboard.urls")),
     path("ckeditor/", include("ckeditor_uploader.urls")),
     path("<int:event_id>/pdf/", admin_event_pdf, name="admin-event-pdf"),

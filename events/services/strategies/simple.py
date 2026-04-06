@@ -4,6 +4,8 @@ from .base import BaseRegistrationStrategy
 from events.utils import form_utils
 import events.forms
 
+from event_feedback.services.feedback_service import SurveyService
+
 class SimpleRegistrationStrategy(BaseRegistrationStrategy):
     def get_form(self, event, data=None):
         kwargs = {"initial": {"country": "DE"}} if data is None else {}
@@ -22,6 +24,8 @@ class SimpleRegistrationStrategy(BaseRegistrationStrategy):
         data = form_utils.get_personal_form_data(form)
         data.update(form_utils.get_additional_form_data(form, event, event.registration_form))
         data["attend_status"] = member.attend_status
+        survey = SurveyService()
+        data["survey_link"] = survey.build_survey_link(member)
         return data
 
     def get_success_message(self, event, member):

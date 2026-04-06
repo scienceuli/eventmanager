@@ -33,6 +33,9 @@ class EventRegistrationService:
         member_data = strategy.build_member_data(form, event)
         member = create_member(event, member_data)
 
+        if not member.survey_token:
+            member.survey_token = uuid.uuid4()
+
         formatting_dict = strategy.build_formatting_dict(form, event, member)
 
         vfll_sent, member_sent = send_registration_emails(

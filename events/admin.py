@@ -36,6 +36,7 @@ from .actions import (
     import_from_csv,
     copy_member_instances,
     export_members_to_csv,
+    create_surveys
 )
 
 from .validators import csv_content_validator
@@ -94,6 +95,7 @@ from moodle.management.commands.moodle import (
 )
 
 from .statistics import membership_statistics
+from event_feedback.services.feedback_service import SurveyService
 
 # setting date format in admin page
 from django.conf.locale.de import formats as de_formats
@@ -446,7 +448,7 @@ class EventMemberAdmin(admin.ModelAdmin):
     ]
     list_filter = ["event", MembershipFilter]
     search_fields = ("lastname", "firstname", "email", "event__name")
-    readonly_fields = ["name", "label", "mail_to_admin", "via_form"]
+    readonly_fields = ["name", "label", "mail_to_admin", "via_form", "get_survey_link"]
     inlines = [
         EventMemberRoleInline,
     ]
@@ -482,6 +484,13 @@ class EventMemberAdmin(admin.ModelAdmin):
                 "fields": ("mail_to_admin", "via_form", "label"),
             },
         ),
+        (
+            "Feedback",
+            {
+                "classes": ("collapse",),
+                "fields": ("get_survey_link",)
+            }
+        )
     )
     actions = [
         export_as_xls,
@@ -552,6 +561,14 @@ class EventMemberAdmin(admin.ModelAdmin):
         if not obj.vfll and obj.memberships == "[]":
             return True
         return False
+
+    def get_survey_link(self, obj):
+        survey = SurveyService()
+        link = survey.build_survey_link(obj)
+        return link
+
+    get_survey_link.short_description = "Feeback-Link"
+
 
     get_no_memberships_boolean.short_description = "Nicht-Mitglied"
 
@@ -1157,6 +1174,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "date_created",
         "date_modified",
         "answers_summary_link",
+        "survey_results_link",
     )
     # readonly_fields = ('uuid', 'label', 'slug', 'date_created', 'date_modified')
 
@@ -1283,6 +1301,12 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
         (
+            "Feedback",
+            {
+                "fields": ("survey_results_link",),
+            },
+        ),
+        (
             "Intern",
             {
                 "fields": ("slug", "uuid", "date_created", "date_modified"),
@@ -1300,6 +1324,12 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         return "Keine Fragen"
 
     answers_summary_link.short_description = "Alle Antworten"
+
+    def survey_results_link(self, obj):
+        url = reverse("feedback:survey-results", args=[obj.id])
+        return format_html('<a href="{}">View Feedback Results</a>', url)
+
+    survey_results_link.short_description = "Feedback Results"
 
     def get_balance_colored(self, obj):
         if obj.get_balance() == 0:
@@ -1345,7 +1375,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         PrivateDocumentInline,
         EventMemberInline,
     )
-    actions = ("copy_event",)
+    actions = ("copy_event", create_surveys,)
     inline_actions = []
 
     def get_queryset(self, request):

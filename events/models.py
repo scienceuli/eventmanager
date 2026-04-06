@@ -1251,6 +1251,7 @@ class EventMember(AddressModel):
     )
 
     data = models.JSONField(null=True, blank=True)
+    survey_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
 
     class Meta:
         verbose_name = "TeilnehmerIn"

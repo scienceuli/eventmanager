@@ -1,0 +1,36 @@
+{
+  "categories": [
+    {
+      "name": "Lernbilanz",
+      "order": 1,
+      "questions": [
+        {
+          "text": "Lernerfolg hoch?",
+          "order": 1
+        }
+      ]
+    },
+    {
+      "name": "Seminargestaltung",
+      "order": 2,
+      "questions": [
+        {
+          "text": "Inhalte - relevant?",
+          "order": 1
+        },
+        {
+          "text": "Methoden - förderlich?",
+          "order": 1
+        },
+        {
+          "text": "Medien - nützlich?",
+          "order": 1
+        },
+        {
+          "text": "Handouts - hilfreich?",
+          "order": 1
+        }
+      ]
+    }
+  ]
+}

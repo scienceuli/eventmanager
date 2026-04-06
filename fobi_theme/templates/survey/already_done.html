@@ -1,0 +1,18 @@
+{% extends 'base/base.html' %}
+
+
+    {% block content %}
+        <div class="max-w-xl mx-auto mt-20 mb-20 text-center">
+        <h1 class="text-2xl font-bold mt-10 mb-4">
+            Vielen Dank!
+        </h1>
+
+        <p class="text-gray-600">
+            Sie haben bereits Ihr Feedback für diese Veranstaltung abgegeben.
+        </p>
+
+        <p class="mt-4 text-sm text-gray-400">
+            {{ event }}
+        </p>
+        </div>
+    {% endblock %}

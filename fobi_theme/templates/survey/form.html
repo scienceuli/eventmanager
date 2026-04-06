@@ -1,0 +1,104 @@
+{% extends 'base/base.html' %}
+{% block content %}
+
+<div class="max-w-3xl mx-auto p-6">
+  <h1 class="text-2xl font-bold mb-6">
+    {{ survey.event.name }} Feedback
+  </h1>
+
+  <form method="post" class="space-y-8">
+    {% csrf_token %}
+
+    {% for category in survey.categories.all %}
+      <div class="bg-white shadow rounded-2xl p-6">
+        <h2 class="text-lg font-semibold mb-4">
+          {{ category.name }}
+        </h2>
+
+        {% for question in category.questions.all %}
+          <div class="mb-6">
+            <p class="font-medium mb-2">{{ question.text }}</p>
+            <input type="hidden" name="rating_{{ question.id }}" id="rating-{{ question.id }}">
+
+            <!-- Rating -->
+            <div class="flex gap-2 mb-2" data-question="{{ question.id }}">
+              {% for i in "12345" %}
+              <svg data-value="{{ forloop.counter }}"
+                         class="star w-8 h-8 cursor-pointer text-gray-300"
+                         fill="currentColor"
+                         viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.955a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.45a1 1 0 00-.364 1.118l1.287 3.955c.3.921-.755 1.688-1.54 1.118l-3.37-2.45a1 1 0 00-1.176 0l-3.37 2.45c-.784.57-1.838-.197-1.539-1.118l1.287-3.955a1 1 0 00-.364-1.118l-3.37-2.45c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.955z"/>
+                    </svg>
+              {% endfor %}
+            </div>
+
+            <!-- Comment -->
+            <textarea name="comment_{{ question.id }}"
+                      placeholder="Optional comment..."
+                      class="w-full border rounded-lg p-2 text-sm"></textarea>
+          </div>
+        {% endfor %}
+      </div>
+    {% endfor %}
+
+      <div class="bg-white shadow rounded-2xl p-6 space-y-4">
+        <label class="flex items-start gap-2">
+          <input type="checkbox" name="consent" required class="mt-1">
+          <span class="text-sm">
+            Ich stimme zu, dass meine Antworten anonym verwendet werden dürfen.
+          </span>
+        </label>
+
+        <div>
+          <label class="block font-medium mb-1">
+            Weitere Kommentare
+          </label>
+          <textarea name="final_comment"
+                    class="w-full border rounded-lg p-2"></textarea>
+        </div>
+      </div>
+      <div class="text-right">
+        <button type="submit"
+                class="bg-blue-600 text-white px-6 py-2 rounded-xl hover:bg-blue-700">
+          Absenden
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <script id="c4u1br">
+  document.querySelectorAll("[data-question]").forEach(container => {
+    const stars = container.querySelectorAll(".star");
+    const questionId = container.dataset.question;
+    const input = document.getElementById(`rating-${questionId}`);
+
+    stars.forEach((star, index) => {
+      star.addEventListener("click", () => {
+        const value = index + 1;
+        input.value = value;
+
+        stars.forEach((s, i) => {
+          s.classList.toggle("text-yellow-400", i < value);
+          s.classList.toggle("text-gray-300", i >= value);
+        });
+      });
+
+      star.addEventListener("mouseover", () => {
+        stars.forEach((s, i) => {
+          s.classList.toggle("text-yellow-300", i <= index);
+          s.classList.toggle("text-gray-300", i > index);
+        });
+      });
+
+      container.addEventListener("mouseleave", () => {
+        const current = input.value || 0;
+        stars.forEach((s, i) => {
+          s.classList.toggle("text-yellow-400", i < current);
+          s.classList.toggle("text-gray-300", i >= current);
+        });
+      });
+    });
+  });
+  </script>
+{% endblock %}

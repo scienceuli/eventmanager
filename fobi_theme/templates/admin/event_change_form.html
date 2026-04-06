@@ -1,23 +1,28 @@
-{% extends "admin/change_form.html" %}
-
-{% block extrahead %}
-{{ block.super }}
+{% extends "admin/change_form.html" %} {% block extrahead %} {{ block.super }}
 <script>
     var dict = {
         ">M": "Kurs in Moodle anlegen",
-        "xM": "Kurs in Moodle loeschen"
+        xM: "Kurs in Moodle loeschen",
     };
 
     function get(object, key, default_value) {
         var result = object[key];
-        return (typeof result !== "undefined") ? result : default_value;
-    };
+        return typeof result !== "undefined" ? result : default_value;
+    }
     (function () {
         document.addEventListener("DOMContentLoaded", function (event) {
-            let inline_actions = document.querySelectorAll(".inline_actions input");
+            let inline_actions = document.querySelectorAll(
+                ".inline_actions input",
+            );
             for (var i = 0; i < inline_actions.length; i++) {
                 inline_actions[i].addEventListener("click", function (e) {
-                    if (!confirm("Willst du wirklich >" + get(dict, e.target.value, e.target.value) + "< ausführen?")) {
+                    if (
+                        !confirm(
+                            "Willst du wirklich >" +
+                                get(dict, e.target.value, e.target.value) +
+                                "< ausführen?",
+                        )
+                    ) {
                         e.preventDefault();
                     }
                 });
@@ -30,33 +35,53 @@
 {% comment %}
 <script>
     $(document).ready(function () {
-        $('#export-button').click(function () {
+        $("#export-button").click(function () {
             window.location.href = "{% url 'export-participants' object_id %}";
         });
     });
 </script>
-{% endcomment %}
-{% endblock %}
-
-{% block object-tools-items %}
-{{ block.super }}
+{% endcomment %} {% endblock %} {% block object-tools-items %} {{ block.super }}
 
 <li>
-    <a href="{% url 'admin:event_hitcount' object_id %}"><i class="icon-tint icon-alpha75"></i>Seitenstatistik</a>
+    <a href="{% url 'admin:event_hitcount' object_id %}"
+        ><i class="icon-tint icon-alpha75"></i>Seitenstatistik</a
+    >
 </li>
 <li>
-    <a style="background: green;" href="{% url 'export-participants' object_id 'controlling' %}"><i class="icon-tint icon-alpha75"></i>Controlling</a>
+    <a
+        style="background: green"
+        href="{% url 'export-participants' object_id 'controlling' %}"
+        ><i class="icon-tint icon-alpha75"></i>Controlling</a
+    >
 </li>
 <li>
-    <a style="background: red;" href="{% url 'export-participants' object_id 'participants' %}"><i class="icon-tint icon-alpha75"></i>TN-Liste</a>
+    <a
+        style="background: red"
+        href="{% url 'export-participants' object_id 'participants' %}"
+        ><i class="icon-tint icon-alpha75"></i>TN-Liste</a
+    >
 </li>
 <li>
-    <a style="background: rgb(0, 255, 47);" href="{% url 'export-moodle-participants' object_id %}"><i class="icon-tint icon-alpha75"></i>Moodle-Liste</a>
+    <a
+        style="background: blue"
+        href="{% url 'feedback:survey-results' object_id %}"
+        ><i class="icon-tint icon-alpha75"></i>Feedback</a
+    >
+</li>
+<li>
+    <a
+        style="background: rgb(0, 255, 47)"
+        href="{% url 'export-moodle-participants' object_id %}"
+        ><i class="icon-tint icon-alpha75"></i>Moodle-Liste</a
+    >
 </li>
 {% comment %}
 <li>
-    <input type="submit" value="Teilnehmerliste" class="default action" id="export-button">
+    <input
+        type="submit"
+        value="Teilnehmerliste"
+        class="default action"
+        id="export-button"
+    />
 </li>
-{% endcomment %}
-
-{% endblock %}
+{% endcomment %} {% endblock %}

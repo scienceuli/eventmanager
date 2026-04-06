@@ -1,0 +1,48 @@
+{% extends 'base/base.html' %}
+{% block content %}
+
+
+<div class="max-w-4xl mx-auto p-6">
+  <h1 class="text-2xl font-bold mb-6">
+    Ergebnisse: {{ event.name }}
+  </h1>
+
+  {% for category in results %}
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold mb-4">
+        {{ category.category.name }}
+      </h2>
+
+      <div class="space-y-4">
+        {% for q in category.questions %}
+          <div class="bg-white shadow rounded-xl p-4">
+            <p class="font-medium">{{ q.question.text }}</p>
+
+            <!-- Stats -->
+            <div class="flex items-center gap-4 mt-2">
+              <span class="text-yellow-500 font-bold">
+                ⭐ {{ q.avg }}
+              </span>
+              <span class="text-sm text-gray-500">
+                ({{ q.count }} Antworten)
+              </span>
+            </div>
+
+            <!-- Comments -->
+            {% if q.comments %}
+              <div class="mt-3 text-sm text-gray-600">
+                <p class="font-semibold mb-1">Kommentare:</p>
+                <ul class="list-disc ml-5 space-y-1">
+                  {% for c in q.comments %}
+                    <li>{{ c }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+</div>
+    {% endblock %}

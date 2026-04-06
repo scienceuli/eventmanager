@@ -1,6 +1,7 @@
 from django.db.models.signals import post_save, m2m_changed
 from django.dispatch import receiver
 from events.models import Event, EventDay, EventSpeakerThrough
+from event_feedback.services.feedback_service import SurveyService
 
 from moodle.management.commands.moodle import create_or_update_trainer
 
@@ -31,3 +32,8 @@ def event_speakers_changed(sender, instance, **kwargs):
 
 
 post_save.connect(event_speakers_changed, sender=EventSpeakerThrough)
+
+@receiver(post_save, sender=Event)
+def create_survey(sender, instance, created, **kwargs):
+    if created:
+        survey = SurveyService().create_survey(instance)

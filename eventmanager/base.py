@@ -109,6 +109,7 @@ INSTALLED_APPS = [
     "mailings.apps.MailingsConfig",
     "invoices.apps.InvoicesConfig",
     "utilities.apps.UtilitiesConfig",
+    "event_feedback.apps.EventFeedbackConfig",
 ]
 
 MIDDLEWARE = [
