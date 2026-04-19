@@ -78,7 +78,7 @@ from events.filter import PeriodFilter, DateRangeFilter, MembershipFilter
 from shop.models import Order, OrderItem
 
 from payment.utils import update_order, check_order_date_in_future
-from payment.views import get_payment_date
+from payment.services.payment_service import PaymentService
 from events.utils.utils import format_memberships
 from events.utils.email_utils import send_email
 
@@ -101,7 +101,6 @@ from event_feedback.services.feedback_service import SurveyService
 from django.conf.locale.de import formats as de_formats
 
 de_formats.DATETIME_FORMAT = "d.m.y H:i"
-
 
 class MyAdminSite(admin.AdminSite):
     def get_app_list(self, request):
@@ -524,7 +523,7 @@ class EventMemberAdmin(admin.ModelAdmin):
             .distinct()
             .first()
         )
-        if check_order_date_in_future(order):
+        if order and check_order_date_in_future(order):
             update_order(order)
 
         order_item = OrderItem.objects.filter(
@@ -546,7 +545,7 @@ class EventMemberAdmin(admin.ModelAdmin):
 
         return (
             datetime.strftime(order.payment_date, "%d.%m.%Y")
-            if order.payment_receipt
+            if order and order.payment_receipt
             else ""
         )
 
@@ -864,7 +863,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
                 quantity=1,
             )
 
-            order.payment_date = get_payment_date(order)
+            order.payment_date = PaymentService().get_payment_date(order)
             order.save()
             messages.success(request, "Rechnung wurde angelegt")
 
@@ -1145,6 +1144,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "get_end_date",
         "price",
         "get_balance_colored",
+        "average_rating",
         "direct_payment",
         "view_members_link",
         "capacity",
@@ -1326,6 +1326,10 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     answers_summary_link.short_description = "Alle Antworten"
 
     def survey_results_link(self, obj):
+        if not obj.pk:
+            return "Save event first"
+        if not hasattr(obj, "survey"):
+            return "No feedback"
         url = reverse("feedback:survey-results", args=[obj.id])
         return format_html('<a href="{}">View Feedback Results</a>', url)
 
@@ -1362,6 +1366,17 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         )
 
     full_price.short_description = "Voller Preis"
+
+    def average_rating(self, obj):
+        avg = SurveyService().get_event_average(obj)
+
+        if avg is None:
+            return "—"
+
+        return f"{avg} ⭐"
+
+    average_rating.short_description = "Avg Rating"
+
 
     inlines = (
         EventQuestionInline,
@@ -1747,19 +1762,23 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     copy_event.short_description = "Copy Event"
 
-    def save_model(self, request, obj, form, change):
-        print("save_model called")
-        # pass
-        super().save_model(request, obj, form, change)
-
     def save_related(self, request, form, formsets, change):
-        print("save_related called")
-        form.save_m2m()
-        for formset in formsets:
-            # print(formset)
-            self.save_formset(request, form, formset, change=change)
-        # super().save_related(request, form, formsets, change)
-        super(EventAdmin, self).save_model(request, form.instance, form, change)
+        super().save_related(request, form, formsets, change)
+
+        event = form.instance
+
+        # update dates
+        first_day = event.get_first_day_start_date()
+        last_day = event.get_last_day_start_date()
+
+        if event.first_day != first_day or event.last_day != last_day:
+            event.first_day = first_day
+            event.last_day = last_day
+            event.save(update_fields=["first_day", "last_day"])
+
+        # ensure survey
+        service = SurveyService()
+        service.ensure_survey(event)
 
 
 admin.site.register(EventCategory, EventCategoryAdmin)

@@ -5,7 +5,6 @@ from django.conf import settings
 from django.urls import reverse
 from django.db.models import Avg, Count
 
-
 from event_feedback.models import Survey, SurveyCategory, SurveyQuestion, QuestionAnswer
 from events.models import EventMember
 from event_feedback.models import SurveyResponse
@@ -19,6 +18,10 @@ class SurveyService:
             self.create_structure(survey, template_name)
 
         return survey
+
+    def ensure_survey(self, event):
+        if not hasattr(event, "survey"):
+            self.create_survey(event)
 
     def build_survey_link(self, registration):
         path = reverse("feedback:survey-view", args=[registration.survey_token])
@@ -106,3 +109,10 @@ class SurveyService:
             })
 
         return results
+
+    def get_event_average(self, event):
+        avg = QuestionAnswer.objects.filter(
+            response__survey=event.survey
+        ).aggregate(avg=Avg("rating"))["avg"]
+
+        return round(avg, 2) if avg else None

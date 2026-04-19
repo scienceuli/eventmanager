@@ -33,7 +33,7 @@ def event_speakers_changed(sender, instance, **kwargs):
 
 post_save.connect(event_speakers_changed, sender=EventSpeakerThrough)
 
-@receiver(post_save, sender=Event)
-def create_survey(sender, instance, created, **kwargs):
-    if created:
-        survey = SurveyService().create_survey(instance)
+# @receiver(post_save, sender=Event)
+# def create_survey(sender, instance, created, **kwargs):
+#     if created:
+#         survey = SurveyService().create_survey(instance)

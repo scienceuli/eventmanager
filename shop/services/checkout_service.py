@@ -2,6 +2,9 @@ from dataclasses import dataclass, field
 from django.db import transaction
 
 from events.services.registration import EventRegistrationService
+from events.services.notification_service import NotificationService
+from events.services.strategies import get_strategy
+
 from shop.services.order_service import OrderService
 from shop.cart import split_cart
 
@@ -21,6 +24,7 @@ class CheckoutService:
 
         self.registration_service = EventRegistrationService()
         self.order_service = OrderService(form, self.email)
+        self.notification_service = NotificationService()
 
     def execute(self) -> CheckoutResult:
         result = CheckoutResult()
@@ -43,6 +47,13 @@ class CheckoutService:
 
                     if reg_result.success:
                         result.success = True
+                        strategy = get_strategy(event)
+                        self.notification_service.send_notification_emails(
+                            event,
+                            self.form,
+                            reg_result.member,
+                            strategy,
+                        )
 
                     if reg_result.errors:
                         result.has_error = True

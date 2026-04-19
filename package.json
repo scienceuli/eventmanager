@@ -4,9 +4,12 @@
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@tailwindcss/typography": "^0.5.16",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.19"
   },
   "dependencies": {
     "pdfjs-dist": "^5.3.31"
+  },
+  "scripts": {
+    "dev": "tailwindcss -i ./input.css -o ./fobi_theme/static/css/output.css --watch"
   }
 }

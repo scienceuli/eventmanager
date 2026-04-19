@@ -1,6 +1,7 @@
+import uuid
 from dataclasses import dataclass, field
 
-from .strategies import get_strategy
+from events.services.strategies import get_strategy
 
 from events.utils import check_utils
 from events.utils.member_utils import create_member
@@ -9,6 +10,7 @@ from events.utils.email_utils import send_registration_emails
 @dataclass
 class RegistrationResult:
     success: bool = False
+    member: object = None
     errors: list[str] = field(default_factory=list)
     successes: list[str] = field(default_factory=list)
 
@@ -36,20 +38,11 @@ class EventRegistrationService:
         if not member.survey_token:
             member.survey_token = uuid.uuid4()
 
-        formatting_dict = strategy.build_formatting_dict(form, event, member)
-
-        vfll_sent, member_sent = send_registration_emails(
-            event, form, formatting_dict, member.attend_status
-        )
-
-        if vfll_sent:
-            member.mail_to_admin = True
-        if member_sent:
-            member.mail_to_member = True
-
         member.save()
 
-        result.successes.append(strategy.get_success_message(event, member))
+        result.member = member
+        newsletter = form.cleaned_data.get("newsletter", False)
+        result.successes.append(strategy.get_success_message(event, member, newsletter=newsletter))
         result.success = True
 
         return result

@@ -1,4 +1,6 @@
-{% extends "admin/change_form.html" %} {% block extrahead %} {{ block.super }}
+{% extends "admin/change_form.html" %}
+{% block extrahead %}
+{{ block.super }}
 <script>
     var dict = {
         ">M": "Kurs in Moodle anlegen",
@@ -32,15 +34,10 @@
 </script>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-{% comment %}
-<script>
-    $(document).ready(function () {
-        $("#export-button").click(function () {
-            window.location.href = "{% url 'export-participants' object_id %}";
-        });
-    });
-</script>
-{% endcomment %} {% endblock %} {% block object-tools-items %} {{ block.super }}
+
+{% endblock %}
+{% block object-tools-items %}
+{{ block.super }}
 
 <li>
     <a href="{% url 'admin:event_hitcount' object_id %}"
@@ -75,13 +72,5 @@
         ><i class="icon-tint icon-alpha75"></i>Moodle-Liste</a
     >
 </li>
-{% comment %}
-<li>
-    <input
-        type="submit"
-        value="Teilnehmerliste"
-        class="default action"
-        id="export-button"
-    />
-</li>
-{% endcomment %} {% endblock %}
+
+{% endblock %}

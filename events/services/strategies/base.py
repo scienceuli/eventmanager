@@ -10,5 +10,5 @@ class BaseRegistrationStrategy:
     def build_formatting_dict(self, form, event, member):
         raise NotImplementedError
 
-    def get_success_message(self, event, member):
+    def get_success_message(self, event, member, newsletter=False):
         return "Vielen Dank für Ihre Anmeldung."

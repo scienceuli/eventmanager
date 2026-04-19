@@ -43,8 +43,11 @@ def survey_results_view(request, event_id):
 
     service = SurveyService()
     results = service.get_results(event)
+    avg = service.get_event_average(event)
+
 
     return render(request, "survey/results.html", {
         "event": event,
         "results": results,
+        "avg": avg,
     })

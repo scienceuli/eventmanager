@@ -27,5 +27,5 @@ class MVRegistrationStrategy(BaseRegistrationStrategy):
         data["attend_status"] = "registered"
         return data
 
-    def get_success_message(self, event, member):
+    def get_success_message(self, event, member, newsletter=False):
         return "Vielen Dank für deine Anmeldung zur Mitgliederversammlung."

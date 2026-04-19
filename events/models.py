@@ -754,6 +754,8 @@ class Event(BaseModel, HitCountMixin):
         #    delta = self.end_date - self.start_date
         #    if delta.days >= 14:
         #        raise ValidationError(f"Das Event umfasst {delta.days} Tage! Korrekt?")
+        if not self.pk:
+            return
         if self.capacity < self.members.filter(attend_status="registered").count():
             raise ValidationError(
                 "Die Teilnehmer*innenzahl darf nicht größer als die Kapazität sein."
@@ -946,33 +948,64 @@ class Event(BaseModel, HitCountMixin):
 
         return total_income or 0
 
+    # def save(self, *args, **kwargs):
+    #     # slug
+    #     max_length = self._meta.get_field("slug").max_length
+    #     last_id = 0
+    #     if Event.objects.exists():
+    #         last_id = Event.objects.latest("id").id
+    #     if not self.id:
+    #         self.slug = slugify(
+    #             f"{self.name.replace('Kopie von ', '')}-{str(last_id + 1)}"
+    #         )[:max_length]
+    #     if not self.uuid:
+    #         self.uuid = uuid.uuid4()
+    #     add = not self.pk
+    #     # super(Event, self).save(*args, **kwargs)
+    #     if add:
+    #         # if not self.slug:
+    #         #    self.slug = slugify(self.name)[:max_length]
+    #         if not self.label:
+    #             self.label = f"{self.name.replace('Kopie von ', '').partition(' ')[0]}-{date.today().year}-{str(last_id + 1)}"
+    #         kwargs["force_insert"] = False  # create() uses this, which causes error.
+
+    #     self.first_day = self.get_first_day_start_date()
+    #     self.last_day = self.get_last_day_start_date()
+    #     if add and self.category.name == "messen":
+    #         self.registration_possible = False
+
+    #     return super().save(*args, **kwargs)
+
     def save(self, *args, **kwargs):
-        # slug
-        max_length = self._meta.get_field("slug").max_length
-        last_id = 0
-        if Event.objects.exists():
-            last_id = Event.objects.latest("id").id
-        if not self.id:
-            self.slug = slugify(
-                f"{self.name.replace('Kopie von ', '')}-{str(last_id + 1)}"
-            )[:max_length]
+        is_new = self.pk is None
+
+        # --- UUID ---
         if not self.uuid:
             self.uuid = uuid.uuid4()
-        add = not self.pk
-        # super(Event, self).save(*args, **kwargs)
-        if add:
-            # if not self.slug:
-            #    self.slug = slugify(self.name)[:max_length]
-            if not self.label:
-                self.label = f"{self.name.replace('Kopie von ', '').partition(' ')[0]}-{date.today().year}-{str(last_id + 1)}"
-            kwargs["force_insert"] = False  # create() uses this, which causes error.
 
-        self.first_day = self.get_first_day_start_date()
-        self.last_day = self.get_last_day_start_date()
-        if add and self.category.name == "messen":
+        # --- SLUG ---
+        if is_new and not self.slug:
+            max_length = self._meta.get_field("slug").max_length
+
+            last_id = Event.objects.order_by("-id").values_list("id", flat=True).first() or 0
+
+            base_name = self.name.replace("Kopie von ", "")
+            self.slug = slugify(f"{base_name}-{last_id + 1}")[:max_length]
+
+        # --- LABEL ---
+        if is_new and not self.label:
+            base_name = self.name.replace("Kopie von ", "").partition(" ")[0]
+
+            last_id = Event.objects.order_by("-id").values_list("id", flat=True).first() or 0
+
+            self.label = f"{base_name}-{date.today().year}-{last_id + 1}"
+
+        # --- SPECIAL CATEGORY LOGIC ---
+        if is_new and self.category and self.category.name == "messen":
             self.registration_possible = False
 
-        return super().save(*args, **kwargs)
+        # --- SAVE ---
+        super().save(*args, **kwargs)
 
 
 class EventSpeakerThrough(BaseModel):

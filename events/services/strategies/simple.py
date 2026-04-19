@@ -2,11 +2,12 @@
 
 from .base import BaseRegistrationStrategy
 from events.utils import form_utils
-import events.forms
+import events.forms as forms
 
 from event_feedback.services.feedback_service import SurveyService
 
 class SimpleRegistrationStrategy(BaseRegistrationStrategy):
+
     def get_form(self, event, data=None):
         kwargs = {"initial": {"country": "DE"}} if data is None else {}
 
@@ -28,7 +29,13 @@ class SimpleRegistrationStrategy(BaseRegistrationStrategy):
         data["survey_link"] = survey.build_survey_link(member)
         return data
 
-    def get_success_message(self, event, member):
+    def get_success_message(self, event, member, newsletter=False):
         if member.attend_status == "waiting":
             return f"Sie wurden auf die Warteliste für die Veranstaltung {event} gesetzt."
-        return f"Vielen Dank für Ihre Anmeldung zur Veranstaltung {event}."
+        if event.get_first_day():
+            success_string = f"Vielen Dank für Ihre Anmeldung zur Veranstaltung {event.name} am {event.get_first_day()}."
+        else:
+            success_string = f"Vielen Dank für Ihre Anmeldung zur Veranstaltung {event}."
+        if newsletter:
+            success_string += " Vielen Dank für Ihr Interesse am Newsletter."
+        return success_string

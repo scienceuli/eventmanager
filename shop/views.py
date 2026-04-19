@@ -53,6 +53,7 @@ from mailings.models import InvoiceMessage
 from events.core_models import SiteSettings
 
 from shop.services.checkout_service import CheckoutService
+from payment.services.payment_service import PaymentService
 from events.utils.messages_utils import add_success, add_error
 
 
@@ -192,27 +193,6 @@ class OrderCreateView(FormView):
         context.update(context_update)
         return context
 
-    def add_success(self, message):
-        if message:
-            messages.success(self.request, message)
-
-    def add_error(self, message):
-        if message:
-            messages.error(self.request, message)
-
-    def handle_blacklist(self):
-        site_settings = SiteSettings.load()
-        messages.error(self.request, site_settings.blacklist_message)
-        self.cart.clear()
-        return redirect("shop:order-result", status="blacklist")
-
-    def apply_result_messages(self, result):
-        """Apply successes and errors from RegistrationResult to Django messages."""
-        for msg in result.successes:
-            messages_utils.add_success(self.request, msg)
-        for msg in result.errors:
-            messages_utils.add_error(self.request, msg)
-
     def finalize_response(self, has_success, has_error):
         if has_error and has_success:
             status = "partial"
@@ -236,7 +216,6 @@ class OrderCreateView(FormView):
 
         return self.finalize_response(result.success, result.has_error)
 
-
     def get_success_url(self):
         return reverse("shop:order-result", kwargs={"status": "ready"})
 
@@ -250,66 +229,16 @@ class OrderResultView(TemplateView):
 
 @staff_member_required
 def admin_order_pdf(request, order_id, process):
-    site_settings = SiteSettings.load()
-    context = {}
     order = get_object_or_404(Order, id=order_id)
-    template_path = "shop/pdf_invoice.html"
-
-    # if check_update_order(request, order):
-    #     update_order(order)
-
-    context["order"] = order
-    context["vfll_recipient_payment"] = site_settings.vfll_recipient_payment
-    context["vfll_bank_account"] = site_settings.vfll_bank_account
-    context["process"] = process
-    if process == "storno":
-        context["label"] = "Storno-Rechnung"
-        context["invoice_date"] = datetime.now()
-    elif process == "order":
-        context["label"] = "Rechnung"
-        if order.payment_date:
-            invoice_date = order.payment_date
-        else:
-            invoice_date = order.date_created
-        context["invoice_date"] = invoice_date
-
-    if process == "order":
-        context["order_items"] = OrderItem.objects.filter(order=order, status="r")
-    elif process == "storno":
-        context["order_items"] = OrderItem.objects.filter(order=order, status="c")
-    context["contains_action_price"] = any(
-        [
-            item.is_action_price
-            for item in OrderItem.objects.filter(order=order, status="r")
-        ]
-    )
-    # if order.discounted:
-    #     ust_footnote_counter = "2"
-    # else:
-    #     ust_footnote_counter = "1"
-    # context["ust_footnote_counter"] = ust_footnote_counter
-    response = render_to_pdf(template_path, context)
-
-    # to directly download the pdf we need attachment
-    # response['Content-Disposition'] = 'attachment; filename="report.pdf"'
-
-    # to view on browser we can remove attachment
-    filename = f"{process}_rechnung_{order.get_order_number}"
-
-    response["Content-Disposition"] = f'filename="{filename}.pdf"'
-
-    return response
+    service = PaymentService()
+    return service.generate_invoice_pdf(order, process)
 
 
 @staff_member_required
 def admin_order_pdf_and_mail(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    # set payment type to invoice
-    order.payment_type = "r"
-    order.save()
-    # call payment_completed
-    response = payment_completed(order_id)
-    # Redirect explicitly to the admin list view
+    service = PaymentService()
+    service.send_invoice_and_pdf(order)
     list_view_url = reverse(
         "admin:%s_%s_changelist" % (order._meta.app_label, order._meta.model_name)
     )
@@ -331,43 +260,13 @@ def invoice_report(request):
 @staff_member_required
 def reminder_mail(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    template_name = "reminder"
+    service = PaymentService()
+    success, error_message = service.send_reminder(order)
 
-    order_complete = check_order_complete(order)
-
-    if order.paid:
-        messages.error(request, f"Rechnung wurde bereits bezahlt")
-    elif not order_complete:
-        messages.error(
-            request, f"Bitte erst die Rechnung vervollständigen (Name, Email)"
-        )
+    if success:
+        messages.success(request, "Mahnung wurde verschickt")
     else:
-        addresses_list = [order.email]
-        addresses = {"to": addresses_list}
-        subject = f"Mahnung Rechnung {order.get_order_number}"
-        formatting_dict = {
-            "firstname": order.firstname,
-            "lastname": order.lastname,
-            "order_number": order.get_order_number,
-            "payment_date": order.payment_date.date().strftime("%d.%m.%Y"),
-            "events": ", ".join(
-                [event.name for event in order.get_registered_items_events()]
-            ),
-            "total_costs": order.get_total_cost(),
-        }
-
-        send_reminder_mail = send_email(
-            addresses,
-            subject,
-            settings.DEFAULT_FROM_EMAIL,
-            [settings.REPLY_TO_EMAIL],
-            template_name,
-            formatting_dict=formatting_dict,
-        )
-
-        if send_reminder_mail:
-            messages.success(request, f"Mahnung wurde verschickt")
-            order.reminder_sent_date = timezone.now()
+        messages.error(request, error_message)
 
     list_view_url = reverse(
         "admin:%s_%s_changelist" % (order._meta.app_label, order._meta.model_name)

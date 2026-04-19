@@ -153,11 +153,6 @@ urlpatterns = [
         name="event-detail-kopie",
     ),
     path("detail/<slug:slug>", EventDetailView.as_view(), name="event-detail"),
-    # path(
-    #     "detail/kopie-von-<slug:slug>",
-    #     EventDetailView.as_view(),
-    #     name="event-detail-kopie",
-    # ),  # the former urls of copied events
     path(
         "ec/detail/<slug:slug>",
         EventCollectionDetailView.as_view(),
@@ -233,7 +228,6 @@ urlpatterns = [
     path(
         "members_ft/export/excel/", export_ft_members_xls, name="export-members-ft-xls"
     ),
-    # re_path(r"^download/(?P<path>.*)$", serve, {"document_root": settings.MEDIA_ROOT}),
     re_path(r"^download/(?P<slug>[A-Za-z0-9_-]+)/$", download, name="pdf-download"),
     path("doc_download/<int:pk>/", doc_download, name="doc-download"),
     path(
