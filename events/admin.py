@@ -487,7 +487,7 @@ class EventMemberAdmin(admin.ModelAdmin):
             "Feedback",
             {
                 "classes": ("collapse",),
-                "fields": ("get_survey_link",)
+                "fields": ("get_survey_link", "has_submitted_feedback")
             }
         )
     )

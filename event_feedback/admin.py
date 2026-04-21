@@ -38,10 +38,10 @@ class QuestionAnswerInline(admin.TabularInline):
 
 @admin.register(SurveyResponse)
 class SurveyResponseAdmin(admin.ModelAdmin):
-    list_display = ("survey", "registration", "consent", "created_at")
+    list_display = ("survey", "consent", "created_at")
     inlines = [QuestionAnswerInline]
 
-    readonly_fields = ("survey", "registration", "consent", "final_comment")
+    readonly_fields = ("survey", "consent", "final_comment")
 
     def has_add_permission(self, request):
         return False

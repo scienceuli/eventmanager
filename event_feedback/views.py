@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404, render, redirect
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import Http404
-from .models import Survey, SurveyResponse, QuestionAnswer
+from .models import Survey
 from .forms import SurveyForm
 from events.models import Event, EventMember
 

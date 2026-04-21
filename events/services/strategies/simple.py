@@ -26,10 +26,8 @@ class SimpleRegistrationStrategy(BaseRegistrationStrategy):
         data.update(form_utils.get_additional_form_data(form, event, event.registration_form))
         data["attend_status"] = member.attend_status
         survey_service = SurveyService()
-        if hasattr(event, "survey"):
-            data["survey_info"] = f"Feedback-Link: {survey_service.build_survey_link(member)}"
-        else:
-            data["survey_info"] = ""
+        survey_service.ensure_survey(event)
+        data["survey_info"] = f"Feedback-Link: {survey_service.build_survey_link(member)}"
         return data
 
     def get_success_message(self, event, member, newsletter=False):

@@ -36,15 +36,17 @@ class SurveyService:
         return registration.event.survey
 
     def has_already_answered(self, registration):
-        return SurveyResponse.objects.filter(registration=registration).exists()
+        return registration.has_submitted_feedback
 
     def save_response(self, registration, survey, form):
         response = SurveyResponse.objects.create(
             survey=survey,
-            registration=registration,
             consent=form.cleaned_data["consent"],
             final_comment=form.cleaned_data["final_comment"],
         )
+
+        registration.has_submitted_feedback = True
+        registration.save(update_fields=["has_submitted_feedback"])
 
         for category in survey.categories.all():
             for q in category.questions.all():

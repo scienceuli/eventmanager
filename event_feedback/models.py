@@ -28,7 +28,6 @@ class SurveyQuestion(models.Model):
 
 class SurveyResponse(models.Model):
     survey = models.ForeignKey(Survey, on_delete=models.CASCADE)
-    registration = models.OneToOneField("events.EventMember", on_delete=models.CASCADE)
 
     consent = models.BooleanField()
     final_comment = models.TextField(blank=True)
