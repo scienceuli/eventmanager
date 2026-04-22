@@ -17,7 +17,6 @@ from events.sitemaps import EventSitemap
 
 # 2FA (conditionally loaded via USE_2FA setting)
 
-
 sitemaps = {
     "events": EventSitemap,
 }
@@ -101,7 +100,9 @@ urlpatterns = [
 
 if getattr(settings, "USE_2FA", False):
     from two_factor.urls import urlpatterns as tf_urls
+    from two_factor.admin import AdminSiteOTPRequired
     urlpatterns += [path("", include(tf_urls))]
+    admin.site.__class__ = AdminSiteOTPRequired
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
