@@ -192,7 +192,7 @@ USE_TZ = True
 
 # login
 # LOGIN_URL = "two_factor:login"
-LOGIN_URL = "users:login"
+LOGIN_URL = "account:login"
 LOGIN_REDIRECT_URL = "home"
 LOGOUT_REDIRECT_URL = "home"
 

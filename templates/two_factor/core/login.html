@@ -1,52 +1,65 @@
 {% extends "two_factor/_base.html" %}
 {% load i18n two_factor_tags %}
-
-
 {% block sub_content %}
-<div class="login-box">
-  <div class="login-logo">
-    <a href="#"><b>FOBI </b>Login</a>
-  </div>
-  <!-- /.login-logo -->
-  <div class="card">
-    <div class="card-body login-card-body">
-      <p class="login-box-msg">Bitte einloggen</p>
-
-      <form action="" method="post" class="space-y-4">
-        {% csrf_token %}
-        {% include "two_factor/_wizard_forms.html" %}
-
-        {# hidden submit button to enable [enter] key #}
-        <input type="hidden" value="" class="hidden" />
-
-        {% if other_devices %}
-        <p class="text-sm text-gray-600">{% trans "Or, alternatively, use one of your backup phones:" %}</p>
-        <div class="space-y-2">
-          {% for other in other_devices %}
-          <button name="challenge_device" value="{{ other.persistent_id }}" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded transition" type="submit">
-            {{ other|as_action }}
-          </button>
-          {% endfor %}
-        </div>
-        {% endif %}
-
-        {% if backup_tokens %}
-        <p class="text-sm text-gray-600">{% trans "As a last resort, you can use a backup token:" %}</p>
-        <button name="wizard_goto_step" type="submit" value="backup" class="w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded transition">
-          {% trans "Use Backup Token" %}
-        </button>
-        {% endif %}
-
-        {% include "two_factor/_wizard_actions.html" %}
-      </form>
-
-      <p class="mb-1">
-        <a href="{% url 'account:pwdreset' %}">Passwort vergessen?</a>
-      </p>
-    </div>
-    <!-- /.login-card-body -->
-  </div>
+<div class="text-center mb-6">
+    <span class="font-bold text-lg">FOBI</span>
+    <span class="text-lg">2FA Login</span>
 </div>
-<!-- /.login-box -->
 
+{% if wizard.steps.current == 'auth' %}
+<p class="text-center text-gray-600 mb-6">Bitte einloggen</p>
+{% elif wizard.steps.current == 'token' %}
+<p class="text-center text-gray-600 mb-6">{{ device|as_verbose_action }}</p>
+{% elif wizard.steps.current == 'backup' %}
+<p class="text-center text-gray-600 mb-6">
+    {% trans "Use a backup token to log in." %}
+</p>
+{% endif %}
+
+<form action="" method="post">
+    {% csrf_token %} {% include "two_factor/_wizard_forms.html" %}
+
+    <input type="submit" value="" hidden />
+
+    {% if other_devices %}
+    <p class="mt-4 text-sm text-gray-600">
+        {% trans "Or, alternatively, use one of your other authentication
+        methods:" %}
+    </p>
+    {% for other in other_devices %}
+    <button
+        name="challenge_device"
+        value="{{ other.persistent_id }}"
+        class="w-full mt-2 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300"
+        type="submit"
+    >
+        {{ other|as_action }}
+    </button>
+    {% endfor %}
+    {% endif %}
+    {% if backup_tokens %}
+    <hr class="my-4" />
+    <form action="" method="post">
+        {% csrf_token %}
+        <p class="text-sm text-gray-600">
+            {% trans "As a last resort, you can use a backup token:" %}
+        </p>
+        <button
+            name="wizard_goto_step"
+            type="submit"
+            value="backup"
+            class="w-full mt-2 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 text-sm"
+        >
+            {% trans "Use Backup Token" %}
+        </button>
+    </form>
+    {% endif %}
+    {% include "two_factor/_wizard_actions.html" %}
+</form>
+
+<p class="mt-4 text-sm">
+    <a href="{% url 'account:pwdreset' %}" class="text-vfllred hover:underline"
+        >Passwort vergessen?</a
+    >
+</p>
 {% endblock %}

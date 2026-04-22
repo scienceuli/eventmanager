@@ -1,7 +1,7 @@
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from django.views.generic import TemplateView
-
+from django.conf import settings
 
 from users.views import login_page, logout_page
 from users.forms import EmailValidationOnForgotPassword
@@ -11,14 +11,6 @@ from .forms import LoginForm, PwdResetForm, PwdResetConfirmForm
 app_name = "account"
 
 urlpatterns = [
-    # path("login/", login_page, name="login"),
-    # path("logout/", logout_page, name="logout"),
-    path(
-        "login/",
-        auth_views.LoginView.as_view(template_name="users/login.html", form_class=LoginForm),
-        name="login",
-    ),
-    path("logout/", auth_views.LogoutView.as_view(next_page="/account/login/"), name="logout"),
     path(
         "password_reset/",
         auth_views.PasswordResetView.as_view(
@@ -48,5 +40,17 @@ urlpatterns = [
         TemplateView.as_view(template_name="users/password_reset_complete.html"),
         name="password_reset_complete",
     ),
-
 ]
+
+urlpatterns += [
+    path("logout/", auth_views.LogoutView.as_view(next_page="/"), name="logout"),
+]
+
+if not getattr(settings, "USE_2FA", False):
+    urlpatterns += [
+        path(
+            "login/",
+            auth_views.LoginView.as_view(template_name="users/login.html", form_class=LoginForm),
+            name="login",
+        ),
+    ]

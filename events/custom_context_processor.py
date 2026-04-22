@@ -47,4 +47,8 @@ def dev_ribbon(request):
 
 def site_settings(request):
     home = Home.objects.first()  # or however you identify it
-    return {"home": home}
+    return {
+        "home": home,
+        "LOGIN_URL": settings.LOGIN_URL,
+        "USE_2FA": getattr(settings, "USE_2FA", False),
+    }

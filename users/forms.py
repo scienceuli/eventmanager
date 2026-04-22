@@ -11,7 +11,7 @@ class UserRegistrationForm(UserCreationForm):
         fields = ["username", "email", "password1", "password2"]
 
 
-class LoginForm(forms.Form):
+class LoginForm(AuthenticationForm):
     username = forms.CharField(
         widget=forms.TextInput(
             attrs={"class": "form-control", "type": "text", "placeholder": "Username"}
@@ -39,7 +39,7 @@ class PwdResetForm(PasswordResetForm):
             raise forms.ValidationError(
                 'Leider gibt es keinen User mit dieser E-Mail.')
         return email
-    
+
 class PwdResetConfirmForm(SetPasswordForm):
     new_password1 = forms.CharField(
         label='Neues Passwort', widget=forms.PasswordInput(
@@ -60,4 +60,3 @@ class EmailValidationOnForgotPassword(PasswordResetForm):
             )
             self.add_error("email", msg)
         return email
-

@@ -34,7 +34,7 @@ MEMBERSHIP_CHOICES = (
     ("sp", "Selfpublisher-Verband"),
     ("tt", "texttreff.de"),
     ("bd", "BDÜ"),
-    ("bv", "Börsenverein des deutschen Buchhandels, LV Bayern"),
+    ("bv", "Börsenverein des Deutschen Buchhandels, LV Bayern"),
     ("gt", "Goldegg Training (Alumni und Absolvent*innen)")
 )
 

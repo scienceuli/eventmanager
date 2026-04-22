@@ -15,16 +15,7 @@ import private_storage.urls
 from events.views import admin_event_pdf
 from events.sitemaps import EventSitemap
 
-# 2FA
-from two_factor.urls import urlpatterns as tf_urls
-# from two_factor.admin import AdminSiteOTPRequired
-
-
-# admin_site = OTPAdmin(name='OTPAdmin')
-# admin_site.register(User)
-# admin_site.register(TOTPDevice, TOTPDeviceAdmin)
-
-# admin.site.__class__ = AdminSiteOTPRequired
+# 2FA (conditionally loaded via USE_2FA setting)
 
 
 sitemaps = {
@@ -47,7 +38,6 @@ urlpatterns = [
     ),
     path("admin/", admin.site.urls),
     path("", include("events.urls")),
-    path('', include(tf_urls)),
     path("account/", include("users.urls")),
     # path("account/", include("django.contrib.auth.urls")),
     # path(
@@ -108,6 +98,10 @@ urlpatterns = [
     ),
 ]
 
+
+if getattr(settings, "USE_2FA", False):
+    from two_factor.urls import urlpatterns as tf_urls
+    urlpatterns += [path("", include(tf_urls))]
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
