@@ -1,9 +1,9 @@
 {% extends "two_factor/_base.html" %}
 {% load i18n two_factor_tags %}
+
 {% block sub_content %}
 <div class="text-center mb-6">
-    <span class="font-bold text-lg">FOBI</span>
-    <span class="text-lg">2FA Login</span>
+    <span class="font-bold text-lg">FOBI</span> <span class="text-lg">2FA Login</span>
 </div>
 
 {% if wizard.steps.current == 'auth' %}
@@ -11,55 +11,38 @@
 {% elif wizard.steps.current == 'token' %}
 <p class="text-center text-gray-600 mb-6">{{ device|as_verbose_action }}</p>
 {% elif wizard.steps.current == 'backup' %}
-<p class="text-center text-gray-600 mb-6">
-    {% trans "Use a backup token to log in." %}
-</p>
+<p class="text-center text-gray-600 mb-6">{% trans "Use a backup token to log in." %}</p>
+{% endif %}
+
+{% if wizard.form.non_field_errors %}
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+    {{ wizard.form.non_field_errors }}
+</div>
 {% endif %}
 
 <form action="" method="post">
-    {% csrf_token %} {% include "two_factor/_wizard_forms.html" %}
+    {% csrf_token %}
+    {% include "two_factor/_wizard_forms.html" %}
 
     <input type="submit" value="" hidden />
 
     {% if other_devices %}
-    <p class="mt-4 text-sm text-gray-600">
-        {% trans "Or, alternatively, use one of your other authentication
-        methods:" %}
-    </p>
+    <p class="mt-4 text-sm text-gray-600">{% trans "Or, alternatively, use one of your other authentication methods:" %}</p>
     {% for other in other_devices %}
-    <button
-        name="challenge_device"
-        value="{{ other.persistent_id }}"
-        class="w-full mt-2 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300"
-        type="submit"
-    >
-        {{ other|as_action }}
-    </button>
+    <button name="challenge_device" value="{{ other.persistent_id }}" class="w-full mt-2 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300" type="submit">{{ other|as_action }}</button>
     {% endfor %}
     {% endif %}
+
     {% if backup_tokens %}
     <hr class="my-4" />
-    <form action="" method="post">
-        {% csrf_token %}
-        <p class="text-sm text-gray-600">
-            {% trans "As a last resort, you can use a backup token:" %}
-        </p>
-        <button
-            name="wizard_goto_step"
-            type="submit"
-            value="backup"
-            class="w-full mt-2 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 text-sm"
-        >
-            {% trans "Use Backup Token" %}
-        </button>
-    </form>
+    <p class="text-sm text-gray-600">{% trans "As a last resort, you can use a backup token:" %}</p>
+    <button name="wizard_goto_step" type="submit" value="backup" class="w-full mt-2 bg-gray-200 text-gray-800 py-2 px-4 rounded hover:bg-gray-300 text-sm">{% trans "Use Backup Token" %}</button>
     {% endif %}
+
     {% include "two_factor/_wizard_actions.html" %}
 </form>
 
 <p class="mt-4 text-sm">
-    <a href="{% url 'account:pwdreset' %}" class="text-vfllred hover:underline"
-        >Passwort vergessen?</a
-    >
+    <a href="{% url 'account:pwdreset' %}" class="text-vfllred hover:underline">Passwort vergessen?</a>
 </p>
 {% endblock %}
