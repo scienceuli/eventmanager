@@ -6,6 +6,13 @@
     <span class="font-bold text-lg">FOBI</span> <span class="text-lg">2FA Login</span>
 </div>
 
+{% if user.is_authenticated and wizard.steps.current == 'auth' %}
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-800 px-4 py-3 rounded mb-4 text-sm">
+    Sie sind eingeloggt, aber haben noch kein 2FA-Gerät eingerichtet.
+    <a href="{% url 'two_factor:setup' %}" class="text-vfllred underline">Jetzt 2FA einrichten</a>
+</div>
+{% endif %}
+
 {% if wizard.steps.current == 'auth' %}
 <p class="text-center text-gray-600 mb-6">Bitte einloggen</p>
 {% elif wizard.steps.current == 'token' %}
