@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from django.conf import settings
 from django.db import transaction
 
 from events.services.registration import EventRegistrationService
@@ -26,6 +27,33 @@ class CheckoutService:
         self.order_service = OrderService(form, self.email)
         self.notification_service = NotificationService()
 
+    def _process_item(self, item, result):
+        """Register member and send notifications. Returns reg_result."""
+        event = item["event"]
+
+        reg_result = self.registration_service.register(
+            self.form, event
+        )
+
+        # collect messages
+        result.successes.extend(reg_result.successes)
+        result.errors.extend(reg_result.errors)
+
+        if reg_result.success:
+            result.success = True
+            strategy = get_strategy(event)
+            self.notification_service.send_notification_emails(
+                event,
+                self.form,
+                reg_result.member,
+                strategy,
+            )
+
+        if reg_result.errors:
+            result.has_error = True
+
+        return reg_result
+
     def execute(self) -> CheckoutResult:
         result = CheckoutResult()
 
@@ -35,35 +63,21 @@ class CheckoutService:
             with transaction.atomic():
 
                 for item in paid_items + free_items:
-                    event = item["event"]
-
-                    reg_result = self.registration_service.register(
-                        self.form, event
-                    )
-
-                    # collect messages
-                    result.successes.extend(reg_result.successes)
-                    result.errors.extend(reg_result.errors)
-
-                    if reg_result.success:
-                        result.success = True
-                        strategy = get_strategy(event)
-                        self.notification_service.send_notification_emails(
-                            event,
-                            self.form,
-                            reg_result.member,
-                            strategy,
-                        )
-
-                    if reg_result.errors:
-                        result.has_error = True
+                    reg_result = self._process_item(item, result)
 
                     # add to order if paid
                     if item in paid_items and reg_result.success:
-                        self.order_service.add_item(item)
+                        if getattr(settings, 'ONE_ORDER_ONE_INVOICE', False):
+                            # each paid item gets its own order + invoice
+                            item_order_service = OrderService(self.form, self.email)
+                            item_order_service.add_item(item)
+                            item_order_service.finalize()
+                        else:
+                            self.order_service.add_item(item)
 
-                # finalize order
-                self.order_service.finalize()
+                if not getattr(settings, 'ONE_ORDER_ONE_INVOICE', False):
+                    # single order for all items
+                    self.order_service.finalize()
 
                 # clear cart
                 self.cart.clear()

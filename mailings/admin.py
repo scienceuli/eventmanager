@@ -6,7 +6,7 @@ from django.contrib import admin
 
 from admin_confirm import AdminConfirmMixin, confirm_action
 
-from .models import InvoiceMessage
+from .models import InvoiceMessage, ConfirmationMessage
 from django.urls import reverse
 
 from mailqueue.admin import MailerAdmin  # Import base admin class
@@ -32,15 +32,15 @@ class InvoiceMessageAdmin(AdminConfirmMixin, MailerAdmin):
     @confirm_action
     def resend_emails_with_confirm(self, request, queryset):
         return super().resend_emails(request, queryset)
-    
+
     @confirm_action
     def send_failed_with_confirm(self, request, queryset):
         return super().send_failed(request, queryset)
-    
+
     @confirm_action
     def mark_unsent_with_confirm(self, request, queryset):
         return super().mark_unsent(request, queryset)
-    
+
     mark_unsent_with_confirm.short_description = "Markieren als ungesendet"
     send_failed_with_confirm.short_description = "Versenden fehlgeschlagen"
     resend_emails_with_confirm.short_description = "E-Mails senden"
@@ -60,11 +60,11 @@ class InvoiceMessageAdmin(AdminConfirmMixin, MailerAdmin):
         'mark_unsent_with_confirm',
         'set_mails_to_sent_with_confirm',
     ]
-    
-    
-    
 
-    
+
+
+
+
 
     def invoice_name_display(self, obj):
         return obj.invoice.name if obj.invoice else "keine Rechnung"
@@ -142,3 +142,45 @@ class SentMailsAdmin(admin.ModelAdmin):
     view_email_logs.short_description = "Email Logs"
 
 
+@admin.register(ConfirmationMessage)
+class ConfirmationMessageAdmin(AdminConfirmMixin, MailerAdmin):
+    model = ConfirmationMessage
+
+    list_display = [
+        "member_name_display",
+        "event_display",
+        "sent",
+        "last_attempt",
+    ]
+    list_filter = ["sent"]
+
+    @confirm_action
+    def resend_emails_with_confirm(self, request, queryset):
+        return super().resend_emails(request, queryset)
+
+    @confirm_action
+    def mark_unsent_with_confirm(self, request, queryset):
+        return super().mark_unsent(request, queryset)
+
+    resend_emails_with_confirm.short_description = "E-Mails senden"
+    mark_unsent_with_confirm.short_description = "Markieren als ungesendet"
+
+    actions = [
+        "resend_emails_with_confirm",
+        "mark_unsent_with_confirm",
+    ]
+
+    def member_name_display(self, obj):
+        if obj.confirmation and obj.confirmation.event_member:
+            member = obj.confirmation.event_member
+            return f"{member.lastname}, {member.firstname}"
+        return "—"
+
+    member_name_display.short_description = "Teilnehmer*in"
+
+    def event_display(self, obj):
+        if obj.confirmation and obj.confirmation.event_member:
+            return obj.confirmation.event_member.event.name
+        return "—"
+
+    event_display.short_description = "Veranstaltung"

@@ -917,6 +917,22 @@ class Event(BaseModel, HitCountMixin):
     def is_several_days(self):
         return self.event_days.count() > 1
 
+    @property
+    def date_string(self):
+        if not self.first_day:
+            return ""
+        if not self.last_day or self.first_day == self.last_day:
+            return f"am {self.first_day.strftime('%d.%m.%Y')}"
+        if self.first_day.month == self.last_day.month and self.first_day.year == self.last_day.year:
+            return f"vom {self.first_day.strftime('%d.')} bi {self.last_day.strftime('%d.%m.%Y')}"
+        if self.first_day.year == self.last_day.year:
+            return f"vom {self.first_day.strftime('%d.%m.')} bis {self.last_day.strftime('%d.%m.%Y')}"
+        return f"vom {self.first_day.strftime('%d.%m.%Y')} bis {self.last_day.strftime('%d.%m.%Y')}"
+
+    @property
+    def speaker_string(self):
+        return ", ".join(s.full_name for s in self.speaker.all())
+
     def current_hit_count(self):
         return self.hit_count.hits
 
@@ -1371,3 +1387,29 @@ class EventHighlight(BaseModel):
                 check=models.Q(id=1),
             ),
         ]
+
+
+class Confirmation(models.Model):
+    event_member = models.OneToOneField(
+        EventMember,
+        on_delete=models.CASCADE,
+        related_name="confirmation",
+    )
+    created = models.DateTimeField(auto_now_add=True)
+    docx_file = PrivateFileField(
+        upload_to="confirmations/",
+        null=True,
+        blank=True,
+    )
+    mail_sent_date = models.DateTimeField(
+        verbose_name="Mailversand",
+        null=True,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = "Teilnahmebescheinigung"
+        verbose_name_plural = "Teilnahmebescheinigungen"
+
+    def __str__(self):
+        return f"Teilnahmebescheinigung: {self.event_member.firstname} {self.event_member.lastname} ({self.event_member.event.name})"

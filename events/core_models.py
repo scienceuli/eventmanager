@@ -7,11 +7,28 @@ class SiteSettings(SingletonModel):
     blacklist_message = models.TextField(
         default="Bitte kontaktieren Sie uns direkt, um sich anzumelden."
     )
-
+    confirmation_place = models.CharField(
+        "Ort (Teilnahmebescheinigung)",
+        max_length=255,
+        blank=True,
+        default="",
+    )
+    confirmation_signatory_vfll = models.CharField(
+        "Unterzeichner*in (Teilnahmebescheinigung) VFLL",
+        max_length=255,
+        blank=True,
+        default="",
+    )
+    confirmation_signatory_speaker = models.CharField(
+        "Unterzeichner*in (Teilnahmebescheinigung) Dozent*in",
+        max_length=255,
+        blank=True,
+        default="",
+    )
 
     def __str__(self):
         return "Site Settings"
-    
+
 
 class EmailBlacklist(models.Model):
     email = models.EmailField(unique=True)

@@ -1,6 +1,9 @@
+import logging
 import markdown
 import io, csv
 from datetime import date, datetime
+
+logger = logging.getLogger(__name__)
 
 from django.contrib import admin, messages
 from django.contrib.admin.models import LogEntry, DELETION
@@ -39,6 +42,11 @@ from .actions import (
     create_surveys
 )
 
+from events.utils.confirmation_utils import (
+    create_confirmation_docx,
+    create_confirmation_mail,
+)
+
 from .validators import csv_content_validator
 
 from .models import (
@@ -67,6 +75,7 @@ from .models import (
     EventMemberRole,
     MemberRole,
     HeroSliderImage,
+    Confirmation,
 )
 
 from .core_models import SiteSettings, EmailBlacklist
@@ -444,6 +453,7 @@ class EventMemberAdmin(admin.ModelAdmin):
         "via_form",
         "mail_to_admin",
         "get_order_nr",
+        "confirmation_status",
     ]
     list_filter = ["event", MembershipFilter]
     search_fields = ("lastname", "firstname", "email", "event__name")
@@ -497,7 +507,54 @@ class EventMemberAdmin(admin.ModelAdmin):
         export_selected_objects,
         import_from_csv,
         copy_member_instances,
+        "create_confirmations",
     ]
+
+    def create_confirmations(self, request, queryset):
+        created_count = 0
+        skipped_count = 0
+        error_count = 0
+        error_messages = []
+        for member in queryset.select_related("event"):
+            if Confirmation.objects.filter(event_member=member).exists():
+                skipped_count += 1
+                continue
+            try:
+                confirmation = Confirmation.objects.create(event_member=member)
+                docx_ok = create_confirmation_docx(confirmation)
+                if docx_ok:
+                    create_confirmation_mail(confirmation)
+                    created_count += 1
+                else:
+                    error_count += 1
+                    error_messages.append(f"{member.firstname} {member.lastname}: DOCX-Erzeugung fehlgeschlagen")
+            except Exception as e:
+                error_count += 1
+                error_messages.append(f"{member.firstname} {member.lastname}: {e}")
+                logger.error("Error creating confirmation for member %s: %s", member.pk, e)
+        msg = f"{created_count} Teilnahmebescheinigung(en) erzeugt."
+        if skipped_count:
+            msg += f" {skipped_count} übersprungen (bereits vorhanden)."
+        if error_count:
+            msg += f" {error_count} Fehler: {'; '.join(error_messages)}"
+        self.message_user(request, msg, messages.SUCCESS if not error_count else messages.WARNING)
+
+    create_confirmations.short_description = "Teilnahmebescheinigungen erzeugen"
+
+    def confirmation_status(self, obj):
+        try:
+            conf = obj.confirmation
+        except Confirmation.DoesNotExist:
+            return "—"
+        if conf.mail_sent_date:
+            return format_html("✅ versendet")
+        try:
+            conf.message
+            return format_html("📧 Mail erzeugt")
+        except Exception:
+            return format_html("📄 erzeugt")
+
+    confirmation_status.short_description = "Bescheinigung"
 
     @admin.display(description="RechNr")
     def get_order_nr(self, obj):

@@ -22,3 +22,17 @@ class InvoiceMessage(MailerMessage):
     class Meta:
         verbose_name = "Rechnungs-Mail"
         verbose_name_plural = "Rechnungs-Mails"
+
+
+class ConfirmationMessage(MailerMessage):
+    confirmation = models.OneToOneField(
+        "events.Confirmation",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="message",
+    )
+
+    class Meta:
+        verbose_name = "Teilnahmebestätigungs-Mail"
+        verbose_name_plural = "Teilnahmebestätigungs-Mails"

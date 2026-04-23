@@ -265,3 +265,61 @@ class FinalizeTest(OrderServiceTestBase):
 
         invoice = Invoice.objects.filter(order=order).first()
         self.assertEqual(invoice.amount, order.get_total_cost())
+
+
+class OneOrderOneInvoiceIntegrationTest(OrderServiceTestBase):
+    """Integration test: ONE_ORDER_ONE_INVOICE creates separate orders+invoices."""
+
+    @override_settings(ORDER_DATE_DELAYED=False, ONE_ORDER_ONE_INVOICE=True)
+    @patch("invoices.models.Invoice.create_invoice_message")
+    def test_two_items_create_two_orders_and_invoices(self, mock_msg):
+        form = make_mock_form()
+
+        # Create members so get_registered_items_events works
+        EventMember.objects.create(
+            event=self.event,
+            firstname="Max",
+            lastname="Mustermann",
+            email="max@example.com",
+            attend_status="registered",
+        )
+        EventMember.objects.create(
+            event=self.event2,
+            firstname="Max",
+            lastname="Mustermann",
+            email="max@example.com",
+            attend_status="registered",
+        )
+
+        initial_order_count = Order.objects.count()
+        initial_invoice_count = Invoice.objects.count()
+
+        # Simulate ONE_ORDER_ONE_INVOICE: one OrderService per item
+        service1 = OrderService(form, "max@example.com")
+        service1.add_item(make_cart_item(self.event))
+        order1 = service1.finalize()
+
+        service2 = OrderService(form, "max@example.com")
+        service2.add_item(make_cart_item(self.event2, price=50, premium_price=70))
+        order2 = service2.finalize()
+
+        # Two separate orders created
+        self.assertEqual(Order.objects.count(), initial_order_count + 2)
+        self.assertNotEqual(order1.pk, order2.pk)
+
+        # Each order has exactly one item
+        self.assertEqual(order1.items.count(), 1)
+        self.assertEqual(order2.items.count(), 1)
+
+        # Each order has its own invoice
+        self.assertEqual(Invoice.objects.count(), initial_invoice_count + 2)
+        invoice1 = Invoice.objects.get(order=order1)
+        invoice2 = Invoice.objects.get(order=order2)
+        self.assertNotEqual(invoice1.pk, invoice2.pk)
+
+        # Invoice amounts match individual order totals
+        self.assertEqual(invoice1.amount, order1.get_total_cost())
+        self.assertEqual(invoice2.amount, order2.get_total_cost())
+
+        # Invoice numbers are different
+        self.assertNotEqual(invoice1.invoice_number, invoice2.invoice_number)

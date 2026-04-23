@@ -277,6 +277,7 @@ REST_FRAMEWORK = {
 
 # SESSION, SHOP
 CART_SESSION_ID = "cart"
+ONE_ORDER_ONE_INVOICE = False
 
 # django-paypal settings
 PAYPAL_BUY_BUTTON_IMAGE = (

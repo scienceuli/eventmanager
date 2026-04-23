@@ -24,6 +24,7 @@ coverage==5.5
 crispy-tailwind==0.5.0
 cssselect2==0.4.1
 defusedxml==0.7.1
+docxtpl==0.16.8
 Django==3.2.15
 django-3-jet==1.0.7
 django-admin-export-action==0.3.2

@@ -91,6 +91,7 @@ class CheckoutResultTest(TestCase):
         self.assertEqual(r2.successes, [])
 
 
+@override_settings(ONE_ORDER_ONE_INVOICE=False)
 class CheckoutExecuteSuccessTest(CheckoutServiceTestBase):
 
     @patch("shop.services.checkout_service.split_cart")
@@ -195,6 +196,7 @@ class CheckoutExecuteSuccessTest(CheckoutServiceTestBase):
         service.order_service.add_item.assert_called_once_with(paid_item)
 
 
+@override_settings(ONE_ORDER_ONE_INVOICE=False)
 class CheckoutExecuteErrorTest(CheckoutServiceTestBase):
 
     @patch("shop.services.checkout_service.split_cart")
@@ -286,6 +288,7 @@ class CheckoutExecuteErrorTest(CheckoutServiceTestBase):
         self.assertIn("Blacklisted", result.errors)
 
 
+@override_settings(ONE_ORDER_ONE_INVOICE=False)
 class CheckoutExecuteCartClearTest(CheckoutServiceTestBase):
 
     @patch("shop.services.checkout_service.split_cart")
@@ -336,6 +339,7 @@ class CheckoutExecuteCartClearTest(CheckoutServiceTestBase):
         service.cart.clear.assert_not_called()
 
 
+@override_settings(ONE_ORDER_ONE_INVOICE=False)
 class CheckoutNotificationTest(CheckoutServiceTestBase):
 
     @patch("shop.services.checkout_service.split_cart")
@@ -394,3 +398,118 @@ class CheckoutNotificationTest(CheckoutServiceTestBase):
         service.execute()
 
         service.notification_service.send_notification_emails.assert_not_called()
+
+
+class CheckoutOneOrderOneInvoiceTest(CheckoutServiceTestBase):
+
+    @override_settings(ONE_ORDER_ONE_INVOICE=True)
+    @patch("shop.services.checkout_service.split_cart")
+    @patch("shop.services.checkout_service.get_strategy")
+    @patch("shop.services.checkout_service.OrderService")
+    @patch.object(CheckoutService, "__init__", lambda self, form, cart: None)
+    def test_two_paid_items_create_two_orders(self, MockOrderService, mock_strategy, mock_split):
+        """With ONE_ORDER_ONE_INVOICE=True, each paid item gets its own OrderService."""
+        member = MagicMock()
+        reg_result = RegistrationResult(success=True, successes=["OK"])
+        reg_result.member = member
+
+        mock_reg_service = MagicMock()
+        mock_reg_service.register.return_value = reg_result
+
+        event2 = Event.objects.create(
+            name="Event Two",
+            category=self.category,
+            eventformat=self.eventformat,
+            location=self.location,
+            label="event-two",
+            price="50.00",
+            first_day=self.event.first_day,
+        )
+
+        item1 = make_cart_item(self.event)
+        item2 = make_cart_item(event2)
+        mock_split.return_value = ([item1, item2], [])
+
+        service = CheckoutService.__new__(CheckoutService)
+        service.form = make_mock_form()
+        service.cart = MagicMock()
+        service.email = "max@example.com"
+        service.registration_service = mock_reg_service
+        service.notification_service = MagicMock()
+        service.order_service = MagicMock()
+
+        result = service.execute()
+
+        self.assertTrue(result.success)
+        # OrderService should be instantiated twice (once per paid item)
+        self.assertEqual(MockOrderService.call_count, 2)
+        # Each instance should have add_item and finalize called once
+        for call_instance in MockOrderService.return_value.method_calls:
+            pass  # checked below
+        instances = [MockOrderService.return_value]
+        # Since mock returns same instance, check total calls
+        self.assertEqual(MockOrderService.return_value.add_item.call_count, 2)
+        self.assertEqual(MockOrderService.return_value.finalize.call_count, 2)
+        # The shared order_service should NOT have been used
+        service.order_service.add_item.assert_not_called()
+        service.order_service.finalize.assert_not_called()
+
+    @override_settings(ONE_ORDER_ONE_INVOICE=False)
+    @patch("shop.services.checkout_service.split_cart")
+    @patch("shop.services.checkout_service.get_strategy")
+    @patch.object(CheckoutService, "__init__", lambda self, form, cart: None)
+    def test_two_paid_items_default_creates_one_order(self, mock_strategy, mock_split):
+        """With ONE_ORDER_ONE_INVOICE=False, all paid items go into one order."""
+        member = MagicMock()
+        reg_result = RegistrationResult(success=True, successes=["OK"])
+        reg_result.member = member
+
+        mock_reg_service = MagicMock()
+        mock_reg_service.register.return_value = reg_result
+
+        item1 = make_cart_item(self.event)
+        item2 = make_cart_item(self.event_full)
+        mock_split.return_value = ([item1, item2], [])
+
+        service = CheckoutService.__new__(CheckoutService)
+        service.form = make_mock_form()
+        service.cart = MagicMock()
+        service.email = "max@example.com"
+        service.registration_service = mock_reg_service
+        service.notification_service = MagicMock()
+        service.order_service = MagicMock()
+
+        result = service.execute()
+
+        self.assertTrue(result.success)
+        self.assertEqual(service.order_service.add_item.call_count, 2)
+        service.order_service.finalize.assert_called_once()
+
+    @override_settings(ONE_ORDER_ONE_INVOICE=True)
+    @patch("shop.services.checkout_service.split_cart")
+    @patch("shop.services.checkout_service.get_strategy")
+    @patch.object(CheckoutService, "__init__", lambda self, form, cart: None)
+    def test_free_items_no_order_with_setting(self, mock_strategy, mock_split):
+        """Free items still don't create orders even with ONE_ORDER_ONE_INVOICE=True."""
+        member = MagicMock()
+        reg_result = RegistrationResult(success=True, successes=["Warteliste"])
+        reg_result.member = member
+
+        mock_reg_service = MagicMock()
+        mock_reg_service.register.return_value = reg_result
+
+        free_item = make_cart_item(self.event_full)
+        mock_split.return_value = ([], [free_item])
+
+        service = CheckoutService.__new__(CheckoutService)
+        service.form = make_mock_form()
+        service.cart = MagicMock()
+        service.email = "max@example.com"
+        service.registration_service = mock_reg_service
+        service.notification_service = MagicMock()
+        service.order_service = MagicMock()
+
+        result = service.execute()
+
+        self.assertTrue(result.success)
+        service.order_service.add_item.assert_not_called()
