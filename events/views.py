@@ -95,6 +95,7 @@ from events.utils.email_utils import send_email_after_registration, send_registr
 from events.utils.messages_utils import add_error, add_success
 
 from events.services.registration import EventRegistrationService
+from events.services.notification_service import NotificationService
 from events.services.export_service import ExportService
 from events.services.strategies import get_strategy
 
@@ -961,6 +962,13 @@ def event_add_member(request, slug):
 
             for msg in result.errors:
                 add_error(request, msg)
+
+            # send notification emails for non-shop registrations
+            if result.success:
+                notification_service = NotificationService()
+                notification_service.send_notification_emails(
+                    event, form, result.member, result.strategy
+                )
 
             # redirect to unified result page
             if result.success:

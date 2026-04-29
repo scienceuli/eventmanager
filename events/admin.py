@@ -42,11 +42,6 @@ from .actions import (
     create_surveys
 )
 
-from events.utils.confirmation_utils import (
-    create_confirmation_docx,
-    create_confirmation_mail,
-)
-
 from .validators import csv_content_validator
 
 from .models import (
@@ -91,6 +86,8 @@ from payment.services.payment_service import PaymentService
 from events.utils.utils import format_memberships
 from events.utils.email_utils import send_email
 
+from events.utils.confirmation_utils import create_confirmation_mail
+
 from .admin_views import hitcount_view
 
 from .email_template import EmailTemplate
@@ -105,6 +102,8 @@ from moodle.management.commands.moodle import (
 
 from .statistics import membership_statistics
 from event_feedback.services.feedback_service import SurveyService
+from events.services.confirmation_service import ConfirmationService
+from mailings.models import ConfirmationMessage
 
 # setting date format in admin page
 from django.conf.locale.de import formats as de_formats
@@ -512,29 +511,40 @@ class EventMemberAdmin(admin.ModelAdmin):
 
     def create_confirmations(self, request, queryset):
         created_count = 0
-        skipped_count = 0
+        updated_count = 0
         error_count = 0
         error_messages = []
+        conf_service = ConfirmationService()
+
         for member in queryset.select_related("event"):
-            if Confirmation.objects.filter(event_member=member).exists():
-                skipped_count += 1
-                continue
             try:
-                confirmation = Confirmation.objects.create(event_member=member)
-                docx_ok = create_confirmation_docx(confirmation)
-                if docx_ok:
+                confirmation, created = Confirmation.objects.get_or_create(event_member=member)
+                conf_service.make_pdf(confirmation)
+                if created:
                     create_confirmation_mail(confirmation)
                     created_count += 1
                 else:
-                    error_count += 1
-                    error_messages.append(f"{member.firstname} {member.lastname}: DOCX-Erzeugung fehlgeschlagen")
+                    try:
+                        mail = confirmation.message
+                        mail.attachment_set.all().delete()
+                        confirmation.pdf_file.open("rb")
+                        mail.add_attachment(confirmation.pdf_file)
+                        confirmation.pdf_file.close()
+                        mail.sent = False
+                        mail.last_attempt = None
+                        mail.save(update_fields=["sent", "last_attempt"])
+                    except ConfirmationMessage.DoesNotExist:
+                        create_confirmation_mail(confirmation)
+                    confirmation.mail_sent_date = None
+                    confirmation.save(update_fields=["mail_sent_date"])
+                    updated_count += 1
             except Exception as e:
                 error_count += 1
                 error_messages.append(f"{member.firstname} {member.lastname}: {e}")
                 logger.error("Error creating confirmation for member %s: %s", member.pk, e)
         msg = f"{created_count} Teilnahmebescheinigung(en) erzeugt."
-        if skipped_count:
-            msg += f" {skipped_count} übersprungen (bereits vorhanden)."
+        if updated_count:
+            msg += f" {updated_count} neu generiert (bereits vorhanden)."
         if error_count:
             msg += f" {error_count} Fehler: {'; '.join(error_messages)}"
         self.message_user(request, msg, messages.SUCCESS if not error_count else messages.WARNING)
@@ -546,13 +556,23 @@ class EventMemberAdmin(admin.ModelAdmin):
             conf = obj.confirmation
         except Confirmation.DoesNotExist:
             return "—"
+
         if conf.mail_sent_date:
-            return format_html("✅ versendet")
-        try:
-            conf.message
-            return format_html("📧 Mail erzeugt")
-        except Exception:
-            return format_html("📄 erzeugt")
+            status = "✅ versendet"
+        else:
+            try:
+                conf.message
+                status = "📧 Mail erzeugt"
+            except Exception:
+                status = "📄 erzeugt"
+
+        link = ""
+        if conf.pdf_file:
+            link = (f'<a href="{conf.pdf_file.url}" target="_blank">PDF</a>')
+
+        if link:
+            return mark_safe(link)
+        return status
 
     confirmation_status.short_description = "Bescheinigung"
 

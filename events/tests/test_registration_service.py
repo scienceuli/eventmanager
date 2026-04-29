@@ -170,6 +170,23 @@ class RegisterDuplicateTest(RegistrationServiceTestBase):
         self.assertTrue(result.success)
 
 
+class RegisterReturnsStrategyTest(RegistrationServiceTestBase):
+
+    @override_settings(NO_MEMBER_DUPLICATES_ALLOWED=True)
+    def test_result_contains_strategy(self):
+        form = make_mock_form()
+        result = self.service.register(form, self.event)
+        self.assertTrue(result.success)
+        self.assertIsNotNone(result.strategy)
+
+    @override_settings(NO_MEMBER_DUPLICATES_ALLOWED=True)
+    @patch("events.services.notification_service.send_registration_emails")
+    def test_register_does_not_send_notifications(self, mock_send):
+        form = make_mock_form()
+        self.service.register(form, self.event)
+        mock_send.assert_not_called()
+
+
 class RegistrationResultDataclassTest(TestCase):
 
     def test_default_values(self):

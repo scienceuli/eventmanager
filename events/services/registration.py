@@ -5,12 +5,12 @@ from events.services.strategies import get_strategy
 
 from events.utils import check_utils
 from events.utils.member_utils import create_member
-from events.utils.email_utils import send_registration_emails
 
 @dataclass
 class RegistrationResult:
     success: bool = False
     member: object = None
+    strategy: object = None
     errors: list[str] = field(default_factory=list)
     successes: list[str] = field(default_factory=list)
 
@@ -44,5 +44,6 @@ class EventRegistrationService:
         newsletter = form.cleaned_data.get("newsletter", False)
         result.successes.append(strategy.get_success_message(event, member, newsletter=newsletter))
         result.success = True
+        result.strategy = strategy
 
         return result

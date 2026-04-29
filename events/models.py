@@ -931,7 +931,7 @@ class Event(BaseModel, HitCountMixin):
 
     @property
     def speaker_string(self):
-        return ", ".join(s.full_name for s in self.speaker.all())
+        return "unter der Leitung von " + ", ".join(s.full_name for s in self.speaker.all())
 
     def current_hit_count(self):
         return self.hit_count.hits
@@ -1397,6 +1397,11 @@ class Confirmation(models.Model):
     )
     created = models.DateTimeField(auto_now_add=True)
     docx_file = PrivateFileField(
+        upload_to="confirmations/",
+        null=True,
+        blank=True,
+    )
+    pdf_file = PrivateFileField(
         upload_to="confirmations/",
         null=True,
         blank=True,
