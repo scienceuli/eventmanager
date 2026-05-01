@@ -239,6 +239,9 @@ def home(request):
     else:
         event_highlight = None
 
+    # next four events
+    next_events = Event.objects.filter(category__belongs_to_all_events=True).filter(first_day__gte=date.today()).order_by("first_day")[:4]
+
     # Get active hero slider images ordered by sequence
     hero_slider_images = HeroSliderImage.objects.filter(is_active=True).order_by(
         "order"
@@ -260,6 +263,7 @@ def home(request):
 
     context = {
         "event_highlight": event_highlight,
+        "next_events": next_events,
         "home": home,
         "hero_slider_images": hero_slider_images,
         "all_events_headline": settings.ALL_EVENTS_HEADLINE,
@@ -674,7 +678,6 @@ class EventCollectionDetailView(DetailView):
 class EventDetailView(HitCountDetailView):
     login_url = "login"
     model = Event
-    # template_name = "events/event_detail_V2.html"
     template_name = "events/event_detail_V3.html"
     context_object_name = "event"
 

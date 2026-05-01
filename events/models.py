@@ -49,6 +49,8 @@ class Home(BaseModel):
     name = models.CharField("Name", max_length=40)
     title = models.CharField("Titel", max_length=255, null=True, blank=True)
     text = models.TextField("Haupttext", blank=True)
+    info_text = RichTextUploadingField("Info-Text", blank=True)
+    next_events_headline = models.CharField("Nächste Veranstaltungen", max_length=255, null=True, blank=True)
     image = models.ImageField(
         default="images/vfll_logo_rot_Bild.jpg", upload_to="home/"
     )
