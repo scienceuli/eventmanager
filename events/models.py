@@ -70,7 +70,7 @@ class Home(BaseModel):
     impressum = RichTextField("Impressum", blank=True, config_name="short")
     legals = RichTextField("Rechtliche Hinweise", blank=True, config_name="short")
     privacy = RichTextField("Datenschutz", blank=True, config_name="short")
-    about_us = RichTextField("Über uns", blank=True, config_name="short")
+    about_us = RichTextField("Über uns", blank=True)
     nl_title = models.CharField(
         "Titel NL Signup", max_length=255, default="Bleiben Sie auf dem Laufenden"
     )
