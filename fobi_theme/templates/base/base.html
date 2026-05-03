@@ -85,13 +85,6 @@
                     class="block md:inline-block text-vfllred font-bold hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none"
                     >VFLL-Akademie</a
                 >
-                {% comment %}
-                <a
-                    href="{% url 'event-list' %}"
-                    class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none"
-                    >Alle Veranstaltungen</a
-                >
-                {% endcomment %}
                 <div
                     class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none"
                 >
@@ -126,32 +119,13 @@
             <div
                 class="toggle hidden md:flex w-full md:w-auto text-right text-bold mt-5 md:mt-0 border-t-2 border-gray-400 md:border-none"
             >
+                {% if home.about_us %}
+                <a class="px-3 py-3" href="{% url 'flatpage' page='about_us' %}">Über uns</a>
+                {% endif %}
+                <a class="px-3 py-3" href="{% url 'speakers' %}">Dozent*innen</a>
                 <a class="px-3 py-3" href="{% url 'faqs:index-view' %}">FAQ</a>
-                {% comment %}
-                <span class="cart px-3 py-3">
-                    {% with total_items=cart|length %}
-                    {% if total_items > 0 %}
-                    <i class="fa fa-shopping-cart" aria-hidden="true"></i>
-                    <a href="{% url 'shop:cart-detail' %}">
-                        <span
-                            class="inline-flex items-center rounded-full bg-vfllred px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-600/20"
-                            >{{ total_items }}</span
-                        >
-                        {% if cart.get_discounted_total_price %}€&thinsp;
-                        {{ cart.get_discounted_total_price }}
-                        {% endif %}
-                        {% if cart.get_total_price %}&thinsp;/&thinsp;€&thinsp;
-                        {{ cart.get_total_price }}{% endif %}
-                    </a>
-                    {% else %}
-                    <i class="fa fa-shopping-cart" aria-hidden="true"></i>
-                    <span
-                        class="inline-flex items-center rounded-full bg-vfllred px-2 py-1 text-xs font-medium text-white ring-1 ring-inset ring-green-600/20"
-                        >0</span
-                    >
-                    {% endif %} {% endwith %}
-                </span>
-                {% endcomment %}
+
+
                 {% if user.is_authenticated %}
                 <a class="px-3 py-3" href="{% url 'event-list-internal' %}"
                     >E</a
@@ -285,11 +259,6 @@
 
         {% block content %}
         {% endblock %}
-        {% if SHOW_NEWSLETTER_SIGNUP %}
-        <section class="newsletter-section">
-            {% include "vfllnl/mailing_signup.html" %}
-        </section>
-        {% endif %}
         {% include "events/footer.html" %}
         {% include 'base/js.html'%}
         {% block extrascript %}

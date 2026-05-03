@@ -6,7 +6,10 @@ from django.contrib import admin
 
 from admin_confirm import AdminConfirmMixin, confirm_action
 
+from django.conf import settings
+
 from .models import InvoiceMessage, ConfirmationMessage
+from vfllnl.models import NewsletterImage
 from django.urls import reverse
 
 from mailqueue.admin import MailerAdmin  # Import base admin class
@@ -184,3 +187,27 @@ class ConfirmationMessageAdmin(AdminConfirmMixin, MailerAdmin):
         return "—"
 
     event_display.short_description = "Veranstaltung"
+
+
+@admin.register(NewsletterImage)
+class NewsletterImageAdmin(admin.ModelAdmin):
+    list_display = ["title", "image_preview", "image_url_display", "uploaded_at"]
+    readonly_fields = ["image_preview", "image_url_display", "uploaded_at"]
+
+    def image_preview(self, obj):
+        if obj.image:
+            return mark_safe(f'<img src="{obj.image.url}" style="max-height: 80px;">')
+        return "—"
+    image_preview.short_description = "Vorschau"
+
+    def image_url_display(self, obj):
+        if obj.image:
+            domain = getattr(settings, "EMAIL_LINK_DOMAIN", "").rstrip("/")
+            full_url = f"{domain}{obj.image.url}"
+            return mark_safe(
+                f'<input type="text" value="{full_url}" readonly '
+                f'style="width: 500px; cursor: pointer;" '
+                f'onclick="this.select(); document.execCommand(\'copy\');">'
+            )
+        return "—"
+    image_url_display.short_description = "Bild-URL (zum Kopieren)"

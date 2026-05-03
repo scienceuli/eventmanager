@@ -16,6 +16,20 @@ class NewsletterSubscription(models.Model):
         return self.email
 
 
+class NewsletterImage(models.Model):
+    title = models.CharField("Titel", max_length=255)
+    image = models.ImageField("Bild", upload_to="newsletter_images/")
+    uploaded_at = models.DateTimeField("Hochgeladen am", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Newsletter-Bild"
+        verbose_name_plural = "Newsletter-Bilder"
+        ordering = ["-uploaded_at"]
+
+    def __str__(self):
+        return self.title
+
+
 class EmailTemplate(models.Model):
     subject = models.CharField(max_length=255)
     title = models.CharField(max_length=255, blank=True, null=True)

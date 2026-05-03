@@ -653,6 +653,8 @@ class Event(BaseModel, HitCountMixin):
         verbose_name="Freitextfeld Intro", null=True, blank=True, config_name="short"
     )
 
+    testimonials = RichTextUploadingField("Bewertungen", null=True, blank=True)
+
     # obsolete
     start_date = models.DateTimeField(
         verbose_name="Beginn",

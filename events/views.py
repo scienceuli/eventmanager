@@ -115,6 +115,7 @@ from .models import (
     EventImage,
     EventMember,
     EventHighlight,
+    EventSpeaker,
     EventSponsor,
     HeroSliderImage,
 )
@@ -287,13 +288,22 @@ def flatpage_view(request, page):
         "impressum": "Impressum",
         "legals": "Rechtliche Hinweise",
         "privacy": "Datenschutz",
-        "about_us": "Über die Akademie",
+        "about_us": "Über uns",
     }
     content = content_map.get(page)
     title = title_map.get(page)
     if not content:
         raise Http404("Page not found")
     return render(request, "events/flatpage.html", {"content": content, "title": title})
+
+
+def speakers_view(request):
+    from datetime import date
+    speakers = EventSpeaker.objects.filter(
+        event__pub_status="PUB",
+        event__first_day__gte=date.today(),
+    ).distinct().order_by("last_name")
+    return render(request, "events/speakers.html", {"speakers": speakers})
 
 
 def maintenance(request):

@@ -1384,6 +1384,12 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
         (
+            "Bewertungen",
+            {
+                "fields": ("testimonials",)
+            }
+        ),
+        (
             "Intern",
             {
                 "fields": ("slug", "uuid", "date_created", "date_modified"),

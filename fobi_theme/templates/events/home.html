@@ -274,6 +274,12 @@
     </div>
 </section>
 
+{% if SHOW_NEWSLETTER_SIGNUP %}
+<section class="newsletter-section">
+    {% include "vfllnl/mailing_signup.html" %}
+</section>
+{% endif %}
+
 {% endblock %}
 {% block extrascript %}
 {% endblock %}
