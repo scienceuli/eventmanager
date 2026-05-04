@@ -299,9 +299,15 @@ def flatpage_view(request, page):
 
 def speakers_view(request):
     from datetime import date
+    from django.db.models import Prefetch
+    future_published_events = Event.objects.filter(
+        pub_status="PUB",
+        first_day__gte=date.today(),
+    ).order_by("first_day")
     speakers = EventSpeaker.objects.filter(
-        event__pub_status="PUB",
-        event__first_day__gte=date.today(),
+        show=True
+    ).prefetch_related(
+        Prefetch("event_set", queryset=future_published_events, to_attr="upcoming_events")
     ).distinct().order_by("last_name")
     return render(request, "events/speakers.html", {"speakers": speakers})
 

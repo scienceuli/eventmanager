@@ -244,7 +244,7 @@
             {% if home.next_events_headline %}
                 {{ home.next_events_headline }}
             {% else %}
-                Nächste Veranstaltungen
+                Anstehende Fortbildungen
             {% endif %}
         </h2>
 
@@ -254,6 +254,10 @@
             <div
                 class="flex flex-col items-center justify-between col-span-3 px-8 py-12 space-y-4 bg-red-100 sm:rounded-xl shadow-lg transition duration-500 ease-in-out transform hover:-translate-y-1 hover:scale-110 mx-2 md:mx-0"
             >
+                <p class="text-base text-center text-gray-500">
+                    <span class="text-left pl-1 text-base">{% with event.event_days.all|first as first %}{{ first.start_date|date:"d.m.Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"d.m.Y" }}{% endif %}</span>
+
+                </p>
 
                 <h4 class="text-xl font-medium text-gray-700 text-center">
                     <a
@@ -262,10 +266,15 @@
                         >{{ event.name|linebreaks }}
                     </a>
                 </h4>
-                <p class="text-base text-center text-gray-500">
-                    <span class="text-left pl-1 text-base">{% with event.event_days.all|first as first %}{{ first.start_date|date:"d.m.Y"}}{% endwith %}{% if event.event_days.all|length > 1 %}&ndash;{{ event.get_last_day.start_date|date:"d.m.Y" }}{% endif %}</span>
+                <p class="text-base text-right text-gray-500">
+                    <a
+                        href="{% url 'event-detail' event.slug %}"
+                        class="nav-link"
+                        >Mehr Infos...
+                    </a>
 
                 </p>
+
             </div>
 
             {% endfor %}

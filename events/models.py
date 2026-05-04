@@ -297,6 +297,7 @@ class EventSpeaker(BaseModel):
     url = models.URLField("Website", blank=True)
     social_url = models.URLField("Soziale Medien", blank=True)
     image = models.ImageField(upload_to="speaker/", blank=True)
+    show = models.BooleanField("Anzeigen", default=True)
 
     class Meta:
         ordering = ("last_name",)

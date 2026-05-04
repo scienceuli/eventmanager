@@ -1008,6 +1008,11 @@ class EventSpeakerAdmin(admin.ModelAdmin):
                 )
             },
         ),
+        ("Zeigen auf Dozentenseite",
+            {
+            "fields": ("show",),
+            }
+        ),
         (
             "Änderungen",
             {
