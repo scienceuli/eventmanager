@@ -980,6 +980,7 @@ class EventSpeakerAdmin(admin.ModelAdmin):
     def unset_show(self, request, queryset):
         updated = queryset.update(show=False)
         self.message_user(request, f"{updated} Dozent*in(nen) werden nicht mehr angezeigt.")
+
     search_fields = (
         "=last_name",
         "=first_name",

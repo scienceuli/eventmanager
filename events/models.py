@@ -929,7 +929,7 @@ class Event(BaseModel, HitCountMixin):
         if not self.last_day or self.first_day == self.last_day:
             return f"am {self.first_day.strftime('%d.%m.%Y')}"
         if self.first_day.month == self.last_day.month and self.first_day.year == self.last_day.year:
-            return f"vom {self.first_day.strftime('%d.')} bi {self.last_day.strftime('%d.%m.%Y')}"
+            return f"vom {self.first_day.strftime('%d.')} bis {self.last_day.strftime('%d.%m.%Y')}"
         if self.first_day.year == self.last_day.year:
             return f"vom {self.first_day.strftime('%d.%m.')} bis {self.last_day.strftime('%d.%m.%Y')}"
         return f"vom {self.first_day.strftime('%d.%m.%Y')} bis {self.last_day.strftime('%d.%m.%Y')}"
