@@ -963,7 +963,7 @@ class EventExternalSponsorThroughInline(admin.TabularInline):
 
 
 class EventSpeakerAdmin(admin.ModelAdmin):
-    list_display = ("last_name", "first_name", "email")
+    list_display = ("last_name", "first_name", "email", "show",)
     ordering = (
         "last_name",
         "first_name",
