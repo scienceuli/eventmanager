@@ -964,10 +964,22 @@ class EventExternalSponsorThroughInline(admin.TabularInline):
 
 class EventSpeakerAdmin(admin.ModelAdmin):
     list_display = ("last_name", "first_name", "email", "show",)
+    list_filter = ("show",)
     ordering = (
         "last_name",
         "first_name",
     )
+    actions = ["set_show", "unset_show"]
+
+    @admin.action(description="Auf Dozentenseite anzeigen")
+    def set_show(self, request, queryset):
+        updated = queryset.update(show=True)
+        self.message_user(request, f"{updated} Dozent*in(nen) werden angezeigt.")
+
+    @admin.action(description="Von Dozentenseite entfernen")
+    def unset_show(self, request, queryset):
+        updated = queryset.update(show=False)
+        self.message_user(request, f"{updated} Dozent*in(nen) werden nicht mehr angezeigt.")
     search_fields = (
         "=last_name",
         "=first_name",
