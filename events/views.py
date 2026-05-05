@@ -241,7 +241,7 @@ def home(request):
         event_highlight = None
 
     # next four events
-    next_events = Event.objects.filter(category__belongs_to_all_events=True).filter(first_day__gte=date.today()).order_by("first_day")[:4]
+    next_events = Event.objects.filter(category__belongs_to_all_events=True).filter(status='active').filter(first_day__gte=date.today()).order_by("first_day")[:4]
 
     # Get active hero slider images ordered by sequence
     hero_slider_images = HeroSliderImage.objects.filter(is_active=True).order_by(
