@@ -16,7 +16,7 @@ from unidecode import unidecode
 import markdown
 
 from django.db import transaction
-from django.db.models import Max, Q, Sum, Count
+from django.db.models import Max, Q, Sum, Count, F
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import request, HttpResponse, Http404
 from django.contrib import messages
@@ -240,8 +240,13 @@ def home(request):
     else:
         event_highlight = None
 
-    # next four events
-    next_events = Event.objects.filter(category__belongs_to_all_events=True).filter(status='active').filter(first_day__gte=date.today()).order_by("first_day")[:4]
+    # next four events — exclude full events (registered members >= capacity)
+    next_events = (
+        Event.objects.filter(category__belongs_to_all_events=True, status='active', first_day__gte=date.today())
+        .annotate(registered_count=Count('members', filter=Q(members__attend_status='registered')))
+        .filter(Q(capacity__isnull=True) | Q(registered_count__lt=F('capacity')))
+        .order_by("first_day")[:4]
+    )
 
     # Get active hero slider images ordered by sequence
     hero_slider_images = HeroSliderImage.objects.filter(is_active=True).order_by(
