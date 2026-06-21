@@ -34,6 +34,7 @@ class F26RegistrationStrategy(BaseRegistrationStrategy):
 
     def build_formatting_dict(self, form, event, member):
         data = form_utils.get_personal_form_data(form)
+        data.update(form_utils.get_additional_form_data(form, event, "f26"))
         data.update(form_utils.get_f26_form_data(form))
         data["attend_status"] = "registered"
         return data
