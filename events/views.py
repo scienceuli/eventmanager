@@ -1,177 +1,155 @@
-import os
+import ast
 import csv
 import json
-import ast
 import logging
+import os
 from datetime import date, datetime
-import pandas as pd
 from decimal import Decimal
 from itertools import chain
 
-from openpyxl import Workbook
-from .export_excel import ExportExcelAction
-from openpyxl.styles import Font
-from unidecode import unidecode
-
 import markdown
-
-from django.db import transaction
-from django.db.models import Max, Q, Sum, Count, F
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import request, HttpResponse, Http404
-from django.contrib import messages
-from django.utils import timezone
-from django.urls import reverse_lazy, reverse
-
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.contrib.auth.decorators import login_required
-from django.contrib.admin.views.decorators import staff_member_required
-
-from django.contrib.auth.models import User, Group
-
-from django.core.mail import send_mail, BadHeaderError
-
-from django.contrib.auth.mixins import UserPassesTestMixin, PermissionRequiredMixin
-from django.core.exceptions import PermissionDenied
-
-from django.contrib.auth.decorators import login_required, user_passes_test
-
-from django.conf import settings
-
-from django.views.generic import (
-    ListView,
-    CreateView,
-    UpdateView,
-    DetailView,
-    DeleteView,
-    FormView,
-)
-
-from hitcount.views import HitCountDetailView
-
+import pandas as pd
 from bootstrap_modal_forms.generic import (
     BSModalCreateView,
-    BSModalUpdateView,
-    BSModalReadView,
     BSModalDeleteView,
     BSModalFormView,
+    BSModalReadView,
+    BSModalUpdateView,
 )
-
+from django.conf import settings
+from django.contrib import messages
+from django.contrib.admin.views.decorators import staff_member_required
+from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin,
+    PermissionRequiredMixin,
+    UserPassesTestMixin,
+)
+from django.contrib.auth.models import Group, User
+from django.core.exceptions import PermissionDenied
+from django.core.mail import BadHeaderError, send_mail
+from django.db import transaction
+from django.db.models import Count, F, Max, Q, Sum
+from django.http import Http404, HttpResponse, request
+from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse, reverse_lazy
+from django.utils import timezone
+from django.views.generic import (
+    CreateView,
+    DeleteView,
+    DetailView,
+    FormView,
+    ListView,
+    UpdateView,
+)
 from django_tables2 import SingleTableView
-
+from hitcount.views import HitCountDetailView
 from meta.views import Meta
-
-from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from openpyxl import Workbook
+from openpyxl.styles import Font
 from rest_framework import permissions, status
 from rest_framework.decorators import (
     api_view,
     permission_classes,
     throttle_classes,
 )
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
+from rest_framework.views import APIView
+from unidecode import unidecode
 
-from events.filter import EventFilter
-from events.actions import style_output_file, convert_boolean_field
+from events.actions import convert_boolean_field, style_output_file
 from events.decorators import check_user_able_to_see_page
-
+from events.filter import EventFilter
+from events.services.export_service import ExportService
+from events.services.notification_service import NotificationService
+from events.services.registration import EventRegistrationService
+from events.services.strategies import get_strategy
+from events.utils import form_utils
+from events.utils.email_utils import (
+    send_email_after_registration,
+    send_registration_emails,
+)
+from events.utils.member_utils import create_member
+from events.utils.messages_utils import add_error, add_success
 from events.utils.utils import (
-    boolean_translate,
-    yes_no_to_boolean,
-    make_bar_plot_from_dict,
-    get_utilisations,
-    update_boolean_values,
-    convert_data_date,
-    convert_boolean_field,
-    convert_html_to_text,
-    remove_linebreaks,
     add_to_newsletter,
+    boolean_translate,
+    convert_boolean_field,
+    convert_data_date,
+    convert_html_to_text,
+    get_utilisations,
+    make_bar_plot_from_dict,
+    remove_linebreaks,
+    update_boolean_values,
+    yes_no_to_boolean,
 )
 
-from events.utils import form_utils
-
-from events.utils.member_utils import create_member
-from events.utils.email_utils import send_email_after_registration, send_registration_emails
-from events.utils.messages_utils import add_error, add_success
-
-from events.services.registration import EventRegistrationService
-from events.services.notification_service import NotificationService
-from events.services.export_service import ExportService
-from events.services.strategies import get_strategy
-
+from .export_excel import ExportExcelAction
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
 logging.basicConfig(filename="eventmanager.log", encoding="utf-8", level=logging.ERROR)
 
-from .models import (
-    Home,
-    EventCategory,
-    EventCollection,
-    Event,
-    EventLocation,
-    EventOrganizer,
-    EventImage,
-    EventMember,
-    EventHighlight,
-    EventSpeaker,
-    EventSponsor,
-    HeroSliderImage,
-)
-
-from .core_models import SiteSettings
-
-from shop.models import OrderItem
-
-from .tables import EventMembersTable, FTEventMembersTable, MVEventMembersTable
-
-from .forms import (
-    EventDayFormSet,
-    EventLocationModelForm,
-    EventLocationNMModelForm,
-    EventOrganizerModelForm,
-    EventOrganizerNMModelForm,
-    EventModelForm,
-    EventMemberForm,
-    EventDocumentFormSet,
-    Symposium2022Form,
-    Symposium2024Form,
-    SymposiumForm,
-    MV2023Form,
-    MV2025Form,
-    AddMemberForm,
-    MemberForm,
-    EventUpdateCapacityForm,
-    EventCategoryFilterForm,
-    FTEventMemberForm,
-    FT24EventMemberForm,
-    WelcomeMemberForm,
-)
-
-from events.admin import EventMemberAdmin
-from shop.admin import OrderItemAdmin
-
-from shop.forms import CartAddEventForm
-
-from .api import call
-
-from .serializers import EventSerializer
-
-from .choices import (
-    MEMBERSHIP_CHOICES,
-    MEMBERSHIP_CHOICES_24_FULL,
-    MEMBER_TYPE_CHOICES,
-    FOOD_PREFERENCE_CHOICES,
-    BOOKING_CHOICES_27,
-    BOOKING_CHOICES_28,
-)
-
 import itertools
+import locale
 
 from wkhtmltopdf.views import PDFTemplateResponse
 
-import locale
+from events.admin import EventMemberAdmin
+from shop.admin import OrderItemAdmin
+from shop.forms import CartAddEventForm
+from shop.models import OrderItem
+
+from .api import call
+from .choices import (
+    BOOKING_CHOICES_27,
+    BOOKING_CHOICES_28,
+    FOOD_PREFERENCE_CHOICES,
+    MEMBER_TYPE_CHOICES,
+    MEMBERSHIP_CHOICES,
+    MEMBERSHIP_CHOICES_24_FULL,
+)
+from .core_models import SiteSettings
+from .forms import (
+    AddMemberForm,
+    EventCategoryFilterForm,
+    EventDayFormSet,
+    EventDocumentFormSet,
+    EventLocationModelForm,
+    EventLocationNMModelForm,
+    EventMemberForm,
+    EventModelForm,
+    EventOrganizerModelForm,
+    EventOrganizerNMModelForm,
+    EventUpdateCapacityForm,
+    FT24EventMemberForm,
+    FTEventMemberForm,
+    MemberForm,
+    MV2023Form,
+    MV2025Form,
+    Symposium2022Form,
+    Symposium2024Form,
+    SymposiumForm,
+    WelcomeMemberForm,
+)
+from .models import (
+    Event,
+    EventCategory,
+    EventCollection,
+    EventHighlight,
+    EventImage,
+    EventLocation,
+    EventMember,
+    EventOrganizer,
+    EventSpeaker,
+    EventSponsor,
+    HeroSliderImage,
+    Home,
+)
+from .serializers import EventSerializer
+from .tables import EventMembersTable, FTEventMembersTable, MVEventMembersTable
 
 yes_no_dict = {
     "y": True,
@@ -188,11 +166,6 @@ def is_member_of_mv_orga(user):
 
 def is_member_of_ft_orga(user):
     return user.groups.filter(name="ft_orga").exists()
-
-
-def choices_to_string(choices_list, choices):
-    label_list = [label for value, label in choices if value in choices_list]
-    return ", ".join(label_list)
 
 
 def choices_to_display(choice, choices):
@@ -242,9 +215,17 @@ def home(request):
 
     # next four events — exclude full events (registered members >= capacity)
     next_events = (
-        Event.objects.filter(category__belongs_to_all_events=True, status='active', first_day__gte=date.today())
-        .annotate(registered_count=Count('members', filter=Q(members__attend_status='registered')))
-        .filter(Q(capacity__isnull=True) | Q(registered_count__lt=F('capacity')))
+        Event.objects.filter(
+            category__belongs_to_all_events=True,
+            status="active",
+            first_day__gte=date.today(),
+        )
+        .annotate(
+            registered_count=Count(
+                "members", filter=Q(members__attend_status="registered")
+            )
+        )
+        .filter(Q(capacity__isnull=True) | Q(registered_count__lt=F("capacity")))
         .order_by("first_day")[:4]
     )
 
@@ -304,18 +285,29 @@ def flatpage_view(request, page):
 
 def speakers_view(request):
     from datetime import date
-    from django.db.models import Prefetch, Count, Q
+
+    from django.db.models import Count, Prefetch, Q
+
     future_published_events = Event.objects.filter(
         pub_status="PUB",
         first_day__gte=date.today(),
     ).order_by("first_day")
-    speakers = EventSpeaker.objects.filter(
-        show=True
-    ).prefetch_related(
-        Prefetch("event_set", queryset=future_published_events, to_attr="upcoming_events")
-    ).annotate(
-        event_count=Count("event", filter=Q(event__pub_status="PUB", event__first_day__gte=date.today()))
-    ).distinct().order_by("-event_count", "last_name")
+    speakers = (
+        EventSpeaker.objects.filter(show=True)
+        .prefetch_related(
+            Prefetch(
+                "event_set", queryset=future_published_events, to_attr="upcoming_events"
+            )
+        )
+        .annotate(
+            event_count=Count(
+                "event",
+                filter=Q(event__pub_status="PUB", event__first_day__gte=date.today()),
+            )
+        )
+        .distinct()
+        .order_by("-event_count", "last_name")
+    )
     return render(request, "events/speakers.html", {"speakers": speakers})
 
 
@@ -970,7 +962,7 @@ def event_add_member(request, slug):
     form_template = form_utils.get_form_template(event.registration_form)
 
     # special case (unchanged if needed)
-    if event.label == "ffl_mv_2022":
+    if event.label == "ffl_mv_2026":
         ws_utilisations, tour_utilisations = get_utilisations(event)
 
     # -----------------------------
@@ -1016,7 +1008,6 @@ def event_add_member(request, slug):
             "payment_button_text": payment_button_text,
         },
     )
-
 
 
 # moodle
@@ -1491,7 +1482,11 @@ def members_dashboard_view(request):
 @login_required
 @user_passes_test(is_member_of_mv_orga)
 def ft_members_dashboard_view(request):
+    from .choices import TOUR_CHOICES_2026, WS2026_CHOICES
     from .parameters import ws_limits
+
+    WS2026_REVERSE = {label: key for key, label in WS2026_CHOICES}
+    TOUR_CHOICES_2026_REVERSE = {label: key for key, label in TOUR_CHOICES_2026}
 
     ws_dict = {}
     ws_utilisation = {"I": 0, "II": 0, "III": 0, "IV": 0, "V": 0, "VI": 0}
@@ -1499,12 +1494,13 @@ def ft_members_dashboard_view(request):
     tour_dict = {}
     tour_utilisation = {"I": 0, "II": 0}
 
-    for member in EventMember.objects.filter(event__label="ffl_mv_2024"):
-        if member.data.get("ws2022"):
-            if member.data["ws2022"] in settings.WS_LIMITS.keys():
-                ws_utilisation[member.data["ws2022"]] = (
-                    ws_utilisation[member.data["ws2022"]] + 1
-                )
+    for member in EventMember.objects.filter(event__label="ffl_mv_2026"):
+        print(f"member data: {member.data}")
+        if member.data.get("ws2026"):
+            ws_key = WS2026_REVERSE.get(member.data["ws2026"])
+            print(f"ws_key: {ws_key}")
+            if ws_key and ws_key in settings.WS_LIMITS.keys():
+                ws_utilisation[ws_key] = ws_utilisation[ws_key] + 1
     for key in ws_utilisation.keys():
         ws_dict[key] = (
             str(ws_utilisation[key]) + " (" + str(settings.WS_LIMITS[key]) + ")"
@@ -1521,12 +1517,12 @@ def ft_members_dashboard_view(request):
 
     del ws_combined["VI"]
 
-    for member in EventMember.objects.filter(event__label="ffl_mv_2024"):
+    for member in EventMember.objects.filter(event__label="ffl_mv_2026"):
         if member.data.get("tour"):
-            if member.data["tour"] in settings.TOUR_LIMITS.keys():
-                tour_utilisation[member.data["tour"]] = (
-                    tour_utilisation[member.data["tour"]] + 1
-                )
+            tour_key = TOUR_CHOICES_2026_REVERSE.get(member.data["tour"])
+
+            if tour_key and tour_key in settings.TOUR_LIMITS.keys():
+                tour_utilisation[tour_key] = tour_utilisation[tour_key] + 1
     for key in tour_utilisation.keys():
         tour_dict[key] = (
             str(tour_utilisation[key]) + " (" + str(settings.TOUR_LIMITS[key]) + ")"
@@ -1542,11 +1538,11 @@ def ft_members_dashboard_view(request):
     }
 
     # create bar plot of  utilisations
-    ws_plot_div = make_bar_plot_from_dict(ws_combined, "Teilnehmer")
-    tour_plot_div = make_bar_plot_from_dict(tour_combined, "Teilnehmer")
+    ws_plot_div = make_bar_plot_from_dict(ws_combined, "Workshops")
+    tour_plot_div = make_bar_plot_from_dict(tour_combined, "Rahmenprogramm")
     context = {
         "count_members_of_mv": EventMember.objects.filter(
-            event__label="ffl_mv_2024"
+            event__label="ffl_mv_2026"
         ).count(),
         "ws_dict": ws_dict,
         "tour_dict": tour_dict,
@@ -1559,7 +1555,7 @@ def ft_members_dashboard_view(request):
 
 @staff_member_required
 def ft_report(request):
-    qs = EventMember.objects.filter(event__label="ffl_mv_2024")
+    qs = EventMember.objects.filter(event__label="ffl_mv_2026")
     template_name = "admin/events/ft_report.html"
     return render(request, template_name, {"members": qs, "number_members": len(qs)})
 

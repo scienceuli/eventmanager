@@ -137,12 +137,12 @@
                 >
 
                 {% endif %}
-                {% if user|has_group:"mv_orga" %} {% comment %}<a
+                {% if user|has_group:"mv_orga" %}
+                <a
                     class="px-3 py-3"
-                    href="{% url 'members' event=event_in_frontend %}"
-                    >TN</a
+                    href="{% url 'ft-members-dashboard' %}"
+                    >FT</a
                 >
-                {% endcomment %}
 
                 <div
                     class="block md:inline-block text-red hover:text-gray-400 px-3 py-3 border-b-2 border-gray-400 md:border-none"

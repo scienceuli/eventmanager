@@ -1,23 +1,18 @@
-import re
-import logging
-from bs4 import BeautifulSoup
 import ast
-
+import logging
+import re
 from smtplib import SMTPException
 
 import pandas as pd
 import plotly.express as px
+from bs4 import BeautifulSoup
+from django.conf import settings
+from django.core.mail import BadHeaderError, EmailMessage
+from django.http import HttpResponse
 from plotly.offline import plot
 
-from django.core.mail import EmailMessage, BadHeaderError
-
-from django.conf import settings
-from django.http import HttpResponse
-
 from events.email_template import EmailTemplate
-
 from events.parameters import ws_limits
-
 from vfllnl.models import NewsletterSubscription
 
 logger = logging.getLogger(__name__)
@@ -48,14 +43,14 @@ def find_duplicates_in_list(L):
     return list(seen2)
 
 
-def make_bar_plot_from_dict(data, y_string):
+def make_bar_plot_from_dict(data, x_string):
     # using pandas dataframe
     df = pd.DataFrame.from_dict(data, orient="index").reset_index()
-    df.columns = ["ws", "Teiln", "frei"]
+    df.columns = [x_string, "Teiln", "frei"]
     print(df)
 
     fig = px.bar(
-        df, x="ws", y=["Teiln", "frei"], color_discrete_sequence=["red", "green"]
+        df, x=x_string, y=["Teiln", "frei"], color_discrete_sequence=["red", "green"]
     )
     fig.update_yaxes(title_text="Teiln.")
     plt_div = plot(fig, output_type="div")
@@ -147,6 +142,6 @@ def format_memberships(code):
         "bd": "Bundesverband der Dolmetscher und Übersetzer (BdÜ)",
         "vfll": "VFLL",
         "bv": "Börsenverein des deutschen Buchhandels, LV Bayern",
-        "gt": "Goldegg Training (Alumni und Absolvent*innen)"
+        "gt": "Goldegg Training (Alumni und Absolvent*innen)",
     }
     return translator.get(code, "unbekannt")

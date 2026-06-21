@@ -1,7 +1,8 @@
-from .simple import SimpleRegistrationStrategy
-from .mv import MVRegistrationStrategy
-from .f24 import F24RegistrationStrategy
 from .f import FRegistrationStrategy
+from .f24 import F24RegistrationStrategy
+from .f26 import F26RegistrationStrategy
+from .mv import MVRegistrationStrategy
+from .simple import SimpleRegistrationStrategy
 
 
 def get_strategy(event):
@@ -10,6 +11,7 @@ def get_strategy(event):
         "w": SimpleRegistrationStrategy(),
         "m": MVRegistrationStrategy(),
         "f24": F24RegistrationStrategy(),
+        "f26": F26RegistrationStrategy(),
         "f": FRegistrationStrategy(),
     }
 

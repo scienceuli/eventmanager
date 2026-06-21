@@ -1,42 +1,34 @@
-import uuid
-import json
 import ast
+import json
 import sys
+import uuid
+from datetime import date, datetime
 from decimal import Decimal
-from datetime import datetime
-from datetime import date
+
 from bs4 import BeautifulSoup
-
+from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField
+from django.conf import settings
 from django.contrib.auth.models import Group
-
+from django.contrib.contenttypes.fields import GenericRelation
+from django.core.exceptions import ValidationError
+from django.core.signing import TimestampSigner
 from django.db import models
 from django.db.models import F, Sum
-from django.conf import settings
 from django.db.models.fields import related
-from django.utils import timezone
+from django.template.defaultfilters import slugify, truncatechars
 from django.urls import reverse
-from django.template.defaultfilters import slugify
-from django.core.exceptions import ValidationError
-from django.template.defaultfilters import truncatechars
-from django.contrib.contenttypes.fields import GenericRelation
-from django.core.signing import TimestampSigner
-
-from ckeditor_uploader.fields import RichTextUploadingField
-from ckeditor.fields import RichTextField
-
+from django.utils import timezone
 from embed_video.fields import EmbedVideoField
-
-from hitcount.models import HitCountMixin, HitCount
-
-from .abstract import BaseModel, AddressModel
-from .managers import ShownEventCategoriesManager
-
-from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
+from hitcount.models import HitCount, HitCountMixin
 
 from events.utils.utils import find_duplicates_in_list
-
 from shop.models import OrderItem
 from shop.utils import premium_price
+
+from .abstract import AddressModel, BaseModel
+from .choices import PUB_STATUS_CHOICES, REGIO_GROUP_CHOICES
+from .managers import ShownEventCategoriesManager
 
 
 class Home(BaseModel):
@@ -50,7 +42,9 @@ class Home(BaseModel):
     title = models.CharField("Titel", max_length=255, null=True, blank=True)
     text = models.TextField("Haupttext", blank=True)
     info_text = RichTextUploadingField("Info-Text", blank=True)
-    next_events_headline = models.CharField("Nächste Veranstaltungen", max_length=255, null=True, blank=True)
+    next_events_headline = models.CharField(
+        "Nächste Veranstaltungen", max_length=255, null=True, blank=True
+    )
     image = models.ImageField(
         default="images/vfll_logo_rot_Bild.jpg", upload_to="home/"
     )
@@ -622,6 +616,7 @@ class Event(BaseModel, HitCountMixin):
         ("m", "MV/ZW"),
         ("f", "Fachtagung 2022/MV"),
         ("f24", "Fachtagung 2024/MV"),
+        ("f26", "Fachtagung 2026/MV"),
     )
 
     registration_form = models.CharField(
@@ -928,7 +923,10 @@ class Event(BaseModel, HitCountMixin):
             return ""
         if not self.last_day or self.first_day == self.last_day:
             return f"am {self.first_day.strftime('%d.%m.%Y')}"
-        if self.first_day.month == self.last_day.month and self.first_day.year == self.last_day.year:
+        if (
+            self.first_day.month == self.last_day.month
+            and self.first_day.year == self.last_day.year
+        ):
             return f"vom {self.first_day.strftime('%d.')} bis {self.last_day.strftime('%d.%m.%Y')}"
         if self.first_day.year == self.last_day.year:
             return f"vom {self.first_day.strftime('%d.%m.')} bis {self.last_day.strftime('%d.%m.%Y')}"
@@ -936,7 +934,9 @@ class Event(BaseModel, HitCountMixin):
 
     @property
     def speaker_string(self):
-        return "unter der Leitung von " + ", ".join(s.full_name for s in self.speaker.all())
+        return "unter der Leitung von " + ", ".join(
+            s.full_name for s in self.speaker.all()
+        )
 
     def current_hit_count(self):
         return self.hit_count.hits
@@ -1008,7 +1008,9 @@ class Event(BaseModel, HitCountMixin):
         if is_new and not self.slug:
             max_length = self._meta.get_field("slug").max_length
 
-            last_id = Event.objects.order_by("-id").values_list("id", flat=True).first() or 0
+            last_id = (
+                Event.objects.order_by("-id").values_list("id", flat=True).first() or 0
+            )
 
             base_name = self.name.replace("Kopie von ", "")
             self.slug = slugify(f"{base_name}-{last_id + 1}")[:max_length]
@@ -1017,7 +1019,9 @@ class Event(BaseModel, HitCountMixin):
         if is_new and not self.label:
             base_name = self.name.replace("Kopie von ", "").partition(" ")[0]
 
-            last_id = Event.objects.order_by("-id").values_list("id", flat=True).first() or 0
+            last_id = (
+                Event.objects.order_by("-id").values_list("id", flat=True).first() or 0
+            )
 
             self.label = f"{base_name}-{date.today().year}-{last_id + 1}"
 

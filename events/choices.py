@@ -35,7 +35,7 @@ MEMBERSHIP_CHOICES = (
     ("tt", "texttreff.de"),
     ("bd", "BDÜ"),
     ("bv", "Börsenverein des Deutschen Buchhandels, LV Bayern"),
-    ("gt", "Goldegg Training (Alumni und Absolvent*innen)")
+    ("gt", "Goldegg Training (Alumni und Absolvent*innen)"),
 )
 
 MEMBERSHIP_CHOICES_24_FULL = (
@@ -49,6 +49,16 @@ MEMBERSHIP_CHOICES_24_FULL = (
     ("sp", "Selfpublisher-Verband"),
     ("tt", "texttreff.de"),
     ("vdu", "VDÜ"),
+)
+
+MEMBERSHIP_CHOICES_MV_2026 = (
+    ("vfll", "VFLL"),
+    ("vdu", "VdÜ"),
+    ("bf", "BücherFrauen"),
+    ("jv", "Junge Verlagsmenschen"),
+    ("il", "Illustratoren Organisation"),
+    ("sp", "Selfpublisher-Verband"),
+    ("at", "ATICOM"),
 )
 
 
@@ -87,6 +97,28 @@ MEMBER_TYPE_CHOICES_VFLL = (
     ("e", "Ehrenmitglied"),
 )
 
+WS2026_CHOICES = (
+    ("I", "Workshop »Unconscious Bios«, 11:00-12:30"),
+    (
+        "II",
+        "Workshop »May the emotional force be with you: Wie sich exclusive Sprache anfühlt«",
+    ),
+    (
+        "III",
+        "Workshop »Ein Backbuch für alle? Ein Praxislabor für Sprache, Barrierefreiheit und KI«",
+    ),
+    (
+        "IV",
+        "Workshop »KI im Lektorat. Nutzen erkennen, Risiken abwägen, Verantwortung zeigen«",
+    ),
+    (
+        "V",
+        "Workshop »Das werd ich so nicht stehenlassen – Argumentationshilfen für den Umgang mit Menschen mit fragwürdiger oder diskriminierender Rhetorik'",
+    ),
+    ("VI", "Textwerkstatt"),
+    ("-", "Ich nehme an keinem Workshop teil."),
+)
+
 WS2022_CHOICES = (
     ("I", "I Wertschätzender Sprachgebrauch mit gendersensibler Sprache"),
     ("II", "II Konfliktgestaltung in belletristischen Texten"),
@@ -95,6 +127,15 @@ WS2022_CHOICES = (
     ("V", "V Honorare – realistisch, angemessen … und durchsetzbar?"),
     ("VI", "VI Sprechen & Stimme – vom Umgang mit der Standardaussprache"),
     ("-", "Ich nehme an keinem Workshop teil."),
+)
+
+TOUR_CHOICES_2026 = (
+    (
+        "I",
+        "Wilhelm-Hack-Museum, Führung »Politik am Küchentisch«, 15:40 vor Ort/14:40 Tagungshotel",
+    ),
+    ("II", "Rhein Walk, Beginn 16:30 vor Ort/15:45 ab Tagungshotel"),
+    ("-", "Ich nehme an keinem Programm teil."),
 )
 
 TOUR_CHOICES = (

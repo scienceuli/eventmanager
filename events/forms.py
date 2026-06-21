@@ -1,54 +1,46 @@
 # from ctypes import HRESULT
-from django.utils import timezone
-
-from django import forms
-from django.utils.safestring import mark_safe
-from django.utils.translation import gettext_lazy as _
-from django_tables2 import CheckBoxColumn
-from django.core.validators import validate_email
-from django.utils.html import escape
-from django.contrib.admin.widgets import AdminDateWidget
-from jinja2 import ChainableUndefined
-
-from regex import B
-from tinymce.widgets import TinyMCE
-from entangled.forms import EntangledModelForm
-
-
+from bootstrap_modal_forms.forms import BSModalForm, BSModalModelForm
+from crispy_forms.bootstrap import InlineCheckboxes, InlineRadios, PrependedAppendedText
 from crispy_forms.helper import FormHelper
 from crispy_forms.layout import (
-    Layout,
-    Fieldset,
     HTML,
-    Div,
-    Submit,
     ButtonHolder,
-    Row,
     Column,
+    Div,
     Field,
+    Fieldset,
+    Layout,
+    Row,
+    Submit,
 )
-from crispy_forms.bootstrap import PrependedAppendedText, InlineRadios, InlineCheckboxes
-
+from django import forms
+from django.contrib.admin.widgets import AdminDateWidget
+from django.core.validators import validate_email
+from django.forms.models import inlineformset_factory
+from django.utils import timezone
+from django.utils.html import escape
+from django.utils.safestring import mark_safe
+from django.utils.translation import gettext_lazy as _
 from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
-
-from django.forms.models import inlineformset_factory
-
-from bootstrap_modal_forms.forms import BSModalModelForm, BSModalForm
+from django_tables2 import CheckBoxColumn
+from entangled.forms import EntangledModelForm
+from jinja2 import ChainableUndefined
+from regex import B
+from tinymce.widgets import TinyMCE
 
 from events.models import (
     Event,
     EventCategory,
-    EventDocument,
     EventDay,
-    EventMember,
+    EventDocument,
     EventLocation,
+    EventMember,
     EventOrganizer,
 )
 
 from .api_models import VfllMemberEmail
-
-from .widgets import RelatedFieldWidgetCanAddWithModal, MyRadioSelect
+from .widgets import MyRadioSelect, RelatedFieldWidgetCanAddWithModal
 
 
 class CustomCheckbox(Field):
@@ -317,17 +309,20 @@ class EventModelForm(forms.ModelForm):
 
 
 from .choices import (
-    MEMBERSHIP_CHOICES,
     ATTENTION_CHOICES,
-    MEMBER_TYPE_CHOICES,
-    MEMBERSHIP_CHOICES_24_FULL,
-    TAKES_PART_CHOICES,
-    WS2022_CHOICES,
-    TOUR_CHOICES,
-    FOOD_PREFERENCE_CHOICES,
     BOOKING_CHOICES_27,
     BOOKING_CHOICES_28,
     BOOLEAN_CHOICES,
+    FOOD_PREFERENCE_CHOICES,
+    MEMBER_TYPE_CHOICES,
+    MEMBERSHIP_CHOICES,
+    MEMBERSHIP_CHOICES_24_FULL,
+    MEMBERSHIP_CHOICES_MV_2026,
+    TAKES_PART_CHOICES,
+    TOUR_CHOICES,
+    TOUR_CHOICES_2026,
+    WS2022_CHOICES,
+    WS2026_CHOICES,
     YES_NO_CHOICES,
 )
 
@@ -682,8 +677,8 @@ class SymposiumForm(forms.Form):
                 "email",
                 HTML(
                     """
-                    <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse 
-                    ist Voraussetzung für die Zusendung eines Zugangscodes für das digitale Wahltool und des Links für die Videokonferenz. 
+                    <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse
+                    ist Voraussetzung für die Zusendung eines Zugangscodes für das digitale Wahltool und des Links für die Videokonferenz.
                     </p>
                     """
                 ),
@@ -706,8 +701,8 @@ class SymposiumForm(forms.Form):
                 "Einverständniserklärung",
                 HTML(
                     """
-                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig, 
-                    um den technisch-organisatorischen Zugang zur Veranstaltung zu 
+                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig,
+                    um den technisch-organisatorischen Zugang zur Veranstaltung zu
                     gewährleisten.</i></p>
                     """
                 ),
@@ -727,16 +722,16 @@ class SymposiumForm(forms.Form):
                 "Einverständniserklärung",
                 HTML(
                     """
-                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig, 
-                    um den technisch-organisatorischen Zugang zur Veranstaltung zu 
+                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig,
+                    um den technisch-organisatorischen Zugang zur Veranstaltung zu
                     gewährleisten.</i></p>
                     """
                 ),
                 "zw_check",
                 HTML(
                     """
-                    <p class="mt-4"><b>Falls ihr euch für die „Zukunftswerkstatt Freies Lektorat“ 
-                    angemeldet habt und doch nicht teilnehmen könnt, 
+                    <p class="mt-4"><b>Falls ihr euch für die „Zukunftswerkstatt Freies Lektorat“
+                    angemeldet habt und doch nicht teilnehmen könnt,
                     bitten wir euch um eine frühzeitige Absage per <br/>
                     E-Mail an: geschaeftsstelle@vfll.de. </b></p>
                     """
@@ -744,13 +739,13 @@ class SymposiumForm(forms.Form):
                 HTML(
                     """
                     <p class="mt-4"><b>Datenschutzhinweis:</b><br/>
-                    Wir verwenden deine Angaben ausschließlich zur Durchführung 
-                    der Veranstaltungen des Verbands der Freien Lektorinnen und 
-                    Lektoren e.V. Deine Daten werden nicht an unbefugte Dritte 
-                    weitergegeben. Verantwortlich im Sinne der DSGVO ist der 
+                    Wir verwenden deine Angaben ausschließlich zur Durchführung
+                    der Veranstaltungen des Verbands der Freien Lektorinnen und
+                    Lektoren e.V. Deine Daten werden nicht an unbefugte Dritte
+                    weitergegeben. Verantwortlich im Sinne der DSGVO ist der
                     Vorstand des Verbands der Freien Lektorinnen und Lektoren e.V.,
-                    Geschäftsstelle, Büro Seehausen + Sandberg, 
-                    Merseburger Straße 5, 10823 Berlin.</p>                    
+                    Geschäftsstelle, Büro Seehausen + Sandberg,
+                    Merseburger Straße 5, 10823 Berlin.</p>
                     """
                 ),
                 css_class="border-b-2 border-gray-900 pb-2 mb-4",
@@ -880,8 +875,8 @@ class MV2023Form(forms.Form):
                 "email",
                 HTML(
                     """
-                    <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse 
-                    ist Voraussetzung für die Zusendung eines Zugangscodes für das digitale Wahltool und des Links für die Videokonferenz. 
+                    <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse
+                    ist Voraussetzung für die Zusendung eines Zugangscodes für das digitale Wahltool und des Links für die Videokonferenz.
                     </p>
                     """
                 ),
@@ -900,8 +895,8 @@ class MV2023Form(forms.Form):
                 "Einverständniserklärung",
                 HTML(
                     """
-                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig, 
-                    um den technisch-organisatorischen Zugang zur Veranstaltung zu 
+                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig,
+                    um den technisch-organisatorischen Zugang zur Veranstaltung zu
                     gewährleisten.</i></p>
                     """
                 ),
@@ -917,13 +912,13 @@ class MV2023Form(forms.Form):
                 HTML(
                     """
                     <p class="mt-4"><b>Datenschutzhinweis:</b><br/>
-                    Wir verwenden deine Angaben ausschließlich zur Durchführung 
-                    der Veranstaltungen des Verbands der Freien Lektorinnen und 
-                    Lektoren e.V. Deine Daten werden nicht an unbefugte Dritte 
-                    weitergegeben. Verantwortlich im Sinne der DSGVO ist der 
+                    Wir verwenden deine Angaben ausschließlich zur Durchführung
+                    der Veranstaltungen des Verbands der Freien Lektorinnen und
+                    Lektoren e.V. Deine Daten werden nicht an unbefugte Dritte
+                    weitergegeben. Verantwortlich im Sinne der DSGVO ist der
                     Vorstand des Verbands der Freien Lektorinnen und Lektoren e.V.,
-                    Geschäftsstelle, Büro Seehausen + Sandberg, 
-                    Merseburger Straße 5, 10823 Berlin.</p>                    
+                    Geschäftsstelle, Büro Seehausen + Sandberg,
+                    Merseburger Straße 5, 10823 Berlin.</p>
                     """
                 ),
                 css_class="border-b-2 border-gray-900 pb-2 mb-4",
@@ -1013,7 +1008,7 @@ class MV2025Form(forms.Form):
         required=False,
         help_text="(Kostenfrei; nur für VFLL-Mitglieder)",
     )
-    
+
     vote_transfer = forms.CharField(
         label="Ich nehme an der Mitgliederversammlung nicht teil und übertrage als ordentliches Mitglied meine Stimme für alle Abstimmungen und Wahlen inhaltlich unbegrenzt an:",
         widget=forms.TextInput(attrs={"placeholder": "Stimmübertragung an"}),
@@ -1048,9 +1043,9 @@ class MV2025Form(forms.Form):
                 "email",
                 HTML(
                     """
-                    <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse 
-                    ist Voraussetzung für die Zusendung 
-                    der Einwahldaten zur Tagung und zum digitalen Wahltool der Mitgliederversammlung. 
+                    <p>Bitte beachten: Die Angabe einer aktuellen E-Mail-Adresse
+                    ist Voraussetzung für die Zusendung
+                    der Einwahldaten zur Tagung und zum digitalen Wahltool der Mitgliederversammlung.
                     </p>
                     """
                 ),
@@ -1071,8 +1066,8 @@ class MV2025Form(forms.Form):
                 "Einverständniserklärung",
                 HTML(
                     """
-                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig, 
-                    um den technisch-organisatorischen Zugang zur Veranstaltung zu 
+                    <p><i>Die Zustimmung zur Einverständniserklärung ist notwendig,
+                    um den technisch-organisatorischen Zugang zur Veranstaltung zu
                     gewährleisten.</i></p>
                     """
                 ),
@@ -1088,13 +1083,13 @@ class MV2025Form(forms.Form):
                 HTML(
                     """
                     <p class="mt-4"><b>Datenschutzhinweis:</b><br/>
-                    Wir verwenden deine Angaben ausschließlich zur Durchführung 
-                    der Veranstaltungen des Verbands der Freien Lektorinnen und 
-                    Lektoren e.V. Deine Daten werden nicht an unbefugte Dritte 
-                    weitergegeben. Verantwortlich im Sinne der DSGVO ist der 
+                    Wir verwenden deine Angaben ausschließlich zur Durchführung
+                    der Veranstaltungen des Verbands der Freien Lektorinnen und
+                    Lektoren e.V. Deine Daten werden nicht an unbefugte Dritte
+                    weitergegeben. Verantwortlich im Sinne der DSGVO ist der
                     Vorstand des Verbands der Freien Lektorinnen und Lektoren e.V.,
-                    Geschäftsstelle, Büro Seehausen + Sandberg, 
-                    Merseburger Straße 5, 10823 Berlin.</p>                    
+                    Geschäftsstelle, Büro Seehausen + Sandberg,
+                    Merseburger Straße 5, 10823 Berlin.</p>
                     """
                 ),
                 css_class="border-b-2 border-gray-900 pb-2 mb-4",
@@ -1359,9 +1354,9 @@ class Symposium2024Form(forms.Form):
                 "phone",
                 HTML(
                     """
-                    <p class='mb-2'>Ich bin damit einverstanden, dass meine Kontakt- und Anmeldedaten zur Durchführung der Anmeldung verarbeitet werden und vor Ort auf nicht frei 
-                    zugänglichen Anmeldelisten aufgeführt sind. 
-                    Weiterhin bin ich damit einverstanden, dass ausschließlich mein Vor- und Nachname mit Wohnort auf einer eventuell vor Ort aushängenden 
+                    <p class='mb-2'>Ich bin damit einverstanden, dass meine Kontakt- und Anmeldedaten zur Durchführung der Anmeldung verarbeitet werden und vor Ort auf nicht frei
+                    zugänglichen Anmeldelisten aufgeführt sind.
+                    Weiterhin bin ich damit einverstanden, dass ausschließlich mein Vor- und Nachname mit Wohnort auf einer eventuell vor Ort aushängenden
                     Teilnahmeliste aufgeführt ist.</p>
                     <p><span class='font-bold'>Datenschutzhinweis:</span> Wir verwenden Ihre Angaben ausschließlich zur Durchführung der Veranstaltungen des Verbands der freien Lektorinnen und Lektoren e. V. Ihre Daten werden nicht an unbefugte Dritte weitergegeben. Verantwortlich im Sinne der DSGVO ist der Vorstand des Verbands der Freien Lektorinnen und Lektoren e. V., Geschäftsstelle, Büro Seehausen + Sandberg, Merseburger Straße 5, 10823 Berlin.</p>
                     """
@@ -1373,9 +1368,9 @@ class Symposium2024Form(forms.Form):
                 CustomCheckbox("takes_part_in_ft"),
                 HTML(
                     """
-                    <p class='ml-4'>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht. 
-                    Ausgewählte Aufnahmen können in den digitalen und den gedruckten Medien des Verbands 
-                    veröffentlicht werden (z.&nbsp;B. Website, Facebook, X, Leitfaden Freies Lektorat, Broschüre „Gemeinsam für Textqualität“). 
+                    <p class='ml-4'>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht.
+                    Ausgewählte Aufnahmen können in den digitalen und den gedruckten Medien des Verbands
+                    veröffentlicht werden (z.&nbsp;B. Website, Facebook, X, Leitfaden Freies Lektorat, Broschüre „Gemeinsam für Textqualität“).
                     <br/>Mit deren Verwendung bin ich einverstanden.</p>
                     """
                 ),
@@ -1389,9 +1384,9 @@ class Symposium2024Form(forms.Form):
                 CustomCheckbox("having_lunch"),
                 HTML(
                     """
-                    <p class='ml-4'>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht. 
-                    Ausgewählte Aufnahmen können in den digitalen und den gedruckten Medien des Verbands 
-                    veröffentlicht werden (z.&nbsp;B. Website, Facebook, X, Leitfaden Freies Lektorat, Broschüre „Gemeinsam für Textqualität“). 
+                    <p class='ml-4'>Auf dieser Veranstaltung werden Fotos, ggf. Film- und Tonaufnahmen der Teilnehmenden gemacht.
+                    Ausgewählte Aufnahmen können in den digitalen und den gedruckten Medien des Verbands
+                    veröffentlicht werden (z.&nbsp;B. Website, Facebook, X, Leitfaden Freies Lektorat, Broschüre „Gemeinsam für Textqualität“).
                     <br/>Mit deren Verwendung bin ich einverstanden.</p>
                     """
                 ),
@@ -1414,8 +1409,8 @@ class Symposium2024Form(forms.Form):
                 "5. Zimmerbuchung",
                 HTML(
                     """
-                    <p class='mb-2'>Die Übernachtungen im Tagungshaus BBZ sind hier verbindlich zu buchen 
-                    (alle Preise inkl. MwSt.). Die Bestätigung und Rechnungsabwicklung erfolgt nach Anmeldeschluss durch das BBZ, 
+                    <p class='mb-2'>Die Übernachtungen im Tagungshaus BBZ sind hier verbindlich zu buchen
+                    (alle Preise inkl. MwSt.). Die Bestätigung und Rechnungsabwicklung erfolgt nach Anmeldeschluss durch das BBZ,
                     die Übernachtungskosten sind somit nicht mit dem Tagungsbeitrag zu überweisen.</p>
 
                     """
@@ -1457,7 +1452,7 @@ class Symposium2024Form(forms.Form):
                     </ul>
                     </p>
                     <p class='mt-2 mb-2'>
-                    Darin enthalten sind die Kosten für die Fachtagung inklusive Mittagessen und Pausenverpflegung am Samstag. 
+                    Darin enthalten sind die Kosten für die Fachtagung inklusive Mittagessen und Pausenverpflegung am Samstag.
                     <b>Nicht enthalten</b> sind Rahmenprogramm, Netzwerkabend und Festabend, Unterkunft, Anreise.</p>
                     <p>Die Teilnahme an der MV ist kostenfrei.</p>
                     """
@@ -1658,7 +1653,6 @@ class FTEventMemberForm(EntangledModelForm):
 
 
 class FT24EventMemberForm(EntangledModelForm):
-
     # def __init__(self, *args, **kwargs):
     #     # Pop the 'instance' kwarg to access the Member instance
     #     instance = kwargs.pop("instance", None)
@@ -2162,3 +2156,347 @@ class Symposium2022Form(forms.Form):
     #         )
 
     #     return nomember
+
+
+class Symposium2026Form(forms.Form):
+    def member_type_label(self):
+        return [
+            label
+            for value, label in self.fields["member_type"].choices
+            if value in self["member_type"].value()
+        ]
+
+    firstname = forms.CharField(
+        label="Vorname", widget=forms.TextInput(attrs={"placeholder": "Vorname"})
+    )
+    lastname = forms.CharField(
+        label="Nachname", widget=forms.TextInput(attrs={"placeholder": "Nachname"})
+    )
+    address_line = forms.CharField(
+        label="Adresszusatz",
+        widget=forms.TextInput(attrs={"placeholder": "Adresszusatz"}),
+        required=False,
+    )
+    street = forms.CharField(
+        label="Straße, Hausnummer",
+        widget=forms.TextInput(attrs={"placeholder": "Straße, Hausnummer"}),
+    )
+    postcode = forms.CharField(
+        label="PLZ", widget=forms.TextInput(attrs={"placeholder": "PLZ"})
+    )
+    city = forms.CharField(
+        label="Ort", widget=forms.TextInput(attrs={"placeholder": "Ort"})
+    )
+    email = forms.EmailField(
+        label="E-Mail",
+        widget=forms.TextInput(attrs={"placeholder": "E-Mail"}),
+    )
+    phone = forms.CharField(
+        label="Telefonnummer",
+        widget=forms.TextInput(attrs={"placeholder": "Telefonnummer"}),
+        required=False,
+    )
+    ws2026 = forms.ChoiceField(
+        widget=MyRadioSelect(),
+        label="Workshop",
+        choices=WS2026_CHOICES,
+        required=False,
+    )
+
+    takes_part_in_ft = forms.BooleanField(
+        label="Ich nehme an der Fachtagung teil.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    takes_part_in_mv = forms.BooleanField(
+        label="Ich nehme an der MV teil.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    tour = forms.ChoiceField(
+        # attrs={"class": "text-xs  text-gray-600"},
+        widget=forms.RadioSelect,
+        label="Ich nehme am Fr., 18.09.2026, an folgendem Programm teil:",
+        choices=TOUR_CHOICES_2026,
+        required=False,
+    )
+    dinner_one = forms.BooleanField(
+        label="Ab 19:00 Abendessen, Kosten: 23,50 € für Buffet inkl. Mineralwasser – werden mit dem Tagungsbeitrag in Rechnung gestellt**",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    dinner_two = forms.BooleanField(
+        label="Ab 19:00 Abendessen, Kosten: 23,50 € für Buffet inkl. Mineralwasser – werden mit dem Tagungsbeitrag in Rechnung gestellt**",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    food_preferences = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label="Ich möchte",
+        choices=FOOD_PREFERENCE_CHOICES,
+        required=False,
+    )
+
+    food_remarks = forms.CharField(
+        label="Andere wichtige Informationen (Allergien, Unverträglichkeiten etc.):",
+        widget=forms.Textarea(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=False,
+    )
+
+    remarks = forms.CharField(
+        label="",
+        widget=forms.Textarea(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=False,
+    )
+
+    memberships = forms.MultipleChoiceField(
+        label="Ich bin Mitglied folgender Organisation(en):",
+        widget=forms.CheckboxSelectMultiple(attrs={"class": "text-xs  text-gray-600"}),
+        choices=MEMBERSHIP_CHOICES_MV_2026,
+        required=False,
+    )
+
+    nomember = forms.BooleanField(
+        label="Ich bin nicht Mitglied einer dieser Organisationen.",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.event_label = kwargs.pop("event_label", "")
+        self.ws_utilisations = kwargs.pop("ws_utilisations", "{}")
+        self.tour_utilisations = kwargs.pop("tour_utilisations", "{}")
+        super(Symposium2026Form, self).__init__(*args, **kwargs)
+        # print("ws in form:", self.ws_utilisations)
+        if self.ws_utilisations:
+            ws_choices = ()
+            ws_full = []
+            for choice in WS2026_CHOICES:
+                if choice[0] == "-":
+                    ws_choices = ws_choices + (choice,)
+                elif self.ws_utilisations[choice[0]] > 0:
+                    ws_choices = ws_choices + (choice,)
+                elif self.ws_utilisations[choice[0]] <= 0:
+                    ws_full.append(choice[0])
+            if len(ws_full) > 0:
+                help_text = (
+                    "Workshop(s) "
+                    + ", ".join(ws_full)
+                    + " ist/sind bereits ausgebucht."
+                )
+            else:
+                help_text = ""
+            self.fields["ws2026"] = forms.ChoiceField(
+                widget=MyRadioSelect(ws_utilisations=self.ws_utilisations),
+                label="Workshop",
+                # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
+                help_text=help_text,
+                choices=ws_choices,
+                required=False,
+            )
+        if self.tour_utilisations:
+            tour_choices = ()
+            tour_full = []
+            for choice in TOUR_CHOICES_2026:
+                if choice[0] == "-":
+                    tour_choices = tour_choices + (choice,)
+                elif self.tour_utilisations[choice[0]] > 0:
+                    tour_choices = tour_choices + (choice,)
+                elif self.tour_utilisations[choice[0]] <= 0:
+                    tour_full.append(choice[0])
+            if len(tour_full) > 0:
+                help_text_tour = (
+                    "Führung(en) "
+                    + ", ".join(tour_full)
+                    + " ist/sind bereits ausgebucht."
+                )
+            else:
+                help_text_tour = ""
+            self.fields["tour"] = forms.ChoiceField(
+                widget=MyRadioSelect(tour_utilisations=self.tour_utilisations),
+                label="Ich nehme am Fr., 18.09.2026, an folgendem Programm teil:",
+                # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
+                help_text=help_text_tour,
+                choices=tour_choices,
+                required=False,
+            )
+        self.helper = FormHelper()
+        # self.helper.form_class = "form-horizontal"
+        self.helper.form_error_title = "Fehler im Formular"
+        self.error_text_inline = True
+        self.helper.layout = Layout(
+            Fieldset(
+                "1. Anmeldedaten",
+                Row(
+                    Column("firstname", css_class="form-group col-md-6 mb-0"),
+                    Column("lastname", css_class="form-group col-md-6 mb-0"),
+                    css_class="form-row",
+                ),
+                # "firstname",
+                # "lastname",
+                "address_line",
+                "street",
+                Row(
+                    Column("postcode", css_class="form-group col-md-2 mb-0"),
+                    Column("city", css_class="form-group col-md-10 mb-0"),
+                    css_class="form-row",
+                ),
+                HTML(
+                    """
+                    <p class='mb-2'>Für die steuerliche Abzugsfähigkeit bitte Geschäftsadresse angeben!</p>
+                    """
+                ),
+                "email",
+                "phone",
+                HTML(
+                    """
+                    <p class='mb-2'>Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, Telefon, E-Mail-Adresse) auf der Teilnahmeliste stehen und an die anderen Teilnehmenden weitergegeben werden.</p>
+                    """
+                ),
+                css_class="border-b-2 border-gray-900 pb-2 mb-4",
+            ),
+            Fieldset(
+                "2. Mitgliederversammlung (MV) am So., 20.09.2026",
+                CustomCheckbox(
+                    "takes_part_in_mv",
+                ),
+                HTML(
+                    """
+                    <p class='mb-2'>(für VFLL-Mitglieder kostenfrei)</p>
+                    """
+                ),
+            ),
+            Fieldset(
+                "3. Rahmenprogramm",
+                HTML(
+                    """
+                    <p class='mb-2 text-italic'>Freitag, 18.9.2026</p>
+                    """
+                ),
+                "tour",
+                CustomCheckbox(
+                    "dinner_one",
+                ),
+                HTML(
+                    """
+                    <p class='mb-2 text-italic'>Samstag, 19.9.2026</p>
+                    """
+                ),
+                "ws2026",
+                CustomCheckbox(
+                    "dinner_two",
+                ),
+            ),
+            Fieldset(
+                "4. Essenswünsche",
+                "food_preferences",
+                "food_remarks",
+            ),
+            Fieldset(
+                "5. Teilnahmekosten",
+                HTML(
+                    """
+                    <p>Der Tagungsbeitrag für die Fachtagung beträgt
+                    <ul style='list-style-position: outside; padding-left: 20px;'>
+                    <li>150 € für Mitglieder des VFLL oder eines der u. g. Partnerverbände</li>
+                    <li>190 € für sonstige Fachbesucher*innen</li>
+                    </ul>
+                    </p>
+                    <p class='mt-2 mb-2'>
+                    Darin enthalten sind die Kosten für die Fachtagung (hinzu kommen ggf.
+                    gewählte Punkte des Rahmenprogramms, Übernachtungen u. Ä.).
+                    </p>
+                    """
+                ),
+            ),
+            Fieldset(
+                "6. Mitgliedschaft",
+                "memberships",
+                CustomCheckbox("nomember"),
+            ),
+            Fieldset(
+                "7. Zahlung, Stornierungsmodalitäten",
+                HTML(
+                    """
+                    <p>Den Gesamtbetrag aus Tagungsbeitrag und ggf. den Kostenbeiträgen
+                    für weitere von mir gewählte Angebote (**) habe ich überwiesen an:</br>
+                    VFLL e. V., IBAN: DE24 4306 0967 6032 5237 00,<br/>
+                    BIC: GENODEM1GLS – Stichwort: FFL 2022
+                    </p>
+                    <p class="mb-2">
+                    <hr>
+                    </p>
+                    <p class="mt-2" style="border:top;">
+                    <b>Für den Fall einer Absage bitte beachten:</b>
+                    <ul style='list-style-position: outside; padding-left: 20px;'>
+                    <li>Bei Absagen bis 20.08.2026 fällt eine Stornogebühr von 35~% an.</li>
+                    <li>Bei Absagen bis 27.08.2026 werden 60% der gezahlten Beträge für die Tagung und das Rahmenprogramm rückerstattet.</li>
+                    <li>Bei Absagen bis 10.09.2026 fällt eine Stornogebühr von 80% an.</li>
+                    </ul>
+                    </p>
+                    <p class='mt-2 mb-2'>
+                    Bitte bucht eure Hotelübernachtungen selbst und beachtet im Fall einer
+                    Absage die dortigen Stornierungsbedingungen.
+                    </p>
+                    """
+                ),
+            ),
+            Fieldset(
+                "Anmerkungen und Wünsche:",
+                "remarks",
+            ),
+            ButtonHolder(
+                Submit(
+                    "submit",
+                    "Ich melde mich hiermit verbindlich an.",
+                    css_class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-full",
+                )
+            ),
+        )
+        # self.helper.add_input(Submit("submit", "Anmelden"))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        takes_part_in_mv = cleaned_data.get("takes_part_in_mv")
+        having_lunch = cleaned_data.get("having_lunch")
+        tour = cleaned_data.get("tour")
+        dinner_one = cleaned_data.get("dinner_one")
+        dinner_two = cleaned_data.get("dinner_two")
+        food_preferences = cleaned_data.get("food_preferences")
+        food_remarks = cleaned_data.get("food_remarks")
+        remarks = cleaned_data.get("remarks")
+        memberships = cleaned_data.get("memberships")
+
+    def clean_ws2026(self):
+        ws2026 = self.cleaned_data.get("ws2026")
+        if (
+            ws2026 in ["I", "II", "III", "IV", "V", "VI"]
+            and self.ws_utilisations[ws2026] <= 0
+        ):
+            self.add_error("ws2026", "Dieser Workshop ist bereits ausgebucht")
+        return ws2026
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if (
+            EventMember.objects.filter(
+                email=email, event__label=self.event_label
+            ).count()
+            > 0
+        ):
+            raise forms.ValidationError(
+                "Es gibt bereits eine Anmeldung mit dieser E-Mail-Adresse."
+            )
+        return email

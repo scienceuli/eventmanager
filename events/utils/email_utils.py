@@ -1,16 +1,18 @@
-import re
 import logging
+import re
+from smtplib import SMTPException
 
 from django.conf import settings
-from django.core.mail import EmailMessage, BadHeaderError
-from smtplib import SMTPException
+from django.core.mail import BadHeaderError, EmailMessage
 
 from events.email_template import EmailTemplate
 
 logger = logging.getLogger(__name__)
 
+
 class EmailTemplateError(Exception):
     pass
+
 
 def get_email_template(template_name):
     try:
@@ -18,6 +20,7 @@ def get_email_template(template_name):
         return template
     except EmailTemplate.DoesNotExist:
         raise EmailTemplateError("No such template: {}".format(template_name))
+
 
 def validate_email_template(raw_template, formatting_dict, required=True):
     required_keys = set(re.findall("{(.+?)}", raw_template))
@@ -42,6 +45,7 @@ def validate_email_template(raw_template, formatting_dict, required=True):
             return raw_template
 
     return raw_template.format(**formatting_dict)
+
 
 def send_email(
     addresses,
@@ -103,6 +107,7 @@ def send_email(
             print(msg)
         return True
 
+
 def get_mail_to_admin_template_name(registration_form):
     if registration_form == "s":
         mail_to_admin_template_name = "anmeldung"
@@ -114,6 +119,11 @@ def get_mail_to_admin_template_name(registration_form):
         mail_to_admin_template_name = "ft_anmeldung"
     elif registration_form == "f24":
         mail_to_admin_template_name = "ft_24_anmeldung"
+    elif registration_form == "f26":
+        mail_to_admin_template_name = "ft_26_anmeldung"
+    else:
+        mail_to_admin_template_name = "anmeldung"
+
     return mail_to_admin_template_name
 
 
@@ -131,7 +141,12 @@ def get_mail_to_member_template_name(registration_form, attend_status):
         mail_to_member_template_name = "ft_bestaetigung"
     elif registration_form == "f24":
         mail_to_member_template_name = "ft_24_bestaetigung"
+    elif registration_form == "f26":
+        mail_to_member_template_name = "ft_26_bestaetigung"
+    else:
+        mail_to_member_template_name = "bestaetigung"
     return mail_to_member_template_name
+
 
 def send_registration_emails(event, form, formatting_dict, attend_status):
     admin_template = get_mail_to_admin_template_name(event.registration_form)
@@ -150,6 +165,7 @@ def send_registration_emails(event, form, formatting_dict, attend_status):
         )
 
     return vfll_sent, member_sent
+
 
 def send_email_after_registration(to, event, form, template, formatting_dict):
     formatting_dict.update(
