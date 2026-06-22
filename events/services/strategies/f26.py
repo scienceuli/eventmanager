@@ -22,7 +22,7 @@ class F26RegistrationStrategy(BaseRegistrationStrategy):
         data.update(form_utils.get_additional_form_data(form, event, "f26"))
 
         f26_data = form_utils.get_f26_form_data(form)
-        if "vfll" in f26_data.memberships:
+        if "vfll" in f26_data.get("memberships"):
             vfll = True
         else:
             vfll = False
