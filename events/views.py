@@ -1300,6 +1300,17 @@ class FTEventMemberDetailView(FTOrgaGroupTestMixin, DetailView):
         return context
 
 
+class FTEventMemberDeleteView(FTOrgaGroupTestMixin, DeleteView):
+    model = EventMember
+    template_name = "events/confirm_member_delete.html"
+
+    def get_success_url(self):
+        pk = self.kwargs["pk"]
+
+        label = EventMember.objects.get(pk=pk).event.label
+        return reverse("ft-members", kwargs={"event": label})
+
+
 class MVEventMemberDetailView(MVOrgaGroupTestMixin, DetailView):
     model = EventMember
     template_name = "events/mv_member_detail.html"
@@ -1502,9 +1513,11 @@ def ft_members_dashboard_view(request):
             if ws_key and ws_key in settings.WS_LIMITS.keys():
                 ws_utilisation[ws_key] = ws_utilisation[ws_key] + 1
     for key in ws_utilisation.keys():
-        ws_dict[key] = (
-            str(ws_utilisation[key]) + " (" + str(settings.WS_LIMITS[key]) + ")"
-        )
+        # ws_dict[key] = (
+        #     str(ws_utilisation[key]) + " (" + str(settings.WS_LIMITS[key]) + ")"
+        # )
+        # FT 2026: no limits
+        ws_dict[key] = str(ws_utilisation[key])
 
     # dict with free places: dict comprehension
     ws_free_places = {
@@ -1524,9 +1537,11 @@ def ft_members_dashboard_view(request):
             if tour_key and tour_key in settings.TOUR_LIMITS.keys():
                 tour_utilisation[tour_key] = tour_utilisation[tour_key] + 1
     for key in tour_utilisation.keys():
-        tour_dict[key] = (
-            str(tour_utilisation[key]) + " (" + str(settings.TOUR_LIMITS[key]) + ")"
-        )
+        # tour_dict[key] = (
+        #     str(tour_utilisation[key]) + " (" + str(settings.TOUR_LIMITS[key]) + ")"
+        # )
+        # FT 2026 no limits
+        tour_dict[key] = str(tour_utilisation[key])
 
     # dict with free places: dict comprehension
     tour_free_places = {
@@ -1538,8 +1553,8 @@ def ft_members_dashboard_view(request):
     }
 
     # create bar plot of  utilisations
-    ws_plot_div = make_bar_plot_from_dict(ws_combined, "Workshops")
-    tour_plot_div = make_bar_plot_from_dict(tour_combined, "Rahmenprogramm")
+    ws_plot_div = make_bar_plot_from_dict(ws_utilisation, "Workshops")
+    tour_plot_div = make_bar_plot_from_dict(tour_utilisation, "Rahmenprogramm")
     context = {
         "count_members_of_mv": EventMember.objects.filter(
             event__label="ffl_mv_2026"

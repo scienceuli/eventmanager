@@ -46,13 +46,10 @@ def find_duplicates_in_list(L):
 def make_bar_plot_from_dict(data, x_string):
     # using pandas dataframe
     df = pd.DataFrame.from_dict(data, orient="index").reset_index()
-    df.columns = [x_string, "Teiln", "frei"]
-    print(df)
+    df.columns = [x_string, "Teiln"]
 
-    fig = px.bar(
-        df, x=x_string, y=["Teiln", "frei"], color_discrete_sequence=["red", "green"]
-    )
-    fig.update_yaxes(title_text="Teiln.")
+    fig = px.bar(df, x=x_string, y=["Teiln"], color_discrete_sequence=["green", "red"])
+    fig.update_yaxes(title_text="Teiln.", dtick=1)
     plt_div = plot(fig, output_type="div")
     return plt_div
 

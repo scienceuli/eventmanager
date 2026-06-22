@@ -2,20 +2,18 @@ import csv
 from datetime import date, datetime
 
 import pandas as pd
+from django.db.models import Count, Q
+from django.http import HttpResponse
 from openpyxl import Workbook
 
-from django.http import HttpResponse
-from django.db.models import Q, Count
-
-from events.models import Event, EventMember
-from events.export_excel import ExportExcelAction
 from events.actions import style_output_file
-from events.utils.utils import convert_data_date, convert_boolean_field
+from events.export_excel import ExportExcelAction
+from events.models import Event, EventMember
 from events.parameters import has_vote_transfer
+from events.utils.utils import convert_boolean_field, convert_data_date
 
 
 class ExportService:
-
     def export_members_csv(self, event_label):
         response = HttpResponse(content_type="text/csv")
         response["Content-Disposition"] = (
@@ -23,12 +21,14 @@ class ExportService:
         )
 
         writer = csv.writer(response)
-        writer.writerow(
-            ["Vorname", "Nachname", "E-Mail", "Datum", "Mitgliedschaft"]
-        )
+        writer.writerow(["Vorname", "Nachname", "E-Mail", "Datum", "Mitgliedschaft"])
 
         members = EventMember.objects.filter(event__label=event_label).values_list(
-            "firstname", "lastname", "email", "date_created", "member_type",
+            "firstname",
+            "lastname",
+            "email",
+            "date_created",
+            "member_type",
         )
 
         for member in members:
@@ -69,8 +69,12 @@ class ExportService:
             members_mv = members_mv.filter(vote_transfer__exact="")
 
         base_fields = [
-            "firstname", "lastname", "email", "attend_status",
-            "date_created", "member_type",
+            "firstname",
+            "lastname",
+            "email",
+            "attend_status",
+            "date_created",
+            "member_type",
         ]
 
         if has_vote_transfer.get(event_label, None):
@@ -94,13 +98,31 @@ class ExportService:
         )
 
         writer = csv.writer(response)
-        writer.writerow([
-            "Vorname", "Nachname", "E-Mail", "Adresszusatz", "Straße",
-            "PLZ", "Ort", "Tel.", "Anmeldedatum", "Workshop",
-            "WS-Alternative", "MV", "Mittagessen", "Führung",
-            "Netzwerkabend", "Yoga", "Feier", "Essenswunsch",
-            "Mitgliedschaft", "kein Mitglied", "Bemerkung",
-        ])
+        writer.writerow(
+            [
+                "Vorname",
+                "Nachname",
+                "E-Mail",
+                "Adresszusatz",
+                "Straße",
+                "PLZ",
+                "Ort",
+                "Tel.",
+                "Anmeldedatum",
+                "Workshop",
+                "WS-Alternative",
+                "MV",
+                "Mittagessen",
+                "Führung",
+                "Netzwerkabend",
+                "Yoga",
+                "Feier",
+                "Essenswunsch",
+                "Mitgliedschaft",
+                "kein Mitglied",
+                "Bemerkung",
+            ]
+        )
 
         members_ft = EventMember.objects.filter(event__label=event_label)
 
@@ -110,7 +132,7 @@ class ExportService:
 
         return response
 
-    def export_ft_members_xls(self, event_label="ffl_mv_2024"):
+    def export_ft_members_xls(self, event_label="ffl_mv_2026"):
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
@@ -119,8 +141,14 @@ class ExportService:
         response["Content-Disposition"] = f"attachment; filename={output_name}"
 
         ftm = EventMember.objects.filter(event__label=event_label).values(
-            "lastname", "firstname", "email", "address_line",
-            "street", "postcode", "city", "data",
+            "lastname",
+            "firstname",
+            "email",
+            "address_line",
+            "street",
+            "postcode",
+            "city",
+            "data",
         )
 
         result = [
@@ -138,19 +166,45 @@ class ExportService:
         ]
 
         df = pd.DataFrame(result)
-        df = df[[
-            "lastname", "firstname", "email", "address_line", "street",
-            "postcode", "city", "takes_part_in_mv", "takes_part_in_ft",
-            "having_lunch", "networking", "yoga", "ideas", "celebration",
-            "food_preferences", "food_remarks", "booking27", "booking28",
-            "memberships_full", "nomember", "remarks",
-        ]]
+        df = df[
+            [
+                "lastname",
+                "firstname",
+                "email",
+                "address_line",
+                "street",
+                "postcode",
+                "city",
+                "takes_part_in_mv",
+                "ws2026",
+                "tour",
+                "dinner_one",
+                "dinner_two",
+                "food_preferences",
+                "food_remarks",
+                "memberships",
+                "nomember",
+                "remarks",
+            ]
+        ]
         df.columns = [
-            "Nachname", "Vorname", "E-Mail", "Adresszusatz", "Strasse",
-            "PLZ", "Stadt", "Teilnahme MV", "Teilname FT", "Mittagessen",
-            "TN Networking", "TN Fuehrung", "TN Erfahrungsaustausch",
-            "TN Feier", "Essenswuensche", "Essen Bem.", "Buchung 27./28.9.",
-            "Buchung 28./29.9.", "Mitgliedschaften", "kein Mitglied", "Bem.",
+            "Nachname",
+            "Vorname",
+            "E-Mail",
+            "Adresszusatz",
+            "Strasse",
+            "PLZ",
+            "Stadt",
+            "Teilnahme MV",
+            "WS",
+            "Rahmenprogramm",
+            "Abendessen Fr",
+            "Abendessen Sa",
+            "Essenswuensche",
+            "Essen Bem.",
+            "Mitgliedschaften",
+            "kein Mitglied",
+            "Bem.",
         ]
         df.to_excel(response)
 
@@ -184,17 +238,31 @@ class ExportService:
 
         if version == "controlling":
             field_names = [
-                "lastname", "firstname", "academic", "company", "street",
-                "postcode", "city", "phone", "email",
-                "get_memberships_boolean", "get_no_memberships_boolean",
-                "date_created", "get_order_nr", "get_order_price",
+                "lastname",
+                "firstname",
+                "academic",
+                "company",
+                "street",
+                "postcode",
+                "city",
+                "phone",
+                "email",
+                "get_memberships_boolean",
+                "get_no_memberships_boolean",
+                "date_created",
+                "get_order_nr",
+                "get_order_price",
                 "get_payment_receipt",
             ]
             file_name = f"Controlling_{event.label}_{datetime.now().date()}"
             sheet_title = "Controlling"
         elif version == "participants":
             field_names = [
-                "lastname", "firstname", "academic", "phone", "email",
+                "lastname",
+                "firstname",
+                "academic",
+                "phone",
+                "email",
             ]
             file_name = f"TeilnehmerInnen_{event.label}_{datetime.now().date()}"
             sheet_title = "TeilnehmerInnen"
@@ -224,34 +292,36 @@ class ExportService:
             )
             ws.append(blank_line)
             ws.append(["", "Warteliste"])
-            self._iterate_members(
-                ws, qs_event_members_waiting, admin_cls, field_names
-            )
+            self._iterate_members(ws, qs_event_members_waiting, admin_cls, field_names)
 
             ws.append(blank_line)
             ws.append(["", "Referentinnen"])
             for speaker in event.speaker.all():
-                ws.append(
-                    ["", speaker.last_name, speaker.first_name, speaker.email]
-                )
+                ws.append(["", speaker.last_name, speaker.first_name, speaker.email])
 
             ws.append(blank_line)
             ws.append(["", "Veranstaltungsdaten"])
             ws.append(["", "Veranstaltungstitel:", event.name])
             ws.append(["", "Veranstaltungsformat:", event.eventformat.name])
-            ws.append([
-                "", "Termin:",
-                (
-                    datetime.strftime(event.first_day, "%d.%m.%Y")
-                    if event.first_day
-                    else ""
-                ),
-            ])
+            ws.append(
+                [
+                    "",
+                    "Termin:",
+                    (
+                        datetime.strftime(event.first_day, "%d.%m.%Y")
+                        if event.first_day
+                        else ""
+                    ),
+                ]
+            )
             ws.append(["", "Ort:", event.location.title])
-            ws.append([
-                "", "Veranstalter:",
-                event.organizer.name if event.organizer else "",
-            ])
+            ws.append(
+                [
+                    "",
+                    "Veranstalter:",
+                    event.organizer.name if event.organizer else "",
+                ]
+            )
 
         ws = style_output_file(ws)
 

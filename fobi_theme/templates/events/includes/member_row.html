@@ -11,4 +11,11 @@
                 <use xlink:href="#pencil">
             </svg></button>
     </td>
+    <td>
+        <a href="{% url 'member-delete' member.pk %}" class="btn btn-sm btn-danger">
+            <svg class="bi bi-trash" width="12" height="12">
+                <use xlink:href="#trash">
+            </svg>
+        </a>
+    </td>
 </tr>

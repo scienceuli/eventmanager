@@ -1,9 +1,9 @@
 # event/tables.py
-from django.utils.html import format_html
-import django_tables2 as tables
-from django_tables2.utils import A
-
 import itertools
+
+import django_tables2 as tables
+from django.utils.html import format_html
+from django_tables2.utils import A
 
 from .models import EventMember
 
@@ -84,6 +84,13 @@ class FTEventMembersTable(tables.Table):
         text="View",
         empty_values=(),
     )
+    delete = MemberDeleteLinkColumn(
+        "ft-member-delete",
+        args=[A("pk")],
+        orderable=False,
+        text="Del",
+        empty_values=(),
+    )
 
     # update = MemberUpdateLinkColumn(
     #     "ft-member-update",
@@ -95,7 +102,7 @@ class FTEventMembersTable(tables.Table):
 
     class Meta:
         model = EventMember
-        template_name = "django_tables2/bootstrap.html"
+        template_name = "django_tables2/bootstrap4.html"
         fields = (
             "firstname",
             "lastname",
@@ -105,7 +112,7 @@ class FTEventMembersTable(tables.Table):
 
 class MVEventMembersTable(tables.Table):
     counter = tables.Column(empty_values=(), orderable=False)
-    mv = tables.BooleanColumn(verbose_name="MV",empty_values=(), orderable=False)
+    mv = tables.BooleanColumn(verbose_name="MV", empty_values=(), orderable=False)
     tg = tables.BooleanColumn(verbose_name="TG", empty_values=(), orderable=False)
 
     def render_counter(self):
@@ -132,7 +139,7 @@ class MVEventMembersTable(tables.Table):
                 return format_html('<span class="false">✘</span>')
         else:
             return False
-    
+
     view = MemberViewLinkColumn(
         "mv-member-detail",
         args=[A("pk")],
@@ -160,12 +167,12 @@ class MVEventMembersTable(tables.Table):
             "vote_transfer_check",
         )
         sequence = (
-            'counter',
-            'firstname',
-            'lastname',
-            'email',
-            'mv',
-            'tg',
-            'vote_transfer',
-            'vote_transfer_check',
-            )
+            "counter",
+            "firstname",
+            "lastname",
+            "email",
+            "mv",
+            "tg",
+            "vote_transfer",
+            "vote_transfer_check",
+        )
