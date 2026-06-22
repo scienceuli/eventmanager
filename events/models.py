@@ -632,6 +632,9 @@ class Event(BaseModel, HitCountMixin):
         blank=True,
         help_text="an diese Adresse werden Anmeldungen geschickt",
     )
+    send_registration_mail_to_admin = models.BooleanField(
+        "E-Mail an Admin senden", default=True
+    )
     notes = RichTextField(
         verbose_name="Hinweise", null=True, blank=True, config_name="short"
     )

@@ -153,10 +153,11 @@ def send_registration_emails(event, form, formatting_dict, attend_status):
     member_template = get_mail_to_member_template_name(
         event.registration_form, attend_status
     )
-
-    vfll_sent = send_email_after_registration(
-        "vfll", event, form, admin_template, formatting_dict
-    )
+    vfll_sent = False
+    if event.send_registration_mail_to_admin:
+        vfll_sent = send_email_after_registration(
+            "vfll", event, form, admin_template, formatting_dict
+        )
 
     member_sent = False
     if settings.SEND_EMAIL_AFTER_REGISTRATION_TO_MEMBER:

@@ -1,114 +1,99 @@
+import csv
+import io
 import logging
-import markdown
-import io, csv
 from datetime import date, datetime
+
+import markdown
 
 logger = logging.getLogger(__name__)
 
-from django.contrib import admin, messages
-from django.contrib.admin.models import LogEntry, DELETION
-from django.conf import settings
-from django.http import HttpResponseRedirect
-from django.template.response import TemplateResponse
-from django.utils.safestring import mark_safe
-from django.utils.http import urlencode
-from django.utils.html import format_html, escape
-from django.shortcuts import render, get_object_or_404, redirect
-from django.urls import reverse, path
-from django import forms
-from django.db.models import Min, Max, Q, Sum
-
-from django.forms.models import BaseInlineFormSet
-from django.forms import inlineformset_factory
-
-from django.contrib.admin.models import LogEntry
-
-from django.contrib.admin import SimpleListFilter
-
-from mapbox_location_field.admin import MapAdmin
 from admin_export_action.admin import export_selected_objects
+from django import forms
+from django.conf import settings
 
-# for inline actions, from 3rd party module
-from inline_actions.admin import InlineActionsMixin
-from inline_actions.admin import InlineActionsModelAdminMixin
-
+# setting date format in admin page
+from django.conf.locale.de import formats as de_formats
+from django.contrib import admin, messages
+from django.contrib.admin import SimpleListFilter
+from django.contrib.admin.models import DELETION, LogEntry
+from django.db.models import Max, Min, Q, Sum
+from django.forms import inlineformset_factory
+from django.forms.models import BaseInlineFormSet
+from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.response import TemplateResponse
+from django.urls import path, reverse
+from django.utils.html import escape, format_html
+from django.utils.http import urlencode
+from django.utils.safestring import mark_safe
 from fieldsets_with_inlines import FieldsetsInlineMixin
 
-from .actions import (
-    export_as_xls,
-    import_from_csv,
-    copy_member_instances,
-    export_members_to_csv,
-    create_surveys
+# for inline actions, from 3rd party module
+from inline_actions.admin import InlineActionsMixin, InlineActionsModelAdminMixin
+from mapbox_location_field.admin import MapAdmin
+
+from event_feedback.services.feedback_service import SurveyService
+from events.filter import DateRangeFilter, MembershipFilter, PeriodFilter
+from events.services.confirmation_service import ConfirmationService
+from events.utils.confirmation_utils import create_confirmation_mail
+from events.utils.email_utils import send_email
+from events.utils.utils import format_memberships
+from mailings.models import ConfirmationMessage
+from moodle.management.commands.moodle import (
+    assign_roles_to_enroled_user,
+    create_moodle_course,
+    delete_moodle_course,
+    enrol_user_to_course,
+    unenrol_user_from_course,
 )
+from payment.services.payment_service import PaymentService
+from payment.utils import check_order_date_in_future, update_order
+from shop.models import Order, OrderItem
 
-from .validators import csv_content_validator
-
+from .actions import (
+    copy_member_instances,
+    create_surveys,
+    export_as_xls,
+    export_members_to_csv,
+    import_from_csv,
+)
+from .admin_views import hitcount_view
+from .core_models import EmailBlacklist, SiteSettings
+from .email_template import EmailTemplate
+from .event_q_and_a import EventQuestion
 from .models import (
-    Home,
-    PayLessAction,
-    EventCategory,
-    EventFormat,
-    EventCollection,
+    Confirmation,
     Event,
+    EventAgenda,
+    EventCategory,
+    EventCollection,
     EventDay,
+    EventDocument,
+    EventExternalSponsor,
+    EventExternalSponsorThrough,
+    EventFormat,
     EventHighlight,
     EventImage,
-    EventDocument,
-    PrivateDocument,
+    EventLocation,
+    EventMember,
+    EventMemberChangeDate,
+    EventMemberRole,
     EventOrganizer,
     EventSpeaker,
     EventSpeakerThrough,
     EventSponsor,
-    EventExternalSponsor,
     EventSponsorThrough,
-    EventExternalSponsorThrough,
-    EventLocation,
-    EventAgenda,
-    EventMember,
-    EventMemberChangeDate,
-    EventMemberRole,
-    MemberRole,
     HeroSliderImage,
-    Confirmation,
+    Home,
+    MemberRole,
+    PayLessAction,
+    PrivateDocument,
 )
-
-from .core_models import SiteSettings, EmailBlacklist
-
-from .event_q_and_a import EventQuestion
-
-from events.filter import PeriodFilter, DateRangeFilter, MembershipFilter
-
-from shop.models import Order, OrderItem
-
-from payment.utils import update_order, check_order_date_in_future
-from payment.services.payment_service import PaymentService
-from events.utils.utils import format_memberships
-from events.utils.email_utils import send_email
-
-from events.utils.confirmation_utils import create_confirmation_mail
-
-from .admin_views import hitcount_view
-
-from .email_template import EmailTemplate
-
-from moodle.management.commands.moodle import (
-    enrol_user_to_course,
-    unenrol_user_from_course,
-    create_moodle_course,
-    delete_moodle_course,
-    assign_roles_to_enroled_user,
-)
-
 from .statistics import membership_statistics
-from event_feedback.services.feedback_service import SurveyService
-from events.services.confirmation_service import ConfirmationService
-from mailings.models import ConfirmationMessage
-
-# setting date format in admin page
-from django.conf.locale.de import formats as de_formats
+from .validators import csv_content_validator
 
 de_formats.DATETIME_FORMAT = "d.m.y H:i"
+
 
 class MyAdminSite(admin.AdminSite):
     def get_app_list(self, request):
@@ -496,9 +481,9 @@ class EventMemberAdmin(admin.ModelAdmin):
             "Feedback",
             {
                 "classes": ("collapse",),
-                "fields": ("get_survey_link", "has_submitted_feedback")
-            }
-        )
+                "fields": ("get_survey_link", "has_submitted_feedback"),
+            },
+        ),
     )
     actions = [
         export_as_xls,
@@ -518,7 +503,9 @@ class EventMemberAdmin(admin.ModelAdmin):
 
         for member in queryset.select_related("event"):
             try:
-                confirmation, created = Confirmation.objects.get_or_create(event_member=member)
+                confirmation, created = Confirmation.objects.get_or_create(
+                    event_member=member
+                )
                 conf_service.make_pdf(confirmation)
                 if created:
                     create_confirmation_mail(confirmation)
@@ -541,13 +528,17 @@ class EventMemberAdmin(admin.ModelAdmin):
             except Exception as e:
                 error_count += 1
                 error_messages.append(f"{member.firstname} {member.lastname}: {e}")
-                logger.error("Error creating confirmation for member %s: %s", member.pk, e)
+                logger.error(
+                    "Error creating confirmation for member %s: %s", member.pk, e
+                )
         msg = f"{created_count} Teilnahmebescheinigung(en) erzeugt."
         if updated_count:
             msg += f" {updated_count} neu generiert (bereits vorhanden)."
         if error_count:
             msg += f" {error_count} Fehler: {'; '.join(error_messages)}"
-        self.message_user(request, msg, messages.SUCCESS if not error_count else messages.WARNING)
+        self.message_user(
+            request, msg, messages.SUCCESS if not error_count else messages.WARNING
+        )
 
     create_confirmations.short_description = "Teilnahmebescheinigungen erzeugen"
 
@@ -568,7 +559,7 @@ class EventMemberAdmin(admin.ModelAdmin):
 
         link = ""
         if conf.pdf_file:
-            link = (f'<a href="{conf.pdf_file.url}" target="_blank">PDF</a>')
+            link = f'<a href="{conf.pdf_file.url}" target="_blank">PDF</a>'
 
         if link:
             return mark_safe(link)
@@ -644,7 +635,6 @@ class EventMemberAdmin(admin.ModelAdmin):
         return link
 
     get_survey_link.short_description = "Feeback-Link"
-
 
     get_no_memberships_boolean.short_description = "Nicht-Mitglied"
 
@@ -963,7 +953,12 @@ class EventExternalSponsorThroughInline(admin.TabularInline):
 
 
 class EventSpeakerAdmin(admin.ModelAdmin):
-    list_display = ("last_name", "first_name", "email", "show",)
+    list_display = (
+        "last_name",
+        "first_name",
+        "email",
+        "show",
+    )
     list_filter = ("show",)
     ordering = (
         "last_name",
@@ -979,7 +974,9 @@ class EventSpeakerAdmin(admin.ModelAdmin):
     @admin.action(description="Von Dozentenseite entfernen")
     def unset_show(self, request, queryset):
         updated = queryset.update(show=False)
-        self.message_user(request, f"{updated} Dozent*in(nen) werden nicht mehr angezeigt.")
+        self.message_user(
+            request, f"{updated} Dozent*in(nen) werden nicht mehr angezeigt."
+        )
 
     search_fields = (
         "=last_name",
@@ -1021,10 +1018,11 @@ class EventSpeakerAdmin(admin.ModelAdmin):
                 )
             },
         ),
-        ("Zeigen auf Dozentenseite",
+        (
+            "Zeigen auf Dozentenseite",
             {
-            "fields": ("show",),
-            }
+                "fields": ("show",),
+            },
         ),
         (
             "Änderungen",
@@ -1356,6 +1354,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                     "registration_possible",
                     # "registration_message",
                     "registration_recipient",
+                    "send_registration_mail_to_admin",
                     "open_date",
                     "close_date",
                     "free_text_field_intro",
@@ -1401,12 +1400,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
                 "fields": ("survey_results_link",),
             },
         ),
-        (
-            "Bewertungen",
-            {
-                "fields": ("testimonials",)
-            }
-        ),
+        ("Bewertungen", {"fields": ("testimonials",)}),
         (
             "Intern",
             {
@@ -1478,7 +1472,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
     average_rating.short_description = "Avg Rating"
 
-
     inlines = (
         EventQuestionInline,
         EventDayInline,
@@ -1491,7 +1484,10 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         PrivateDocumentInline,
         EventMemberInline,
     )
-    actions = ("copy_event", create_surveys,)
+    actions = (
+        "copy_event",
+        create_surveys,
+    )
     inline_actions = []
 
     def get_queryset(self, request):
