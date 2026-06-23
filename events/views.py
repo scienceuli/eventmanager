@@ -1506,10 +1506,8 @@ def ft_members_dashboard_view(request):
     tour_utilisation = {"I": 0, "II": 0}
 
     for member in EventMember.objects.filter(event__label="ffl_mv_2026"):
-        print(f"member data: {member.data}")
         if member.data.get("ws2026"):
             ws_key = WS2026_REVERSE.get(member.data["ws2026"])
-            print(f"ws_key: {ws_key}")
             if ws_key and ws_key in settings.WS_LIMITS.keys():
                 ws_utilisation[ws_key] = ws_utilisation[ws_key] + 1
     for key in ws_utilisation.keys():
@@ -1528,7 +1526,7 @@ def ft_members_dashboard_view(request):
         key: [ws_utilisation[key], ws_free_places[key]] for key in ws_utilisation
     }
 
-    del ws_combined["VI"]
+    # del ws_combined["-"]
 
     for member in EventMember.objects.filter(event__label="ffl_mv_2026"):
         if member.data.get("tour"):
@@ -1551,6 +1549,11 @@ def ft_members_dashboard_view(request):
     tour_combined = {
         key: [tour_utilisation[key], tour_free_places[key]] for key in tour_utilisation
     }
+    # labels for dashboard
+    ws_labels = {label: ws_dict[key] for key, label in WS2026_CHOICES if key != "-"}
+    tour_labels = {
+        label: tour_dict[key] for key, label in TOUR_CHOICES_2026 if key != "-"
+    }
 
     # create bar plot of  utilisations
     ws_plot_div = make_bar_plot_from_dict(ws_utilisation, "Workshops")
@@ -1560,6 +1563,8 @@ def ft_members_dashboard_view(request):
             event__label="ffl_mv_2026"
         ).count(),
         "ws_dict": ws_dict,
+        "ws_labels": ws_labels,
+        "tour_labels": tour_labels,
         "tour_dict": tour_dict,
         "now": datetime.now(),
         "ws_plot_div": ws_plot_div,
