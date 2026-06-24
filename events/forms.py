@@ -2501,3 +2501,8 @@ class Symposium2026Form(forms.Form):
                 "Es gibt bereits eine Anmeldung mit dieser E-Mail-Adresse."
             )
         return email
+
+    def clean_takes_part_in_mv(self):
+        takes_part_in_mv = self.cleaned_data["takes_part_in_mv"]
+        if not takes_part_in_mv:
+            self.add_error("takes_part_in_mv", "Bitte eine Auswahl treffen")
