@@ -2198,16 +2198,16 @@ class Symposium2026Form(forms.Form):
         required=False,
     )
     ws2026 = forms.ChoiceField(
-        widget=MyRadioSelect(),
+        widget=forms.RadioSelect,
         label="Workshops 11:00 – 12:30 Uhr",
         choices=WS2026_CHOICES,
-        required=False,
+        required=True,
     )
     takes_part_in_mv = forms.ChoiceField(
         widget=forms.RadioSelect,
         label="",
         choices=TAKES_PART_CHOICES_MV,
-        required=False,
+        required=True,
     )
 
     # takes_part_in_mv = forms.BooleanField(
@@ -2221,7 +2221,7 @@ class Symposium2026Form(forms.Form):
         widget=forms.RadioSelect,
         label="Rahmenprogramm",
         choices=TOUR_CHOICES_2026,
-        required=False,
+        required=True,
     )
     dinner_one = forms.BooleanField(
         label="Ab 19:00 Abendessen, Kosten: 23,50 € für Buffet inkl. Mineralwasser – werden mit dem Tagungsbeitrag in Rechnung gestellt**",
@@ -2266,13 +2266,7 @@ class Symposium2026Form(forms.Form):
         label="Ich bin Mitglied folgender Organisation(en):",
         widget=forms.CheckboxSelectMultiple(attrs={"class": "text-xs  text-gray-600"}),
         choices=MEMBERSHIP_CHOICES_MV_2026,
-        required=False,
-    )
-
-    nomember = forms.BooleanField(
-        label="Ich bin nicht Mitglied einer dieser Organisationen.",
-        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
-        required=False,
+        required=True,
     )
 
     def __init__(self, *args, **kwargs):
@@ -2424,7 +2418,6 @@ class Symposium2026Form(forms.Form):
             Fieldset(
                 "6. Mitgliedschaft",
                 "memberships",
-                CustomCheckbox("nomember"),
             ),
             Fieldset(
                 "7. Zahlung, Stornierungsmodalitäten",
@@ -2471,8 +2464,8 @@ class Symposium2026Form(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         takes_part_in_mv = cleaned_data.get("takes_part_in_mv")
-        having_lunch = cleaned_data.get("having_lunch")
         tour = cleaned_data.get("tour")
+        ws2026 = cleaned_data.get("ws2026")
         dinner_one = cleaned_data.get("dinner_one")
         dinner_two = cleaned_data.get("dinner_two")
         food_preferences = cleaned_data.get("food_preferences")
@@ -2480,14 +2473,24 @@ class Symposium2026Form(forms.Form):
         remarks = cleaned_data.get("remarks")
         memberships = cleaned_data.get("memberships")
 
+        if takes_part_in_mv == "mv" and ws2026 not in ("-", "", None):
+            self.add_error(
+                "ws2026",
+                "Bitte die Auswahl hier und bei Teilnahme (nur MV) prüfen. Wenn nur an der MV teilgenommen wird, bitte letzte Option wählen.",
+            )
+        if takes_part_in_mv == "mv" and tour not in ("-", "", None):
+            self.add_error(
+                "tour",
+                "Bitte die Auswahl hier und bei Teilnahme (nur MV) prüfen. Wenn nur an der MV teilgenommen wird, bitte letzte Option wählen.",
+            )
+
     def clean_ws2026(self):
         ws2026 = self.cleaned_data.get("ws2026")
-        if (
-            ws2026 in ["I", "II", "III", "IV", "V", "VI"]
-            and self.ws_utilisations[ws2026] <= 0
-        ):
-            self.add_error("ws2026", "Dieser Workshop ist bereits ausgebucht")
         return ws2026
+
+    def clean_tour(self):
+        tour = self.cleaned_data.get("tour")
+        return tour
 
     def clean_email(self):
         email = self.cleaned_data["email"]
@@ -2503,6 +2506,14 @@ class Symposium2026Form(forms.Form):
         return email
 
     def clean_takes_part_in_mv(self):
-        takes_part_in_mv = self.cleaned_data["takes_part_in_mv"]
-        if not takes_part_in_mv:
-            self.add_error("takes_part_in_mv", "Bitte eine Auswahl treffen")
+        takes_part_in_mv = self.cleaned_data.get("takes_part_in_mv")
+        return takes_part_in_mv
+
+    def clean_memberships(self):
+        memberships = self.cleaned_data.get("memberships")
+        if "-" in memberships and len(memberships) > 1:
+            self.add_error(
+                "memberships",
+                "Bitte eine oder mehrere Organisationen wählen oder die letzte Option",
+            )
+        return memberships

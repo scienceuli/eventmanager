@@ -33,7 +33,6 @@ class EventRegistrationService:
         strategy = get_strategy(event)
 
         member_data = strategy.build_member_data(form, event)
-        print(f"member_data: {member_data}")
         member = create_member(event, member_data)
 
         if not member.survey_token:

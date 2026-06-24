@@ -183,7 +183,6 @@ class ExportService:
                 "food_preferences",
                 "food_remarks",
                 "memberships",
-                "nomember",
                 "remarks",
             ]
         ]
@@ -203,7 +202,6 @@ class ExportService:
             "Essenswuensche",
             "Essen Bem.",
             "Mitgliedschaften",
-            "kein Mitglied",
             "Bem.",
         ]
         df.to_excel(response)

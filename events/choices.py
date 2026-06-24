@@ -59,6 +59,7 @@ MEMBERSHIP_CHOICES_MV_2026 = (
     ("il", "Illustratoren Organisation"),
     ("sp", "Selfpublisher-Verband"),
     ("at", "ATICOM"),
+    ("-", "Ich bin nicht Mitglied einer dieser Organisationen"),
 )
 
 

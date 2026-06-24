@@ -169,7 +169,6 @@ def get_f26_form_data(form):
 
     data_dict = {}
     data_dict["memberships"] = form.cleaned_data.get("memberships")
-    data_dict["nomember"] = form.cleaned_data.get("nomember")
     data_dict["takes_part_in_mv"] = choices_to_string(
         takes_part_in_mv_list, TAKES_PART_CHOICES_MV
     )
@@ -181,7 +180,6 @@ def get_f26_form_data(form):
     data_dict["food_remarks"] = form.cleaned_data.get("food_remarks")
     data_dict["tour"] = choices_to_string(tour_list, TOUR_CHOICES_2026)
     data_dict["ws2026"] = choices_to_string(ws_list, WS2026_CHOICES)
-    data_dict["food_remarks"] = form.cleaned_data.get("food_remarks")
 
     data_dict["remarks"] = form.cleaned_data.get("remarks")
 
