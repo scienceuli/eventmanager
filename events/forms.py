@@ -319,6 +319,7 @@ from .choices import (
     MEMBERSHIP_CHOICES_24_FULL,
     MEMBERSHIP_CHOICES_MV_2026,
     TAKES_PART_CHOICES,
+    TAKES_PART_CHOICES_MV,
     TOUR_CHOICES,
     TOUR_CHOICES_2026,
     WS2022_CHOICES,
@@ -2198,27 +2199,27 @@ class Symposium2026Form(forms.Form):
     )
     ws2026 = forms.ChoiceField(
         widget=MyRadioSelect(),
-        label="Workshop",
+        label="Workshops 11:00 – 12:30 Uhr",
         choices=WS2026_CHOICES,
         required=False,
     )
-
-    takes_part_in_ft = forms.BooleanField(
-        label="Ich nehme an der Fachtagung teil.",
-        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+    takes_part_in_mv = forms.ChoiceField(
+        widget=forms.RadioSelect,
+        label="",
+        choices=TAKES_PART_CHOICES_MV,
         required=False,
     )
 
-    takes_part_in_mv = forms.BooleanField(
-        label="Ich nehme an der MV teil.",
-        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
-        required=False,
-    )
+    # takes_part_in_mv = forms.BooleanField(
+    #     label="Ich nehme nur an der Mitgliederversammlung (Sonntag) teil.",
+    #     widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+    #     required=False,
+    # )
 
     tour = forms.ChoiceField(
         # attrs={"class": "text-xs  text-gray-600"},
         widget=forms.RadioSelect,
-        label="Ich nehme am Fr., 18.09.2026, an folgendem Programm teil:",
+        label="Rahmenprogramm",
         choices=TOUR_CHOICES_2026,
         required=False,
     )
@@ -2236,13 +2237,13 @@ class Symposium2026Form(forms.Form):
 
     food_preferences = forms.ChoiceField(
         widget=forms.RadioSelect,
-        label="Ich möchte",
+        label="",
         choices=FOOD_PREFERENCE_CHOICES,
         required=False,
     )
 
     food_remarks = forms.CharField(
-        label="Andere wichtige Informationen (Allergien, Unverträglichkeiten etc.):",
+        label="Andere Informationen (Allergien, Unverträglichkeiten etc.):",
         widget=forms.Textarea(
             attrs={
                 "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
@@ -2280,58 +2281,58 @@ class Symposium2026Form(forms.Form):
         self.tour_utilisations = kwargs.pop("tour_utilisations", "{}")
         super(Symposium2026Form, self).__init__(*args, **kwargs)
         # print("ws in form:", self.ws_utilisations)
-        if self.ws_utilisations:
-            ws_choices = ()
-            ws_full = []
-            for choice in WS2026_CHOICES:
-                if choice[0] == "-":
-                    ws_choices = ws_choices + (choice,)
-                elif self.ws_utilisations[choice[0]] > 0:
-                    ws_choices = ws_choices + (choice,)
-                elif self.ws_utilisations[choice[0]] <= 0:
-                    ws_full.append(choice[0])
-            if len(ws_full) > 0:
-                help_text = (
-                    "Workshop(s) "
-                    + ", ".join(ws_full)
-                    + " ist/sind bereits ausgebucht."
-                )
-            else:
-                help_text = ""
-            self.fields["ws2026"] = forms.ChoiceField(
-                widget=MyRadioSelect(ws_utilisations=self.ws_utilisations),
-                label="Workshop",
-                # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
-                help_text=help_text,
-                choices=ws_choices,
-                required=False,
-            )
-        if self.tour_utilisations:
-            tour_choices = ()
-            tour_full = []
-            for choice in TOUR_CHOICES_2026:
-                if choice[0] == "-":
-                    tour_choices = tour_choices + (choice,)
-                elif self.tour_utilisations[choice[0]] > 0:
-                    tour_choices = tour_choices + (choice,)
-                elif self.tour_utilisations[choice[0]] <= 0:
-                    tour_full.append(choice[0])
-            if len(tour_full) > 0:
-                help_text_tour = (
-                    "Führung(en) "
-                    + ", ".join(tour_full)
-                    + " ist/sind bereits ausgebucht."
-                )
-            else:
-                help_text_tour = ""
-            self.fields["tour"] = forms.ChoiceField(
-                widget=MyRadioSelect(tour_utilisations=self.tour_utilisations),
-                label="Ich nehme am Fr., 18.09.2026, an folgendem Programm teil:",
-                # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
-                help_text=help_text_tour,
-                choices=tour_choices,
-                required=False,
-            )
+        # if self.ws_utilisations:
+        #     ws_choices = ()
+        #     ws_full = []
+        #     for choice in WS2026_CHOICES:
+        #         if choice[0] == "-":
+        #             ws_choices = ws_choices + (choice,)
+        #         elif self.ws_utilisations[choice[0]] > 0:
+        #             ws_choices = ws_choices + (choice,)
+        #         elif self.ws_utilisations[choice[0]] <= 0:
+        #             ws_full.append(choice[0])
+        #     if len(ws_full) > 0:
+        #         help_text = (
+        #             "Workshop(s) "
+        #             + ", ".join(ws_full)
+        #             + " ist/sind bereits ausgebucht."
+        #         )
+        #     else:
+        #         help_text = ""
+        #     self.fields["ws2026"] = forms.ChoiceField(
+        #         widget=MyRadioSelect(ws_utilisations=self.ws_utilisations),
+        #         label="Workshop",
+        #         # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
+        #         help_text=help_text,
+        #         choices=ws_choices,
+        #         required=False,
+        #     )
+        # if self.tour_utilisations:
+        #     tour_choices = ()
+        #     tour_full = []
+        #     for choice in TOUR_CHOICES_2026:
+        #         if choice[0] == "-":
+        #             tour_choices = tour_choices + (choice,)
+        #         elif self.tour_utilisations[choice[0]] > 0:
+        #             tour_choices = tour_choices + (choice,)
+        #         elif self.tour_utilisations[choice[0]] <= 0:
+        #             tour_full.append(choice[0])
+        #     if len(tour_full) > 0:
+        #         help_text_tour = (
+        #             "Führung(en) "
+        #             + ", ".join(tour_full)
+        #             + " ist/sind bereits ausgebucht."
+        #         )
+        #     else:
+        #         help_text_tour = ""
+        #     self.fields["tour"] = forms.ChoiceField(
+        #         widget=MyRadioSelect(tour_utilisations=self.tour_utilisations),
+        #         label="",
+        #         # help_text="Bereits ausgebuchte Workshops werden nicht angezeigt.",
+        #         help_text=help_text_tour,
+        #         choices=tour_choices,
+        #         required=False,
+        #     )
         self.helper = FormHelper()
         # self.helper.form_class = "form-horizontal"
         self.helper.form_error_title = "Fehler im Formular"
@@ -2362,27 +2363,22 @@ class Symposium2026Form(forms.Form):
                 "phone",
                 HTML(
                     """
-                    <p class='mb-2'>Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, Telefon, E-Mail-Adresse) auf der Teilnahmeliste stehen und an die anderen Teilnehmenden weitergegeben werden.</p>
+                    <p class='mb-2'>Ich bin damit einverstanden, dass meine Kontaktdaten (Vor- und Nachname, Telefon, E-Mail-Adresse)
+                    auf der Teilnahmeliste stehen und an das
+                    Orgateam weitergegeben werden.</p>
                     """
                 ),
                 css_class="border-b-2 border-gray-900 pb-2 mb-4",
             ),
             Fieldset(
-                "2. Mitgliederversammlung (MV) am So., 20.09.2026",
-                CustomCheckbox(
-                    "takes_part_in_mv",
-                ),
-                HTML(
-                    """
-                    <p class='mb-2'>(für VFLL-Mitglieder kostenfrei)</p>
-                    """
-                ),
+                "2. Teilnahme",
+                "takes_part_in_mv",
             ),
             Fieldset(
-                "3. Rahmenprogramm",
+                "3. Programm",
                 HTML(
                     """
-                    <p class='mb-2 text-italic'>Freitag, 18.9.2026</p>
+                    <p class='mb-2 font-weight-bold'>Freitag, 18.09.2026</p>
                     """
                 ),
                 "tour",
@@ -2391,21 +2387,26 @@ class Symposium2026Form(forms.Form):
                 ),
                 HTML(
                     """
-                    <p class='mb-2 text-italic'>Samstag, 19.9.2026</p>
+                    <p class='mb-2 font-weight-bold'>Samstag, 19.09.2026</p>
                     """
                 ),
                 "ws2026",
+                HTML(
+                    """
+                    <p class='text-gray-700 text-sm font-bold mb-2'>Rahmenprogramm</p>
+                    """
+                ),
                 CustomCheckbox(
                     "dinner_two",
                 ),
             ),
             Fieldset(
-                "4. Essenswünsche",
+                "4. Essensvorlieben und Unverträglichkeiten",
                 "food_preferences",
                 "food_remarks",
             ),
             Fieldset(
-                "5. Teilnahmekosten",
+                "5. Teilnahmegebühr",
                 HTML(
                     """
                     <p>Der Tagungsbeitrag für die Fachtagung beträgt
@@ -2415,8 +2416,7 @@ class Symposium2026Form(forms.Form):
                     </ul>
                     </p>
                     <p class='mt-2 mb-2'>
-                    Darin enthalten sind die Kosten für die Fachtagung (hinzu kommen ggf.
-                    gewählte Punkte des Rahmenprogramms, Übernachtungen u. Ä.).
+                    Bitte beachten: Kosten für ggf. Übernachtungen und gewählte Rahmenprogrammpunkte etc. sind von den Teilnehmenden selbst zu tragen.
                     </p>
                     """
                 ),
@@ -2431,9 +2431,9 @@ class Symposium2026Form(forms.Form):
                 HTML(
                     """
                     <p>Den Gesamtbetrag aus Tagungsbeitrag und ggf. den Kostenbeiträgen
-                    für weitere von mir gewählte Angebote (**) habe ich überwiesen an:</br>
+                    für weitere von mir gewählte Angebote (**) werde ich überweisen an:</br>
                     VFLL e. V., IBAN: DE24 4306 0967 6032 5237 00,<br/>
-                    BIC: GENODEM1GLS – Stichwort: FFL 2022
+                    BIC: GENODEM1GLS – Stichwort: FFL 2026
                     </p>
                     <p class="mb-2">
                     <hr>
@@ -2441,9 +2441,10 @@ class Symposium2026Form(forms.Form):
                     <p class="mt-2" style="border:top;">
                     <b>Für den Fall einer Absage bitte beachten:</b>
                     <ul style='list-style-position: outside; padding-left: 20px;'>
-                    <li>Bei Absagen bis 20.08.2026 fällt eine Stornogebühr von 35~% an.</li>
-                    <li>Bei Absagen bis 27.08.2026 werden 60% der gezahlten Beträge für die Tagung und das Rahmenprogramm rückerstattet.</li>
-                    <li>Bei Absagen bis 10.09.2026 fällt eine Stornogebühr von 80% an.</li>
+                    <li>Bei Absagen bis 20.08.2026 fällt eine Stornogebühr von 35&nbsp;% an.</li>
+                    <li>Bei Absagen bis 27.08.2026 fällt eine Stornogebühr von 40&nbsp;% an.</li>
+                    <li>Bei Absagen bis 10.09.2026 fällt eine Stornogebühr von 80&nbsp;% an.</li>
+                    <li>Bei Absagen ab dem 11.09.2026 ist keine Rückerstattung mehr möglich.</li>
                     </ul>
                     </p>
                     <p class='mt-2 mb-2'>

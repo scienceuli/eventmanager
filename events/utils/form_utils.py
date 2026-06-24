@@ -1,6 +1,11 @@
 from django.utils import timezone
 
-from events.choices import FOOD_PREFERENCE_CHOICES, TOUR_CHOICES_2026, WS2026_CHOICES
+from events.choices import (
+    FOOD_PREFERENCE_CHOICES,
+    TAKES_PART_CHOICES_MV,
+    TOUR_CHOICES_2026,
+    WS2026_CHOICES,
+)
 from events.utils.utils import boolean_translate
 
 
@@ -153,6 +158,8 @@ def get_f24_form_data(form):
 
 
 def get_f26_form_data(form):
+    takes_part_in_mv_list = []
+    takes_part_in_mv_list.append(form.cleaned_data.get("takes_part_in_mv"))
     food_pref_list = []
     food_pref_list.append(form.cleaned_data.get("food_preferences"))
     tour_list = []
@@ -163,8 +170,8 @@ def get_f26_form_data(form):
     data_dict = {}
     data_dict["memberships"] = form.cleaned_data.get("memberships")
     data_dict["nomember"] = form.cleaned_data.get("nomember")
-    data_dict["takes_part_in_mv"] = boolean_translate(
-        form.cleaned_data.get("takes_part_in_mv")
+    data_dict["takes_part_in_mv"] = choices_to_string(
+        takes_part_in_mv_list, TAKES_PART_CHOICES_MV
     )
     data_dict["dinner_one"] = boolean_translate(form.cleaned_data.get("dinner_one"))
     data_dict["dinner_two"] = boolean_translate(form.cleaned_data.get("dinner_two"))

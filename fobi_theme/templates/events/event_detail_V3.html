@@ -222,7 +222,7 @@
                         <p class="text-left ">{{ event.location.title }}</p>
                         <p class="text-left ">{{ event.location.get_complete_address|linebreaksbr }}</p>
                         {% if event.location.url %}
-                        <p><a href="{{ event.location.url }}">Webseite</a></p>
+                        <p><a href="{{ event.location.url }}">Website</a></p>
                         {% endif %}
                     </div>
                 </div>
@@ -742,7 +742,7 @@
                                     <h4 class="font-medium text-2xl mb-3">{{ externalsponsor.name }}</h4>
                                     <p class="leading-normal">{{ externalsponsor.text }}</p>
                                     {% if externalsponsor.url %}
-                                    <p class="text-sm text-grey block mt-6"><a href="{{ externalsponsor.url }}">Webseite</a></p>
+                                    <p class="text-sm text-grey block mt-6"><a href="{{ externalsponsor.url }}">Website</a></p>
                                     {% endif %}
                                 </div>
                             </div>

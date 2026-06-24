@@ -97,11 +97,21 @@ MEMBER_TYPE_CHOICES_VFLL = (
     ("e", "Ehrenmitglied"),
 )
 
+TAKES_PART_CHOICES_MV = (
+    ("mv", "Ich nehme nur an der Mitgliederversammlung (Sonntag) teil."),
+    ("ft", "Ich nehme nur an der Fachtagung (Samstag) teil."),
+    (
+        "both",
+        "Ich nehme an der Fachtagung und Mitgliederversammlung (Samstag und Sonntag) teil.",
+    ),
+)
+
+
 WS2026_CHOICES = (
-    ("I", "Workshop »Unconscious Bios«, 11:00-12:30"),
+    ("I", "Workshop »Unconscious Bias«"),
     (
         "II",
-        "Workshop »May the emotional force be with you: Wie sich exclusive Sprache anfühlt«",
+        "Workshop »May the emotional force be with you: Wie sich exklusive Sprache anfühlt«",
     ),
     (
         "III",
@@ -113,7 +123,7 @@ WS2026_CHOICES = (
     ),
     (
         "V",
-        "Workshop »Das werd ich so nicht stehenlassen – Argumentationshilfen für den Umgang mit Menschen mit fragwürdiger oder diskriminierender Rhetorik'",
+        "Workshop »Das werd ich so nicht stehenlassen – Argumentationshilfen für den Umgang mit Menschen mit fragwürdiger oder diskriminierender Rhetorik«",
     ),
     ("VI", "Textwerkstatt"),
     ("-", "Ich nehme an keinem Workshop teil."),
@@ -132,9 +142,9 @@ WS2022_CHOICES = (
 TOUR_CHOICES_2026 = (
     (
         "I",
-        "Wilhelm-Hack-Museum, Führung »Politik am Küchentisch«, 15:40 vor Ort/14:40 Tagungshotel",
+        "Wilhelm-Hack-Museum, Führung »Politik am Küchentisch«, Beginn 15:40 Uhr vor Ort/14:40 Uhr Tagungshotel",
     ),
-    ("II", "Rhein Walk, Beginn 16:30 vor Ort/15:45 ab Tagungshotel"),
+    ("II", "Rhein Walk, Beginn 16:30 Uhr vor Ort/15:45 Uhr ab Tagungshotel"),
     ("-", "Ich nehme an keinem Programm teil."),
 )
 
@@ -145,9 +155,8 @@ TOUR_CHOICES = (
 )
 
 FOOD_PREFERENCE_CHOICES = (
-    ("vt", "vegetarisch essen"),
-    ("vn", "vegan essen"),
-    ("-", "keine Präferenz"),
+    ("vt", "Vegetarisch"),
+    ("vn", "Vegan"),
 )
 
 BOOKING_CHOICES_27 = (
