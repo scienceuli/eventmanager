@@ -5,7 +5,12 @@ import django_tables2 as tables
 from django.utils.html import format_html
 from django_tables2.utils import A
 
+from .choices import TAKES_PART_CHOICES_MV, TOUR_CHOICES_2026, WS2026_CHOICES
 from .models import EventMember
+
+_TOUR_LABEL_TO_KEY = {label: key for key, label in TOUR_CHOICES_2026}
+_WS2026_LABEL_TO_KEY = {label: key for key, label in WS2026_CHOICES}
+_TAKES_PART_LABEL_TO_KEY = {label: key for key, label in TAKES_PART_CHOICES_MV}
 
 
 class MemberViewLinkColumn(tables.LinkColumn):
@@ -71,11 +76,31 @@ class EventMembersTable(tables.Table):
 
 class FTEventMembersTable(tables.Table):
     counter = tables.Column(empty_values=(), orderable=False)
+    tour = tables.Column(verbose_name="Tour", empty_values=(), orderable=False)
+    ws2026 = tables.Column(verbose_name="WS", empty_values=(), orderable=False)
+    takes_part_in_mv = tables.Column(verbose_name="Teilnahme", empty_values=(), orderable=False)
 
     def render_counter(self):
         self.row_counter = getattr(self, "row_counter", itertools.count())
         return next(self.row_counter) + self.page.start_index()
-        # self.page.sart_index() is default Table function and return number of start index per page
+
+    def render_tour(self, record):
+        if record.data:
+            label = record.data.get("tour", "")
+            return _TOUR_LABEL_TO_KEY.get(label, label)
+        return ""
+
+    def render_ws2026(self, record):
+        if record.data:
+            label = record.data.get("ws2026", "")
+            return _WS2026_LABEL_TO_KEY.get(label, label)
+        return ""
+
+    def render_takes_part_in_mv(self, record):
+        if record.data:
+            label = record.data.get("takes_part_in_mv", "")
+            return _TAKES_PART_LABEL_TO_KEY.get(label, label)
+        return ""
 
     view = MemberViewLinkColumn(
         "ft-member-detail",
@@ -92,14 +117,6 @@ class FTEventMembersTable(tables.Table):
         empty_values=(),
     )
 
-    # update = MemberUpdateLinkColumn(
-    #     "ft-member-update",
-    #     args=[A("pk")],
-    #     orderable=False,
-    #     text="Update",
-    #     empty_values=(),
-    # )
-
     class Meta:
         model = EventMember
         template_name = "django_tables2/bootstrap4.html"
@@ -107,6 +124,17 @@ class FTEventMembersTable(tables.Table):
             "firstname",
             "lastname",
             "email",
+        )
+        sequence = (
+            "counter",
+            "firstname",
+            "lastname",
+            "email",
+            "takes_part_in_mv",
+            "ws2026",
+            "tour",
+            "view",
+            "delete",
         )
 
 
