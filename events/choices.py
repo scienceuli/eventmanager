@@ -143,7 +143,7 @@ WS2022_CHOICES = (
 TOUR_CHOICES_2026 = (
     (
         "I",
-        "Wilhelm-Hack-Museum, Führung »Politik am Küchentisch«, Beginn 15:40 Uhr vor Ort/14:40 Uhr Tagungshotel",
+        "Wilhelm-Hack-Museum, Führung »Politik am Küchentisch«, Beginn 15:40 Uhr vor Ort/14:40 Uhr ab Tagungshotel",
     ),
     ("II", "Rhein Walk, Beginn 16:30 Uhr vor Ort/15:45 Uhr ab Tagungshotel"),
     ("-", "Ich nehme an keinem Programm teil."),

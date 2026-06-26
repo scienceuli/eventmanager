@@ -939,11 +939,7 @@ def event_add_member(request, slug):
     event = get_object_or_404(Event, slug=slug)
     strategy = get_strategy(event)
 
-    # allow testing override
-    if user_in_testing_group(request.user):
-        event.registration_possible = True
-
-    if not event.registration_possible:
+    if not event.registration_possible and not user_in_testing_group(request.user):
         add_error(request, "keine Anmeldung möglich")
         return redirect("event-detail", event.slug)
 
