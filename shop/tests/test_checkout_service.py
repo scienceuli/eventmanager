@@ -111,7 +111,7 @@ class CheckoutExecuteSuccessTest(CheckoutServiceTestBase):
         mock_order_service = MagicMock()
 
         item = make_cart_item(self.event)
-        mock_split.return_value = ([item], [])
+        mock_split.return_value = ([item], [], [])
         reg_result.member = member
 
         service = CheckoutService.__new__(CheckoutService)
@@ -147,7 +147,7 @@ class CheckoutExecuteSuccessTest(CheckoutServiceTestBase):
         mock_reg_service.register.return_value = reg_result
 
         free_item = make_cart_item(self.event_full)
-        mock_split.return_value = ([], [free_item])
+        mock_split.return_value = ([], [free_item], [])
 
         service = CheckoutService.__new__(CheckoutService)
         service.form = make_mock_form()
@@ -161,7 +161,7 @@ class CheckoutExecuteSuccessTest(CheckoutServiceTestBase):
 
         self.assertTrue(result.success)
         service.order_service.add_item.assert_not_called()
-        service.order_service.finalize.assert_called_once()
+        service.order_service.finalize.assert_not_called()
 
     @patch("shop.services.checkout_service.split_cart")
     @patch("shop.services.checkout_service.get_strategy")
@@ -179,7 +179,7 @@ class CheckoutExecuteSuccessTest(CheckoutServiceTestBase):
 
         paid_item = make_cart_item(self.event)
         free_item = make_cart_item(self.event_full)
-        mock_split.return_value = ([paid_item], [free_item])
+        mock_split.return_value = ([paid_item], [free_item], [])
 
         service = CheckoutService.__new__(CheckoutService)
         service.form = make_mock_form()
@@ -211,7 +211,7 @@ class CheckoutExecuteErrorTest(CheckoutServiceTestBase):
         mock_reg_service.register.return_value = reg_result
 
         item = make_cart_item(self.event)
-        mock_split.return_value = ([item], [])
+        mock_split.return_value = ([item], [], [])
 
         service = CheckoutService.__new__(CheckoutService)
         service.form = make_mock_form()
@@ -232,7 +232,7 @@ class CheckoutExecuteErrorTest(CheckoutServiceTestBase):
     def test_exception_returns_generic_error(self, mock_split):
         """Unhandled exception inside try block results in generic error message."""
         item = make_cart_item(self.event)
-        mock_split.return_value = ([item], [])
+        mock_split.return_value = ([item], [], [])
 
         mock_reg_service = MagicMock()
         mock_reg_service.register.side_effect = Exception("DB error")
@@ -270,7 +270,7 @@ class CheckoutExecuteErrorTest(CheckoutServiceTestBase):
 
         item1 = make_cart_item(self.event)
         item2 = make_cart_item(self.event_full)
-        mock_split.return_value = ([item1], [item2])
+        mock_split.return_value = ([item1], [item2], [])
 
         service = CheckoutService.__new__(CheckoutService)
         service.form = make_mock_form()
@@ -302,7 +302,7 @@ class CheckoutExecuteCartClearTest(CheckoutServiceTestBase):
         mock_reg_service = MagicMock()
         mock_reg_service.register.return_value = reg_result
 
-        mock_split.return_value = ([], [])
+        mock_split.return_value = ([], [], [])
 
         service = CheckoutService.__new__(CheckoutService)
         service.form = make_mock_form()
@@ -321,7 +321,7 @@ class CheckoutExecuteCartClearTest(CheckoutServiceTestBase):
     def test_cart_not_cleared_on_exception(self, mock_split):
         """Cart is NOT cleared when an exception occurs."""
         item = make_cart_item(self.event)
-        mock_split.return_value = ([item], [])
+        mock_split.return_value = ([item], [], [])
 
         mock_reg_service = MagicMock()
         mock_reg_service.register.side_effect = Exception("fail")
@@ -358,7 +358,7 @@ class CheckoutNotificationTest(CheckoutServiceTestBase):
         mock_strategy.return_value = strategy_instance
 
         item = make_cart_item(self.event)
-        mock_split.return_value = ([item], [])
+        mock_split.return_value = ([item], [], [])
 
         form = make_mock_form()
         service = CheckoutService.__new__(CheckoutService)
@@ -385,7 +385,7 @@ class CheckoutNotificationTest(CheckoutServiceTestBase):
         mock_reg_service.register.return_value = reg_result
 
         item = make_cart_item(self.event)
-        mock_split.return_value = ([item], [])
+        mock_split.return_value = ([item], [], [])
 
         service = CheckoutService.__new__(CheckoutService)
         service.form = make_mock_form()
@@ -428,7 +428,7 @@ class CheckoutOneOrderOneInvoiceTest(CheckoutServiceTestBase):
 
         item1 = make_cart_item(self.event)
         item2 = make_cart_item(event2)
-        mock_split.return_value = ([item1, item2], [])
+        mock_split.return_value = ([item1, item2], [], [])
 
         service = CheckoutService.__new__(CheckoutService)
         service.form = make_mock_form()
@@ -469,7 +469,7 @@ class CheckoutOneOrderOneInvoiceTest(CheckoutServiceTestBase):
 
         item1 = make_cart_item(self.event)
         item2 = make_cart_item(self.event_full)
-        mock_split.return_value = ([item1, item2], [])
+        mock_split.return_value = ([item1, item2], [], [])
 
         service = CheckoutService.__new__(CheckoutService)
         service.form = make_mock_form()
@@ -499,7 +499,7 @@ class CheckoutOneOrderOneInvoiceTest(CheckoutServiceTestBase):
         mock_reg_service.register.return_value = reg_result
 
         free_item = make_cart_item(self.event_full)
-        mock_split.return_value = ([], [free_item])
+        mock_split.return_value = ([], [free_item], [])
 
         service = CheckoutService.__new__(CheckoutService)
         service.form = make_mock_form()

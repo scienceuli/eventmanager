@@ -196,7 +196,12 @@ class Cart:
 
 
 def split_cart(cart):
-    payment, non_payment = [], []
+    paid_items, free_items, waiting_items = [], [], []
     for item in cart:
-        (non_payment, payment)[not item["event"].is_full()].append(item)
-    return payment, non_payment
+        if item["event"].is_full():
+            waiting_items.append(item)
+        elif item["event"].price == 0:
+            free_items.append(item)
+        else:
+            paid_items.append(item)
+    return paid_items, free_items, waiting_items

@@ -57,15 +57,15 @@ class CheckoutService:
     def execute(self) -> CheckoutResult:
         result = CheckoutResult()
 
-        paid_items, free_items = split_cart(self.cart)
+        paid_items, free_items, waiting_items = split_cart(self.cart)
 
         try:
             with transaction.atomic():
 
-                for item in paid_items + free_items:
+                for item in paid_items + free_items + waiting_items:
                     reg_result = self._process_item(item, result)
 
-                    # add to order if paid
+                    # add to order only if paid (price > 0, not full)
                     if item in paid_items and reg_result.success:
                         if getattr(settings, 'ONE_ORDER_ONE_INVOICE', False):
                             # each paid item gets its own order + invoice
@@ -75,8 +75,8 @@ class CheckoutService:
                         else:
                             self.order_service.add_item(item)
 
-                if not getattr(settings, 'ONE_ORDER_ONE_INVOICE', False):
-                    # single order for all items
+                if not getattr(settings, 'ONE_ORDER_ONE_INVOICE', False) and paid_items:
+                    # single order for all paid items
                     self.order_service.finalize()
 
                 # clear cart

@@ -1,8 +1,10 @@
 import locale
-from typing import Any
-import pytz
-from datetime import datetime
 import logging
+from datetime import datetime
+from typing import Any
+
+import pytz
+
 _logger = logging.getLogger(__name__)
 
 
@@ -11,50 +13,41 @@ from django import http
 locale.setlocale(locale.LC_ALL, "de_DE")
 
 from decimal import Decimal
-from django.shortcuts import render, redirect, get_object_or_404
-from django.urls import reverse, reverse_lazy
+
 from django.conf import settings
-from django.contrib.admin.views.decorators import staff_member_required
-from django.http import HttpResponse, HttpResponseRedirect
-from django.db import transaction
-
-from django.views.decorators.http import require_POST
 from django.contrib import messages
-from django.template.loader import get_template
-from django.views.generic.edit import CreateView, FormView
-from django.views.generic import TemplateView
-
+from django.contrib.admin.views.decorators import staff_member_required
 from django.core.mail import send_mail
-
+from django.db import transaction
+from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import get_template
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
-
+from django.views.decorators.http import require_POST
+from django.views.generic import TemplateView
+from django.views.generic.edit import CreateView, FormView
 from xhtml2pdf import pisa
 
-from events.models import Event, EventCollection
-from events.forms import EventMemberForm
-from events.utils.email_utils import send_email
 from events.core_models import SiteSettings
-
+from events.forms import EventMemberForm
+from events.models import Event, EventCollection
+from events.utils.email_utils import send_email
+from events.utils.messages_utils import add_error, add_success
+from invoices.models import Invoice
+from mailings.models import InvoiceMessage
+from payment.services.payment_service import PaymentService
+from payment.tasks import payment_completed
+from payment.utils import (
+    check_order_complete,
+    update_order,
+)
 from shop.cart import Cart, split_cart
 from shop.forms import CartAddEventForm
 from shop.models import Order, OrderItem
-from shop.tasks import order_created
-
-from utilities.pdf import render_to_pdf
-
-from payment.utils import (
-    update_order,
-    check_order_complete,
-)
-from payment.tasks import payment_completed
-
-from invoices.models import Invoice
-from mailings.models import InvoiceMessage
-from events.core_models import SiteSettings
-
 from shop.services.checkout_service import CheckoutService
-from payment.services.payment_service import PaymentService
-from events.utils.messages_utils import add_success, add_error
+from shop.tasks import order_created
+from utilities.pdf import render_to_pdf
 
 
 @require_POST
@@ -99,6 +92,7 @@ def cart_detail(request):
         {
             "payment_cart": split_cart(cart)[0],
             "non_payment_cart": split_cart(cart)[1],
+            "waiting_cart": split_cart(cart)[2],
             "total_price": cart.get_total_price(),
             "discounted_total_price": cart.get_discounted_total_price(),
         },
@@ -115,6 +109,7 @@ class OrderCreateView(FormView):
 
         self.payment_cart = split_cart(self.cart)[0]
         self.non_payment_cart = split_cart(self.cart)[1]
+        self.waiting_cart = split_cart(self.cart)[2]
 
         return super().dispatch(request, *args, **kwargs)
 
@@ -128,6 +123,7 @@ class OrderCreateView(FormView):
         cart = self.cart
         payment_cart = self.payment_cart
         non_payment_cart = self.non_payment_cart
+        waiting_cart = self.waiting_cart
 
         if payment_cart:
             show_costs = True
@@ -155,7 +151,7 @@ class OrderCreateView(FormView):
             ]
         )
 
-        order_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_total_price(), grouping=False,symbol=False)} €</span>"
+        order_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_total_price(), grouping=False, symbol=False)} €</span>"
         order_totalprice_html_string += "<br><span class='italic'>*Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span>"
 
         order_discounted_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_discounted_total_price(), grouping=False, symbol=False)} €</span>"
@@ -172,6 +168,8 @@ class OrderCreateView(FormView):
         if payment_cart:
             payment_button_text = settings.PAY_NOW_TEXT
         elif non_payment_cart:
+            payment_button_text = settings.REGISTER_NOW_TEXT_FREE
+        elif waiting_cart:
             payment_button_text = settings.REGISTER_NOW_TEXT_WAITING
 
         context_update = {
@@ -189,6 +187,7 @@ class OrderCreateView(FormView):
         self.cart = cart
         self.payment_cart = payment_cart
         self.non_payment_cart = non_payment_cart
+        self.waiting_cart = waiting_cart
 
         context.update(context_update)
         return context
@@ -219,6 +218,7 @@ class OrderCreateView(FormView):
     def get_success_url(self):
         return reverse("shop:order-result", kwargs={"status": "ready"})
 
+
 class OrderResultView(TemplateView):
     template_name = "shop/order_result.html"
 
@@ -226,6 +226,7 @@ class OrderResultView(TemplateView):
         context = super().get_context_data(**kwargs)
         context["status"] = self.kwargs.get("status")
         return context
+
 
 @staff_member_required
 def admin_order_pdf(request, order_id, process):
