@@ -62,6 +62,7 @@ from .views import (
     maintenance,
     members_dashboard_view,
     moodle,
+    create_confirmations,
     search_event,
     search_members_list,
     speakers_view,
@@ -253,5 +254,10 @@ urlpatterns = [
         "events/answers/<int:event_id>/",
         event_answers_summary,
         name="admin-event-answers-summary",
+    ),
+    path(
+        "events/create_confirmations/<int:event_id>/",
+        create_confirmations,
+        name="create-confirmations",
     ),
 ]

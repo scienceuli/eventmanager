@@ -1622,3 +1622,23 @@ def documentation_view(request):
         "admin/documentation_view.html",
         {"documentation_content": rendered_content},
     )
+
+
+@staff_member_required
+def create_confirmations(request, event_id):
+    from events.services.confirmation_service import ConfirmationService
+
+    event = get_object_or_404(Event, pk=event_id)
+    service = ConfirmationService()
+    created, updated, errors = service.make_pdfs_for_event(event)
+
+    msg = f"{created} Teilnahmebescheinigung(en) erzeugt."
+    if updated:
+        msg += f" {updated} neu generiert (bereits vorhanden)."
+    if errors:
+        msg += f" {len(errors)} Fehler: {'; '.join(errors)}"
+        messages.warning(request, msg)
+    else:
+        messages.success(request, msg)
+
+    return redirect(reverse("admin:events_event_change", args=[event_id]))

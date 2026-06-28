@@ -29,6 +29,8 @@ Warenkorb
                 {% include 'shop/includes/_cart_items.html' with cart=payment_cart show_total_price=True %}
                 <!-- End Cart Items Table -->
 
+                {% elif waiting_cart %}
+                <p class="mt-2">Bitte anmelden für Warteliste</p>
                 {% else %}
                 <p class="mt-2">Noch keine Veranstaltungen hinzugefügt</p>
 

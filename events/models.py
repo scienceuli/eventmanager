@@ -220,6 +220,7 @@ class EventCategory(BaseModel):
 
 class EventFormat(BaseModel):
     name = models.CharField(verbose_name="Format", max_length=255, unique=True)
+    title = models.CharField(verbose_name="Titel", max_length=255, blank=True)
     description = models.TextField("Beschreibung", blank=True)
     moodle = models.BooleanField(default=False)
 
@@ -705,6 +706,13 @@ class Event(BaseModel, HitCountMixin):
         max_length=24, verbose_name="Moodle Standard-Passwort", default="VfllMoodle123#"
     )
     students_number = models.PositiveSmallIntegerField(default=0, editable=False)
+    confirmation_template = models.FileField(
+        verbose_name="Vorlage Teilnahmebescheinigung (PDF)",
+        upload_to="confirmation_templates/",
+        null=True,
+        blank=True,
+        help_text="PDF-Vorlage für die Teilnahmebescheinigung dieser Veranstaltung.",
+    )
 
     # couting hits with package django-hitcount
     # ref: https://django-hitcount.readthedocs.io/en/latest/overview.html
@@ -936,10 +944,23 @@ class Event(BaseModel, HitCountMixin):
         return f"vom {self.first_day.strftime('%d.%m.%Y')} bis {self.last_day.strftime('%d.%m.%Y')}"
 
     @property
+    def date_string_confirmation(self):
+        if not self.first_day:
+            return ""
+        if not self.last_day or self.first_day == self.last_day:
+            return f"{self.first_day.strftime('%d. %B %Y')}"
+        if (
+            self.first_day.month == self.last_day.month
+            and self.first_day.year == self.last_day.year
+        ):
+            return f"{self.first_day.strftime('%d.')} bis {self.last_day.strftime('%d. %B %Y')}"
+        if self.first_day.year == self.last_day.year:
+            return f"{self.first_day.strftime('%d. %B ')} bis {self.last_day.strftime('%d. %B %Y')}"
+        return f"{self.first_day.strftime('%d. %B %Y')} bis {self.last_day.strftime('%d. %B %Y')}"
+
+    @property
     def speaker_string(self):
-        return "unter der Leitung von " + ", ".join(
-            s.full_name for s in self.speaker.all()
-        )
+        return ", ".join(s.full_name for s in self.speaker.all())
 
     def current_hit_count(self):
         return self.hit_count.hits
@@ -1279,6 +1300,7 @@ class EventMember(AddressModel):
         ("attending", "nimmt teil"),
         ("absent", "nicht erschienen"),
         ("cancelled", "abgesagt"),
+        ("done", "teilgenommen"),
     )
     attend_status = models.CharField(
         verbose_name="Status", choices=ATTEND_STATUS_CHOICES, max_length=10

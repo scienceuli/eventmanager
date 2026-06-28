@@ -722,7 +722,6 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     verbose_name = "Anmeldung"
     verbose_name_plural = "Anmeldungen"
     fields = (
-        "academic",
         "firstname",
         "lastname",
         "email",
@@ -730,10 +729,10 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "vfll",
         "get_memberships_string",
         "agree",
-        "education_bonus",
         "get_registration_date",
         "total_cost",
         "change_link",
+        "confirmation_link",
         # "enroled",
         # "moodle_id",
     )
@@ -741,10 +740,11 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
     readonly_fields = (
         "total_cost",
         "change_link",
+        "confirmation_link",
         "get_registration_date",
         "get_memberships_string",
         "enroled",
-        "attend_status",
+        # "attend_status",
         # "moodle_id",
     )
 
@@ -780,6 +780,20 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         )
 
     change_link.short_description = "Edit"
+
+    def confirmation_link(self, obj):
+        try:
+            confirmation = obj.confirmation
+            if confirmation.pdf_file:
+                return format_html(
+                    '<a href="{}" target="_blank">PDF</a>',
+                    confirmation.pdf_file.url,
+                )
+        except Exception:
+            pass
+        return "–"
+
+    confirmation_link.short_description = "Bescheinigung"
 
     def get_inline_actions(self, request, obj=None):
         actions = super(EventMemberInline, self).get_inline_actions(request, obj)
@@ -1401,6 +1415,12 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             },
         ),
         ("Bewertungen", {"fields": ("testimonials",)}),
+        (
+            "Teilnahmebescheinigung",
+            {
+                "fields": ("confirmation_template",),
+            },
+        ),
         (
             "Intern",
             {

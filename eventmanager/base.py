@@ -302,7 +302,7 @@ COPY_ONLY_ALLOWED_FOR_SINGLE_OBJECT = True
 PAY_NOW_TEXT = "Jetzt kaufen"
 REGISTER_NOW_TEXT = "Jetzt kostenpflichtig anmelden"
 REGISTER_NOW_FREE_TEXT = "Jetzt anmelden"
-REGISTER_NOW_TEXT_WAITING = "Jetzt anmelden"
+REGISTER_NOW_TEXT_WAITING = "Jetzt anmelden (Warteliste)"
 
 # disable sitewide django-admin-export-action
 ADMIN_EXPORT_ACTION = {"ENABLE_SITEWIDE": False}
