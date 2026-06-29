@@ -1,4 +1,10 @@
+import json
+from pathlib import Path
+
 from django.contrib import admin
+from django.shortcuts import redirect, render
+from django.urls import path
+
 from .models import (
     Survey,
     SurveyCategory,
@@ -7,9 +13,47 @@ from .models import (
     QuestionAnswer,
 )
 
+TEMPLATE_PATH = Path(__file__).parent / "survey_templates" / "default.json"
+
+
 @admin.register(Survey)
 class SurveyAdmin(admin.ModelAdmin):
     list_display = ("event",)
+    change_list_template = "admin/event_feedback/survey/change_list.html"
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom = [
+            path(
+                "template-editor/",
+                self.admin_site.admin_view(self.template_editor_view),
+                name="event_feedback_survey_template_editor",
+            ),
+        ]
+        return custom + urls
+
+    def template_editor_view(self, request):
+        error = None
+        if request.method == "POST":
+            content = request.POST.get("content", "")
+            try:
+                json.loads(content)
+                TEMPLATE_PATH.write_text(content, encoding="utf-8")
+                self.message_user(request, "Feedback-Vorlage gespeichert.")
+                return redirect("..")
+            except json.JSONDecodeError as e:
+                error = f"Ungültiges JSON: {e}"
+        else:
+            content = TEMPLATE_PATH.read_text(encoding="utf-8")
+
+        context = {
+            **self.admin_site.each_context(request),
+            "title": "Feedback-Vorlage bearbeiten",
+            "content": content,
+            "error": error,
+            "opts": self.model._meta,
+        }
+        return render(request, "admin/event_feedback/survey/template_editor.html", context)
 
 class SurveyQuestionInline(admin.TabularInline):
     model = SurveyQuestion
