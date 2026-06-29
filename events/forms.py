@@ -2403,10 +2403,10 @@ class Symposium2026Form(forms.Form):
                 "5. Teilnahmegebühr",
                 HTML(
                     """
-                    <p>Der Tagungsbeitrag für die Fachtagung beträgt
+                    <p>
                     <ul style='list-style-position: outside; padding-left: 20px;'>
-                    <li>150 € für Mitglieder des VFLL oder eines der u. g. Partnerverbände</li>
-                    <li>190 € für sonstige Fachbesucher*innen</li>
+                    <li>150,00&nbsp;€ für Mitglieder des VFLL und Partnerverbände (siehe unten)</li>
+                    <li>190,00&nbsp;€ für Nichtmitglieder</li>
                     </ul>
                     </p>
                     <p class='mt-2 mb-2'>
@@ -2424,20 +2424,20 @@ class Symposium2026Form(forms.Form):
                 HTML(
                     """
                     <p>Den Gesamtbetrag aus Tagungsbeitrag und ggf. den Kostenbeiträgen
-                    für weitere von mir gewählte Angebote (**) werde ich überweisen an:</br>
-                    VFLL e. V., IBAN: DE24 4306 0967 6032 5237 00,<br/>
-                    BIC: GENODEM1GLS – Stichwort: FFL 2026
+                    für weitere von mir gewählte Angebote (**) werde ich innerhalb von 14&nbsp;Tagen überweisen an VFLL e.V.,
+                    IBAN: DE24 4306 0967 6032 5237 00,<br/>
+                    BIC: GENODEM1GLS – Stichwort: FFL&nbsp;2026
                     </p>
+                    <p>Die Rechnung über den bezahlten Betrag wird nach der Tagung verschickt.</p>
                     <p class="mb-2">
                     <hr>
                     </p>
                     <p class="mt-2" style="border:top;">
                     <b>Für den Fall einer Absage bitte beachten:</b>
                     <ul style='list-style-position: outside; padding-left: 20px;'>
-                    <li>Bei Absagen bis 20.08.2026 fällt eine Stornogebühr von 35&nbsp;% an.</li>
-                    <li>Bei Absagen bis 27.08.2026 fällt eine Stornogebühr von 40&nbsp;% an.</li>
-                    <li>Bei Absagen bis 10.09.2026 fällt eine Stornogebühr von 80&nbsp;% an.</li>
-                    <li>Bei Absagen ab dem 11.09.2026 ist keine Rückerstattung mehr möglich.</li>
+                    <li>Bei Absagen bis 06.08.2026 wird eine Bearbeitungsgebühr von €&nbsp;25,00 erhoben.</li>
+                    <li>Bei Absagen bis 20.08.2026 werden 50&nbsp;% der gezahlten Beträge für Tagung und Rahmenprogramm zurückerstattet.</li>
+                    <li>Bei Absagen ab 21.08.2026 ist keine Rückerstattung mehr möglich.</li>
                     </ul>
                     </p>
                     <p class='mt-2 mb-2'>

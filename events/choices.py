@@ -99,12 +99,12 @@ MEMBER_TYPE_CHOICES_VFLL = (
 )
 
 TAKES_PART_CHOICES_MV = (
-    ("mv", "Ich nehme nur an der Mitgliederversammlung (Sonntag) teil."),
     ("ft", "Ich nehme nur an der Fachtagung (Samstag) teil."),
     (
         "both",
-        "Ich nehme an der Fachtagung und Mitgliederversammlung (Samstag und Sonntag) teil.",
+        "Ich nehme an der Fachtagung (Samstag) und Mitgliederversammlung (Sonntag) teil.",
     ),
+    ("mv", "Ich nehme nur an der Mitgliederversammlung (Sonntag) teil."),
 )
 
 
@@ -141,11 +141,11 @@ WS2022_CHOICES = (
 )
 
 TOUR_CHOICES_2026 = (
+    ("I", "Rhein Walk, 15:45 Uhr ab Tagungshaus/Foyer oder 16:30 direkt vor Ort"),
     (
-        "I",
-        "Wilhelm-Hack-Museum, Führung »Politik am Küchentisch«, Beginn 15:40 Uhr vor Ort/14:40 Uhr ab Tagungshotel",
+        "II",
+        "Wilhelm-Hack-Museum, Führung »Politik am Küchentisch«, 14:40 Uhr ab Tagungshaus/Foyer oder 15:40 direkt vor Ort, Kosten: abhängig von TN-Zahl, zahlbar vor Ort",
     ),
-    ("II", "Rhein Walk, Beginn 16:30 Uhr vor Ort/15:45 Uhr ab Tagungshotel"),
     ("-", "Ich nehme an keinem Programm teil."),
 )
 
