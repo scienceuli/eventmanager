@@ -2410,7 +2410,7 @@ class Symposium2026Form(forms.Form):
                     </ul>
                     </p>
                     <p class='mt-2 mb-2'>
-                    Bitte beachten: Kosten für ggf. Übernachtungen und gewählte Rahmenprogrammpunkte etc. sind von den Teilnehmenden selbst zu tragen.
+                    Darin enthalten sind die Kosten für die Fachtagung (hinzu kommen ggf. gewählte Punkte des Rahmenprogramms).
                     </p>
                     """
                 ),
@@ -2441,8 +2441,8 @@ class Symposium2026Form(forms.Form):
                     </ul>
                     </p>
                     <p class='mt-2 mb-2'>
-                    Bitte bucht eure Hotelübernachtungen selbst und beachtet im Fall einer
-                    Absage die dortigen Stornierungsbedingungen.
+                    Bitte bucht eure Hotelübernachtungen selbst und beachtet im Fall
+                    einer Absage die dortigen Stornierungsbedingungen.
                     </p>
                     """
                 ),
