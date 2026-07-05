@@ -40,6 +40,7 @@ from .views import (
     FTEventMemberDetailView,
     FTEventMembersListView,
     FTEventMemberUpdateView,
+    MV2026MemberUpdateView,
     MVEventMemberDetailView,
     MVEventMembersListView,
     MVEventMemberUpdateView,
@@ -197,6 +198,11 @@ urlpatterns = [
         "members/update/<int:pk>/",
         EventMemberUpdateView.as_view(),
         name="member-update",
+    ),
+    path(
+        "members/update-data/<int:pk>/",
+        MV2026MemberUpdateView.as_view(),
+        name="member-data-update",
     ),
     path(
         "ft_members/update/<int:pk>/",

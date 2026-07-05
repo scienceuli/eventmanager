@@ -30,7 +30,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.mail import BadHeaderError, send_mail
 from django.db import transaction
 from django.db.models import Count, F, Max, Q, Sum
-from django.http import Http404, HttpResponse, request
+from django.http import Http404, HttpResponse, HttpResponseRedirect, request
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse, reverse_lazy
 from django.utils import timezone
@@ -129,6 +129,7 @@ from .forms import (
     MemberForm,
     MV2023Form,
     MV2025Form,
+    MV2026MemberEditForm,
     Symposium2022Form,
     Symposium2024Form,
     SymposiumForm,
@@ -1363,6 +1364,36 @@ class MVEventMemberUpdateView(MVOrgaGroupTestMixin, UpdateView):
 
         label = EventMember.objects.get(pk=pk).event.label
         return reverse("mv-members", kwargs={"event": label})
+
+
+class MV2026MemberUpdateView(MVOrgaGroupTestMixin, UpdateView):
+    model = EventMember
+    form_class = MV2026MemberEditForm
+    template_name = "events/mv2026_member_update.html"
+
+    def get_success_url(self):
+        label = EventMember.objects.get(pk=self.kwargs["pk"]).event.label
+        return reverse("ft-members", kwargs={"event": label})
+
+    def form_valid(self, form):
+        instance = form.save(commit=False)
+        if instance.data is None:
+            instance.data = {}
+        data_fields = [
+            "takes_part_in_mv",
+            "ws2026",
+            "tour",
+            "dinner_one",
+            "dinner_two",
+            "food_preferences",
+            "food_remarks",
+            "memberships",
+            "remarks",
+        ]
+        for field in data_fields:
+            instance.data[field] = form.cleaned_data.get(field)
+        instance.save()
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class EventMemberCreateView(MVOrgaGroupTestMixin, CreateView):

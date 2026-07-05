@@ -2517,3 +2517,92 @@ class Symposium2026Form(forms.Form):
                 "Bitte eine oder mehrere Organisationen wählen oder die letzte Option",
             )
         return memberships
+
+
+def _label_to_choice_key(stored_value, choices):
+    """Return choice key from either a valid key or a human-readable label.
+
+    Data stored via choices_to_string() holds labels; data re-saved via the
+    edit view holds keys. This handles both formats.
+    """
+    if not stored_value:
+        return ""
+    for value, label in choices:
+        if value == stored_value:
+            return value
+    for value, label in choices:
+        if label == stored_value:
+            return value
+    return ""
+
+
+class MV2026MemberEditForm(forms.ModelForm):
+    takes_part_in_mv = forms.ChoiceField(
+        label="Teilnahme",
+        choices=[("", "---------")] + list(TAKES_PART_CHOICES_MV),
+        required=False,
+    )
+    ws2026 = forms.ChoiceField(
+        label="Workshop",
+        choices=[("", "---------")] + list(WS2026_CHOICES),
+        required=False,
+    )
+    tour = forms.ChoiceField(
+        label="Rahmenprogramm",
+        choices=[("", "---------")] + list(TOUR_CHOICES_2026),
+        required=False,
+    )
+    dinner_one = forms.BooleanField(label="Abendessen Freitag", required=False)
+    dinner_two = forms.BooleanField(label="Abendessen Samstag", required=False)
+    food_preferences = forms.ChoiceField(
+        label="Essenspräferenz",
+        choices=[("", "---------")] + list(FOOD_PREFERENCE_CHOICES),
+        required=False,
+    )
+    food_remarks = forms.CharField(
+        label="Anmerkungen Essen",
+        widget=forms.Textarea(attrs={"rows": 3}),
+        required=False,
+    )
+    memberships = forms.MultipleChoiceField(
+        label="Mitgliedschaften",
+        choices=MEMBERSHIP_CHOICES_MV_2026,
+        widget=forms.SelectMultiple,
+        required=False,
+    )
+    remarks = forms.CharField(
+        label="Anmerkungen",
+        widget=forms.Textarea(attrs={"rows": 3}),
+        required=False,
+    )
+
+    class Meta:
+        model = EventMember
+        fields = ["lastname", "firstname", "email", "address_line", "street", "postcode", "city"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk and self.instance.data:
+            d = self.instance.data
+            # Data is stored as human-readable labels by choices_to_string /
+            # boolean_translate, so reverse-map back to choice keys here.
+            self.initial["takes_part_in_mv"] = _label_to_choice_key(
+                d.get("takes_part_in_mv", ""), TAKES_PART_CHOICES_MV
+            )
+            self.initial["ws2026"] = _label_to_choice_key(
+                d.get("ws2026", ""), WS2026_CHOICES
+            )
+            self.initial["tour"] = _label_to_choice_key(
+                d.get("tour", ""), TOUR_CHOICES_2026
+            )
+            # Legacy: "Ja"/"Nein"; post-edit: Python bool
+            dinner_one_raw = d.get("dinner_one", "")
+            self.initial["dinner_one"] = dinner_one_raw is True or dinner_one_raw == "Ja"
+            dinner_two_raw = d.get("dinner_two", "")
+            self.initial["dinner_two"] = dinner_two_raw is True or dinner_two_raw == "Ja"
+            self.initial["food_preferences"] = _label_to_choice_key(
+                d.get("food_preferences", ""), FOOD_PREFERENCE_CHOICES
+            )
+            self.initial["food_remarks"] = d.get("food_remarks", "")
+            self.initial["memberships"] = d.get("memberships", [])
+            self.initial["remarks"] = d.get("remarks", "")

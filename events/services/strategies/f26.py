@@ -32,6 +32,7 @@ class F26RegistrationStrategy(BaseRegistrationStrategy):
                 "agree": True,
                 "attend_status": "registered",
                 "data": f26_data,
+                "original_data": f26_data,
                 "vfll": vfll,
             }
         )

@@ -12,6 +12,13 @@
             </svg></button>
     </td>
     <td>
+        <a href="{% url 'member-data-update' member.pk %}" class="btn btn-sm btn-secondary">
+            <svg class="bi bi-pencil-square" width="12" height="12">
+                <use xlink:href="#pencil-square">
+            </svg>
+        </a>
+    </td>
+    <td>
         <a href="{% url 'member-delete' member.pk %}" class="btn btn-sm btn-danger">
             <svg class="bi bi-trash" width="12" height="12">
                 <use xlink:href="#trash">

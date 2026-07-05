@@ -5,12 +5,19 @@ import django_tables2 as tables
 from django.utils.html import format_html
 from django_tables2.utils import A
 
-from .choices import TAKES_PART_CHOICES_MV, TOUR_CHOICES_2026, WS2026_CHOICES
+from .choices import (
+    FOOD_PREFERENCE_CHOICES,
+    TAKES_PART_CHOICES_MV,
+    TOUR_CHOICES_2026,
+    WS2026_CHOICES,
+)
 from .models import EventMember
+from .utils.utils import boolean_translate
 
 _TOUR_LABEL_TO_KEY = {label: key for key, label in TOUR_CHOICES_2026}
 _WS2026_LABEL_TO_KEY = {label: key for key, label in WS2026_CHOICES}
 _TAKES_PART_LABEL_TO_KEY = {label: key for key, label in TAKES_PART_CHOICES_MV}
+_FOOD_PREFERENCE_LABEL_TO_KEY = {label: key for key, label in FOOD_PREFERENCE_CHOICES}
 
 
 class MemberViewLinkColumn(tables.LinkColumn):
@@ -78,7 +85,18 @@ class FTEventMembersTable(tables.Table):
     counter = tables.Column(empty_values=(), orderable=False)
     tour = tables.Column(verbose_name="Tour", empty_values=(), orderable=False)
     ws2026 = tables.Column(verbose_name="WS", empty_values=(), orderable=False)
-    takes_part_in_mv = tables.Column(verbose_name="Teilnahme", empty_values=(), orderable=False)
+    takes_part_in_mv = tables.Column(
+        verbose_name="Teilnahme", empty_values=(), orderable=False
+    )
+    dinner_one = tables.BooleanColumn(
+        yesno="✔,✘", verbose_name="AE Fr", empty_values=(), orderable=False
+    )
+    dinner_two = tables.BooleanColumn(
+        yesno="✔,✘", verbose_name="AE Sa", empty_values=(), orderable=False
+    )
+    food_preferences = tables.Column(
+        verbose_name="Essen", empty_values=(), orderable=False
+    )
 
     def render_counter(self):
         self.row_counter = getattr(self, "row_counter", itertools.count())
@@ -96,6 +114,24 @@ class FTEventMembersTable(tables.Table):
             return _WS2026_LABEL_TO_KEY.get(label, label)
         return ""
 
+    def render_dinner_one(self, record):
+        if record.data:
+            label = boolean_translate(record.data.get("dinner_one", ""))
+            return label
+        return ""
+
+    def render_dinner_two(self, record):
+        if record.data:
+            label = boolean_translate(record.data.get("dinner_two", ""))
+            return label
+        return ""
+
+    def render_food_preferences(self, record):
+        if record.data:
+            label = record.data.get("food_preferences", "")
+            return _FOOD_PREFERENCE_LABEL_TO_KEY.get(label, label)
+        return ""
+
     def render_takes_part_in_mv(self, record):
         if record.data:
             label = record.data.get("takes_part_in_mv", "")
@@ -106,14 +142,21 @@ class FTEventMembersTable(tables.Table):
         "ft-member-detail",
         args=[A("pk")],
         orderable=False,
-        text="View",
+        text="👁",
+        empty_values=(),
+    )
+    update = MemberUpdateLinkColumn(
+        "member-data-update",
+        args=[A("pk")],
+        orderable=False,
+        text="✎",
         empty_values=(),
     )
     delete = MemberDeleteLinkColumn(
         "ft-member-delete",
         args=[A("pk")],
         orderable=False,
-        text="Del",
+        text="🗑️",
         empty_values=(),
     )
 
@@ -133,8 +176,12 @@ class FTEventMembersTable(tables.Table):
             "takes_part_in_mv",
             "ws2026",
             "tour",
+            "dinner_one",
+            "dinner_two",
+            "food_preferences",
             "view",
             "delete",
+            "update",
         )
 
 

@@ -1,0 +1,66 @@
+{% extends 'base/base.html' %}
+
+{% load widget_tweaks %}
+
+{% block content %}
+
+<div class="max-w-3xl mx-auto pt-8">
+
+    <h1 class="text-xl font-semibold mb-4">Teilnehmer bearbeiten: {{ object.firstname }} {{ object.lastname }}</h1>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+
+        {% for field in form %}
+        <div class="mb-4">
+            {% if field.field.widget.input_type != "checkbox" %}
+            <label for="{{ field.id_for_label }}" class="block text-gray-700 text-sm font-bold mb-1">
+                {{ field.label }}{% if field.field.required %} *{% endif %}
+            </label>
+            {% endif %}
+
+            {% if field.field.widget.allow_multiple_selected %}
+                {% comment %}MultipleChoiceField — render as checkboxes{% endcomment %}
+                {% for choice_value, choice_label in field.field.choices %}
+                <div class="flex items-center mb-1">
+                    <input type="checkbox"
+                           name="{{ field.html_name }}"
+                           value="{{ choice_value }}"
+                           id="{{ field.auto_id }}_{{ forloop.counter }}"
+                           {% if choice_value in field.value %}checked{% endif %}
+                           class="mr-2">
+                    <label for="{{ field.auto_id }}_{{ forloop.counter }}"
+                           class="text-gray-700 text-sm font-normal">{{ choice_label }}</label>
+                </div>
+                {% endfor %}
+            {% elif field.field.widget.input_type == "checkbox" %}
+                <div class="flex items-center">
+                    {{ field|add_class:"mr-2" }}
+                    <label for="{{ field.auto_id }}" class="text-gray-700 text-sm font-normal ml-1">
+                        {{ field.label }}
+                    </label>
+                </div>
+            {% else %}
+                {{ field|add_class:"bg-white border border-gray-300 rounded-lg py-2 px-4 block w-full" }}
+            {% endif %}
+
+            {% if field.help_text %}
+            <p class="text-gray-500 text-xs mt-1">{{ field.help_text }}</p>
+            {% endif %}
+            {% for error in field.errors %}
+            <p class="text-red-500 text-xs mt-1">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="flex gap-4 mt-6">
+            <input type="submit" value="Speichern"
+                   class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+            <a href="{{ request.META.HTTP_REFERER|default:'/' }}"
+               class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Abbrechen</a>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}
