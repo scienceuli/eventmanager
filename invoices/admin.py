@@ -137,7 +137,7 @@ class StandardInvoiceAdmin(admin.ModelAdmin):
     
     @admin.display(boolean=True, description='↓')
     def pdf_exported(self, obj):
-        return obj.pdf and obj.pdf_export is not None
+        return bool(obj.pdf) and obj.pdf_export is not None
 
     def get_urls(self):
         urls = super().get_urls()
