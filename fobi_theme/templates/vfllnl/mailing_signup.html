@@ -1,4 +1,4 @@
-{% load static %}
+{% load static honeypot %}
 
 <div class="bg-vfllred text-white mt-12">
     <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-16">
@@ -20,6 +20,7 @@
                     class="sm:flex"
                 >
                     {% csrf_token %}
+                    {% render_honeypot_field "secret_key_for_vfll" %}
                     <label for="newsletter-email" class="sr-only"
                         >Email address</label
                     >
