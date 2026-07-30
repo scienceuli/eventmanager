@@ -215,6 +215,7 @@ def home(request):
         event_highlight = None
 
     # next four events — exclude full events (registered members >= capacity)
+    # and events of partners
     next_events = (
         Event.objects.filter(
             category__belongs_to_all_events=True,
@@ -227,6 +228,7 @@ def home(request):
             )
         )
         .filter(Q(capacity__isnull=True) | Q(registered_count__lt=F("capacity")))
+        .exclude(category__name__in=settings.PARTNER_CATEGORIES)
         .order_by("first_day")[:4]
     )
 
