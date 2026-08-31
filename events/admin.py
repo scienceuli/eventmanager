@@ -79,6 +79,7 @@ from .models import (
     EventMemberChangeDate,
     EventMemberRole,
     EventOrganizer,
+    EventPreRegistration,
     EventSpeaker,
     EventSpeakerThrough,
     EventSponsor,
@@ -422,6 +423,19 @@ class CsvImportForm(forms.Form):
 class EventMemberRoleInline(admin.TabularInline):
     model = EventMemberRole
     extra = 0
+
+
+class EventPreRegistrationInline(admin.TabularInline):
+    model = EventPreRegistration
+    extra = 0
+    verbose_name = "Vormerkung"
+    verbose_name_plural = "Vormerkungen"
+    fields = ["salutation", "academic", "firstname", "lastname", "email", "date_created"]
+    readonly_fields = ["salutation", "academic", "firstname", "lastname", "email", "date_created"]
+    can_delete = True
+
+    def has_add_permission(self, request, obj=None):
+        return False
 
 
 class EventMemberAdmin(admin.ModelAdmin):
@@ -1503,6 +1517,7 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         EventDocumentInline,
         PrivateDocumentInline,
         EventMemberInline,
+        EventPreRegistrationInline,
     )
     actions = (
         "copy_event",

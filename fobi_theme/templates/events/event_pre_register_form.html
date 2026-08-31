@@ -1,0 +1,27 @@
+{% extends 'base/base.html' %}
+
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto flex flex-col px-4">
+    <div class="space-y-2">
+        <h2 class="text-xl font-bold pt-4">Ja, ich möchte an »{{ event.name }}« erinnert werden!</h2>
+
+    </div>
+
+    <div class="pt-4">
+        <form method="post">
+            {% crispy form %}
+            <div class="grid grid-cols-1 py-5">
+              <button type="submit" class="w-full py-3 mt-6 text-xl font-bold rounded-full tracking-widest text-vfllred uppercase bg-gray-200 focus:outline-none hover:shadow-lg">
+                  Jetzt vormerken lassen
+              </button>
+
+
+              <button class="flex justify-between inline-block mt-4 text-xs text-gray-500 cursor-pointer hover:text-black" onclick="javascript:history.back();">Abbrechen</button>
+
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

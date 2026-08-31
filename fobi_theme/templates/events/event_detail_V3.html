@@ -506,7 +506,17 @@
                     <div class="flex mx-auto">
                         <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
 
-                            {% if show_button %}
+                            {% if show_pre_registration %}
+
+                            <div class="item">
+                                <div class="">
+                                    <a class=" bg-gray-200 font-bold  text-vfllred px-2" href="{% url 'event-pre-register' event.slug %}">
+                                        Jetzt vormerken lassen
+                                    </a>
+                                </div>
+                            </div>
+
+                            {% elif show_button %}
 
                             {% if event.direct_payment and event.is_open_for_registration %}
                             <div class="item">

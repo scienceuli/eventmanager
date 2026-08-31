@@ -37,6 +37,7 @@ from events.models import (
     EventLocation,
     EventMember,
     EventOrganizer,
+    EventPreRegistration,
 )
 
 from .api_models import VfllMemberEmail
@@ -334,6 +335,52 @@ class MemberForm(forms.ModelForm):
         fields = ["lastname", "firstname", "email", "attend_status"]
 
 
+class EventPreRegistrationForm(forms.ModelForm):
+    agree = forms.BooleanField(
+        label="Ich bin einverstanden",
+        widget=forms.CheckboxInput(attrs={"class": "form-radio"}),
+        required=True,
+    )
+
+    class Meta:
+        model = EventPreRegistration
+        fields = ["salutation", "academic", "firstname", "lastname", "email", "agree"]
+
+    def __init__(self, *args, event=None, **kwargs):
+        self.event = event
+        super().__init__(*args, **kwargs)
+        self.helper = FormHelper()
+        self.helper.form_tag = False
+        self.helper.layout = Layout(
+            "salutation",
+            "academic",
+            "firstname",
+            "lastname",
+            "email",
+            HTML(
+                "<p class='text-sm text-gray-600 mb-2'>"
+                "Mit dieser Bestellung einer Vormerkung für eine schriftliche Erinnerung "
+                "stimme ich der Verarbeitung meiner hier angegebenen personenbezogenen Daten "
+                "zum Zwecke der Erinnerung an den Anmeldebeginn zu. Dieser Einwilligung kann "
+                "ich jederzeit per E-Mail an fortbildung@vfll.de schriftlich widersprechen.<br/>"
+                "Informationen über die rechtmäßige Verarbeitung der Daten finden Sie auf der "
+                "<a class='text-vfllred' href='https://veranstaltungskalender.vfll.de/pages/privacy/' target='_blank'>Website der VFLL-Akademie</a>."
+                "</p>"
+            ),
+            "agree",
+        )
+
+    def clean_email(self):
+        email = self.cleaned_data["email"]
+        if self.event and EventPreRegistration.objects.filter(
+            event=self.event, email=email
+        ).exists():
+            raise forms.ValidationError(
+                "Für diese E-Mail-Adresse liegt für diese Veranstaltung bereits eine Vormerkung vor."
+            )
+        return email
+
+
 class EventMemberForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -361,7 +408,7 @@ class EventMemberForm(forms.Form):
                 "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
             }
         ),
-        required=True,
+        required=False,
     )
     lastname = forms.CharField(
         widget=forms.TextInput(
@@ -369,7 +416,7 @@ class EventMemberForm(forms.Form):
                 "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
             }
         ),
-        required=True,
+        required=False,
     )
     address_line = forms.CharField(
         widget=forms.TextInput(
@@ -521,6 +568,23 @@ class EventMemberForm(forms.Form):
     #             "Veranstaltung ist nur für Mitglieder. Bitte entsprechende Checkbox bestätigen."
     #         )
 
+    def clean(self):
+        cleaned_data = super().clean()
+        firstname = cleaned_data.get('firstname')
+        lastname = cleaned_data.get('lastname')
+        company = cleaned_data.get('company')
+        if not firstname and not company:
+            self.add_error(
+                "firstname",
+                "Bitte Vornamen angeben, wenn nicht als Firma bestellt wird."
+            )
+
+        if not lastname and not company:
+            self.add_error(
+                "lastname",
+                "Bitte Nachnamen angeben, wenn nicht als Firma bestellt wird."
+            )
+
 
 class WelcomeMemberForm(forms.Form):
     def __init__(self, *args, **kwargs):
@@ -538,7 +602,7 @@ class WelcomeMemberForm(forms.Form):
                 HTML(
                     """
                     <p class='mb-2'><small>Bitte beachten: Bitte benutzen Sie die E-Mail-Adresse, mit der Sie beim VFLL
-                    registriert sind.</small
+                    registriert sind.</small>
                     </p>
                     """
                 ),

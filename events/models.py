@@ -1385,6 +1385,46 @@ class EventMember(AddressModel):
             super(EventMember, self).save(*args, **kwargs)
 
 
+SALUTATION_CHOICES = (
+    ("m", "Herr"),
+    ("f", "Frau"),
+    ("d", "Divers"),
+)
+
+
+class EventPreRegistration(BaseModel):
+    """
+    Unverbindliche Vormerkung für Veranstaltungen, deren Anmeldung
+    noch nicht möglich ist (z.B. Veranstaltungen im kommenden Jahr).
+    """
+
+    event = models.ForeignKey(
+        Event,
+        verbose_name="Veranstaltung",
+        related_name="pre_registrations",
+        on_delete=models.CASCADE,
+    )
+    salutation = models.CharField(
+        verbose_name="Anrede", max_length=1, choices=SALUTATION_CHOICES, blank=True
+    )
+    academic = models.CharField(
+        verbose_name="Titel", max_length=40, null=True, blank=True
+    )
+    firstname = models.CharField(verbose_name="Vorname", max_length=255)
+    lastname = models.CharField(verbose_name="Nachname", max_length=255)
+    email = models.EmailField(verbose_name="E-Mail", max_length=255)
+    agree = models.BooleanField("Einverständnis", default=False)
+
+    class Meta:
+        verbose_name = "Vormerkung"
+        verbose_name_plural = "Vormerkungen"
+        unique_together = ["event", "email"]
+        ordering = ["-date_created"]
+
+    def __str__(self):
+        return f"Vormerkung von {self.lastname}, {self.firstname} für {self.event}"
+
+
 class EventMemberChangeDate(BaseModel):
     action = models.CharField(max_length=255, blank=True, null=True)
     change_date = models.DateTimeField()

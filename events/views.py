@@ -63,7 +63,9 @@ from events.decorators import check_user_able_to_see_page
 from events.filter import EventFilter
 from events.services.export_service import ExportService
 from events.services.notification_service import NotificationService
+from events.services.pre_registration_service import PreRegistrationService
 from events.services.registration import EventRegistrationService
+from events.services.registration_display_service import RegistrationDisplayService
 from events.services.strategies import get_strategy
 from events.utils import form_utils
 from events.utils.email_utils import (
@@ -122,6 +124,7 @@ from .forms import (
     EventMemberForm,
     EventModelForm,
     EventOrganizerModelForm,
+    EventPreRegistrationForm,
     EventOrganizerNMModelForm,
     EventUpdateCapacityForm,
     FT24EventMemberForm,
@@ -705,71 +708,16 @@ class EventDetailView(HitCountDetailView):
         context = super().get_context_data(**kwargs)
 
         event = self.get_object()
-        registration_text = ""
-        registration_button = ""
-        show_button = False
-        show_registration = True
-        additional_text = ""
 
         # exception if user is authenticated and belongs to testing group
         # in this case registration possible is set to true
-        show = user_in_testing_group(
+        override_registration_possible = user_in_testing_group(
             self.request.user
         ) or registration_possible_for_this_event(event.label)
 
-        if show:
-            event.registration_possible = True
-            event.category.registration = True
-
-        if event.category.registration == False:
-            if event.registration:
-                registration_text = event.registration
-            else:
-                show_registration = False
-            show_button = False
-        elif event.registration_possible:
-            show_button = True
-            show_registration = True
-            registration_text = event.registration
-
-            if event.registration_message:
-                registration_text += f"<span class='font-medium'>{event.registration_message}</span><br/>"
-                registration_button = "Online anmelden"
-            else:
-                if event.close_date:
-                    registration_text += "<span class='font-medium'>Anmeldeschluss: {:%d. %B %Y}</span><br/>".format(
-                        event.close_date
-                    )
-                    if event.is_closed_for_registration():
-                        if not event.is_full():
-                            if event.few_remaining_places():
-                                registration_text += "<span class='text-vfllred'>Anmeldung möglich, da noch wenige freie Plätze</span>"
-                            else:
-                                registration_text += "<span class='text-vfllred'>Anmeldung möglich, da noch freie Plätze</span>"
-
-                            registration_button = "Online anmelden"
-                        else:
-                            registration_text += (
-                                "<span class='italic'>Leider ausgebucht</span>"
-                            )
-                            registration_button = "Auf die Warteliste"
-                            additional_text = "Nach Abschluss des Bestellvorgangs werden Sie auf die Warteliste gesetzt."
-                    else:
-                        if not event.is_full():
-                            if event.few_remaining_places():
-                                registration_text += "<span class='text-vfllred'>Nur noch wenige freie Plätze!</span>"
-                            registration_button = "Online anmelden"
-                        else:
-                            registration_text += (
-                                "<span class='italic'>Leider ausgebucht</span> "
-                            )
-                            registration_button = "Auf die Warteliste"
-                            additional_text = "*Nach Abschluss des Bestellvorgangs werden Sie auf die Warteliste gesetzt."
-
-                else:
-                    registration_button = "Online anmelden"
-        else:
-            show_registration = False
+        display = RegistrationDisplayService().get_display(
+            event, override_registration_possible=override_registration_possible
+        )
 
         cart_event_form = CartAddEventForm()
 
@@ -783,11 +731,12 @@ class EventDetailView(HitCountDetailView):
             show_action_button = payless_collection.action_is_possible()
             context["show_action_button"] = show_action_button
 
-        context["registration_text"] = registration_text
-        context["registration_button"] = registration_button
-        context["additional_text"] = additional_text
-        context["show_button"] = show_button
-        context["show_registration"] = show_registration
+        context["registration_text"] = display.registration_text
+        context["registration_button"] = display.registration_button
+        context["additional_text"] = display.additional_text
+        context["show_button"] = display.show_button
+        context["show_registration"] = display.show_registration
+        context["show_pre_registration"] = display.show_pre_registration
         context["cart_event_form"] = cart_event_form
         context["pc_events"] = pc_events
         context["payless_collection"] = payless_collection
@@ -1006,6 +955,30 @@ def event_add_member(request, slug):
             "event": event,
             "payment_button_text": payment_button_text,
         },
+    )
+
+def event_pre_register(request, slug):
+    event = get_object_or_404(Event, slug=slug)
+
+    if request.method == "POST":
+        form = EventPreRegistrationForm(request.POST, event=event)
+        if form.is_valid():
+            service = PreRegistrationService()
+            result = service.register(form, event)
+
+            for msg in result.successes:
+                add_success(request, msg)
+            for msg in result.errors:
+                add_error(request, msg)
+
+            return redirect("event-detail", event.slug)
+    else:
+        form = EventPreRegistrationForm(event=event)
+
+    return render(
+        request,
+        "events/event_pre_register_form.html",
+        {"form": form, "event": event},
     )
 
 
