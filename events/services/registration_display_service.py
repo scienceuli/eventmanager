@@ -32,7 +32,7 @@ class RegistrationDisplayService:
     def get_display(self, event, override_registration_possible=False) -> RegistrationDisplay:
         display = RegistrationDisplay()
 
-        if self._is_next_year_event(event):
+        if self._is_next_year_event(event) and event.category.registration:
             display.show_pre_registration = True
             display.registration_text = _pre_registration_text(event.first_day.year)
             return display
