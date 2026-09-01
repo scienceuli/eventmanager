@@ -56,7 +56,10 @@ class RegistrationDisplayService:
 
     @staticmethod
     def _is_next_year_event(event):
-        return bool(event.first_day) and event.first_day.year > date.today().year
+        if not event.first_day:
+            return False
+        next_year_start = date(date.today().year + 1, 2, 1)
+        return event.first_day >= next_year_start
 
     def _apply_open_registration(self, display, event):
         display.registration_text = event.registration
