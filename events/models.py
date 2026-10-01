@@ -507,7 +507,7 @@ class Event(BaseModel, HitCountMixin):
         help_text="eindeutiger Kurzname",
     )
     description = RichTextUploadingField(
-        verbose_name="Teaser", blank=True, config_name="short"
+        verbose_name="Teaser", blank=True
     )
     meta_description = models.CharField(
         verbose_name="Meta Beschreibung", max_length=255, null=True, blank=True
@@ -521,10 +521,10 @@ class Event(BaseModel, HitCountMixin):
         blank=True,
     )
     prerequisites = RichTextUploadingField(
-        verbose_name="Voraussetzungen", null=True, blank=True, config_name="short"
+        verbose_name="Voraussetzungen", null=True, blank=True
     )
     objectives = RichTextUploadingField(
-        verbose_name="Lernziele", null=True, blank=True, config_name="short"
+        verbose_name="Lernziele", null=True, blank=True
     )
     price = models.DecimalField(
         verbose_name="Mitgliederpreis",
@@ -574,7 +574,7 @@ class Event(BaseModel, HitCountMixin):
     #    verbose_name="Methoden", max_length=255, null=True, blank=True
     # )
     methods = RichTextField(
-        verbose_name="Methoden", null=True, blank=True, config_name="short"
+        verbose_name="Methoden", null=True, blank=True
     )
     contribution = models.CharField(
         verbose_name="VFLL-Beteiligung", max_length=255, null=True, blank=True
@@ -637,7 +637,7 @@ class Event(BaseModel, HitCountMixin):
         "E-Mail an Admin senden", default=True
     )
     notes = RichTextField(
-        verbose_name="Hinweise", null=True, blank=True, config_name="short"
+        verbose_name="Hinweise", null=True, blank=True
     )
 
     pdf_file = models.FileField(blank=True, upload_to="pdfs")
@@ -1203,7 +1203,7 @@ class EventAgenda(BaseModel):
         verbose_name="wo", max_length=255, null=True, blank=True
     )
     description = RichTextField(
-        verbose_name="Programm", config_name="short", blank=True
+        verbose_name="Programm", blank=True
     )
 
     class Meta:

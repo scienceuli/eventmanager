@@ -185,14 +185,6 @@ class PayLessActionForm(forms.ModelForm):
     ref: https://stackoverflow.com/questions/6034047/one-to-many-inline-select-with-django-admin
     """
 
-    # events = forms.ModelMultipleChoiceField(
-    #     queryset=Event.objects.filter(first_day__gte=date.today())
-    #     .filter(pub_status="PUB")
-    #     .exclude(event_days=None)
-    #     .order_by("name"),
-    #     widget=forms.CheckboxSelectMultiple,
-    #     required=True,
-    # )
     events = forms.ModelMultipleChoiceField(
         queryset=Event.objects.none(),  # We'll define this queryset in the __init__ method
         widget=forms.CheckboxSelectMultiple,
@@ -267,25 +259,6 @@ class PayLessActionForm(forms.ModelForm):
                 .order_by("name")
             )
 
-        # if self.instance and self.instance.pk:
-        #     pay_less_events = self.instance.events.all()
-        #     events_with_collection = pay_less_events.filter(
-        #         event_collection__isnull=False
-        #     )
-        #     collection_events = []
-        #     if events_with_collection:
-        #         collection_events = list(
-        #             events_with_collection[0]
-        #             .event_collection.events.all()
-        #             .values_list("name", flat=True)
-        #         )
-        #         help_text = (
-        #             f"Bitte folgende Veranstaltungen wählen: {collection_events}"
-        #         )
-        #     else:
-        #         help_text = "Bitte alle Veranstaltungen wählen, die zu einer Event Collection gehören"
-
-        #     self.fields["events"].help_text = help_text
 
     def save_m2m(self):
         pass
@@ -305,26 +278,6 @@ class PayLessActionForm(forms.ModelForm):
                 "Die Event Collection umfasst nicht die selben Veranstaltungen wie die Payless Collection"
             )
         return self.cleaned_data
-
-    # def save(self, *args, **kwargs):
-    #     # import pdb
-
-    #     # pdb.set_trace()
-    #     self.fields["events"].initial.update(payless_collection=None)
-    #     payless_collection_instance = PayLessAction()
-    #     payless_collection_instance.pk = self.instance.pk
-    #     payless_collection_instance.name = self.instance.name
-    #     payless_collection_instance.title = self.instance.title
-    #     payless_collection_instance.type = self.instance.type
-    #     payless_collection_instance.percents = self.instance.percents
-    #     payless_collection_instance.price_premium = self.instance.price_premium
-    #     payless_collection_instance.price_members = self.instance.price_members
-    #     payless_collection_instance.save()
-    #     self.cleaned_data["events"].update(
-    #         payless_collection=payless_collection_instance
-    #     )
-    #     return payless_collection_instance
-
 
 class PayLessActionAdmin(admin.ModelAdmin):
     model = PayLessAction
