@@ -39,13 +39,6 @@ from events.utils.confirmation_utils import create_confirmation_mail
 from events.utils.email_utils import send_email
 from events.utils.utils import format_memberships
 from mailings.models import ConfirmationMessage
-from moodle.management.commands.moodle import (
-    assign_roles_to_enroled_user,
-    create_moodle_course,
-    delete_moodle_course,
-    enrol_user_to_course,
-    unenrol_user_from_course,
-)
 from payment.services.payment_service import PaymentService
 from payment.utils import check_order_date_in_future, update_order
 from shop.models import Order, OrderItem
@@ -700,10 +693,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "total_cost",
         "change_link",
         "confirmation_link",
-        # "enroled",
-        # "moodle_id",
     )
-    # inline_actions = ['enrol_to_moodle_course']
     readonly_fields = (
         "total_cost",
         "change_link",
@@ -711,21 +701,8 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         "get_registration_date",
         "get_memberships_string",
         "enroled",
-        # "attend_status",
-        # "moodle_id",
     )
 
-    # def has_add_permission(self, request, obj=None):
-    #    if obj and obj.is_past():
-    #        return False
-    #    return True
-
-    # def get_short_attend_status(self, obj):
-    #    if obj.attend_status:
-    #        return obj.attend_status[0]
-    #    return "-"
-
-    # get_short_attend_status.short_description = "St"
 
     def total_cost(self, obj):
         if obj.attend_status == "registered":
@@ -770,59 +747,7 @@ class EventMemberInline(InlineActionsMixin, admin.TabularInline):
         elif obj and obj.attend_status == "waiting":
             actions.append("change_attend_status_to_registered")
 
-        if obj and obj.event.moodle_id > 0:
-            if obj.enroled == False:
-                actions.append("enrol_to_moodle_course")
-            elif obj.enroled == True:
-                actions.append("unenrol_from_moodle_course")
-                actions.append("update_role_to_moodle_course")
-        # if obj and obj.enroled == False:
-        #    actions.append("delete_user")
         return actions
-
-    def enrol_to_moodle_course(self, request, obj, parent_obj=None):
-        obj.enroled = True
-        obj.roles.add(MemberRole.objects.get(roleid=5))
-        obj.save()
-        # get
-        response = enrol_user_to_course(
-            obj.email,
-            obj.event.moodle_id,
-            obj.event.moodle_new_user_flag,
-            obj.event.moodle_standard_password,
-            5,
-            obj.firstname,
-            obj.lastname,
-        )  # 5: student
-        if type(response) == dict:
-            if "warnings" in response and response["warnings"]:
-                messages.warning(request, response["warnings"])
-            if "exception" in response or "errorcode" in response:
-                messages.error(
-                    request,
-                    f"Teilnehmer*in konnte nicht eingeschrieben werden: {response.get('exception', '')}, {response.get('errorcode', '')}, {response.get('message', '')}",
-                )
-        else:
-            messages.success(
-                request, f"Teilnehmer*in wurde in den Moodle-Kurs eingeschrieben"
-            )
-        return True
-
-    enrol_to_moodle_course.short_description = "T>M"
-
-    def unenrol_from_moodle_course(self, request, obj, parent_obj=None):
-        obj.enroled = False
-        obj.save()
-        unenrol_user_from_course(obj.moodle_id, obj.event.moodle_id)
-
-    unenrol_from_moodle_course.short_description = "TxM"
-
-    def update_role_to_moodle_course(self, request, obj, parent_obj=None):
-        # list of role ids
-        role_id_list = [item.roleid for item in obj.roles.all()]
-        assign_roles_to_enroled_user(obj.event.moodle_id, obj.moodle_id, role_id_list)
-
-    update_role_to_moodle_course.short_description = "UR"
 
     def delete_user(self, request, obj, parent_obj):
         obj.delete()
@@ -1243,8 +1168,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         "full_price",
         "uuid",
         "slug",
-        "moodle_id",
-        "moodle_course_created",
         "date_created",
         "date_modified",
         "answers_summary_link",
@@ -1357,18 +1280,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             "Programm als Pdf",
             {"fields": ("pdf_file",)},
         ),
-        # (
-        #     "Moodle",
-        #     {
-        #         "fields": (
-        #             "moodle_course_type",
-        #             "moodle_id",
-        #             "moodle_course_created",
-        #             "moodle_new_user_flag",
-        #             "moodle_standard_password",
-        #         ),
-        #     },
-        # ),
         (
             "Zusatzinfos",
             {
@@ -1488,21 +1399,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         return queryset
 
     def get_start_date(self, obj):
-        """
-        wenn das Event ein Moodle-Kurs ist,
-        werden start_date und end_date angezeigt.
-        Beide Daten werden (Stand 16.3.21) in Moodle gepflegt
-        geandert 21.3.21
-        immer start_date_min und max der model instance
-        """
-        """
-        if obj.moodle_id > 0:
-            return obj.start_date
-        else:
-            if obj._start_date_min:
-                return obj._start_date_min.strftime("%d.%m.%y")
-            return "-"
-        """
         if obj._start_date_min:
             return obj._start_date_min.strftime("%d.%m.%y")
         return "-"
@@ -1511,15 +1407,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     get_start_date.short_description = "Beginn"
 
     def get_end_date(self, obj):
-        # siehe Bem. zu get_start_date
-        """
-        if obj.moodle_id > 0:
-            return obj.end_date
-        else:
-            if obj._start_date_max:
-                return obj._start_date_max.strftime("%d.%m.%y")
-            return "-"
-        """
         if obj._start_date_max:
             return obj._start_date_max.strftime("%d.%m.%y")
         return "-"
@@ -1545,14 +1432,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             actions.append("cancel_event")
         if obj and obj.status == "cancel" and not obj.is_past():
             actions.append("reactivate_event")
-        # if obj.moodle_id == 0 and obj.eventformat.moodle:
-        #     actions.append("create_course_in_moodle")
-        # if (
-        #     not obj.moodle_id == 0
-        #     and obj.category.name == "Onlineseminare"
-        #     and not obj.members.exists()
-        # ):
-        #     actions.append("delete_course_in_moodle")
         return actions
 
     def test_intermediate(self, request, obj, parent_obj=None):
@@ -1676,101 +1555,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
     def get_reactivate_event_css(self, obj):
         return "grp-button grp-reactivate-link"
 
-    def create_course_in_moodle(self, request, obj, parent_obj=None):
-        # obj.save()
-        category = (
-            obj.moodle_course_type
-        )  # wird in defaultmäßig als Fortbildung angelegt
-        if not obj.get_first_day():
-            self.message_user(
-                request,
-                "Kurs hat kein Startdatum und kann nicht angelegt werden",
-                messages.ERROR,
-            )
-            return None
-        else:
-            # check, which speakers have no email address
-            speakers = obj.speaker.all()
-            for speaker in speakers:
-                if speaker.last_name and not speaker.email:
-                    self.message_user(
-                        request,
-                        f"Dozent*in {speaker.last_name} hat keine E-Mail-Adresse und wird deshalb dem Kurs in Moodle nicht zugeordnet",
-                        messages.WARNING,
-                    )
-            response = create_moodle_course(
-                obj.name,
-                obj.label,
-                obj.description,
-                obj.moodle_new_user_flag,
-                obj.moodle_standard_password,
-                category,
-                speakers,
-                obj.get_first_day(),
-                obj.get_last_day(),
-            )
-        if type(response) == dict:
-            if "warnings" in response and response["warnings"]:
-                self.message_user(request, response["warnings"], messages.WARNING)
-            if "exception" in response or "errorcode" in response:
-                self.message_user(
-                    request,
-                    f"Moodle-Kurs konnte nicht angelegt werden: {response.get('exception', '')}, {response.get('errorcode', '')}, {response.get('message', '')}",
-                    messages.ERROR,
-                )
-        else:
-            new_course_id = response[0].get("id", 0)  # moodle id of the new course
-            obj.moodle_id = new_course_id
-            obj.moodle_course_created = True
-            obj.save()
-            self.message_user(
-                request,
-                f"neuer Moodle-Kurs mit ID {new_course_id} angelegt",
-                messages.SUCCESS,
-            )
-
-    create_course_in_moodle.short_description = ">M"
-
-    def delete_course_in_moodle(self, request, obj, parent_obj=None):
-        if obj.moodle_id == 0:
-            self.message_user(
-                request,
-                "Kurs ist kein Moodle-Kurs und kann nicht gelöscht werden",
-                messages.ERROR,
-            )
-            return None
-        elif obj.members.exists():
-            self.message_user(
-                request,
-                "Kurs hat Teilnehmer und kann nicht gelöscht werden",
-                messages.ERROR,
-            )
-            return None
-        else:
-            response = delete_moodle_course(obj.moodle_id)
-
-        if type(response) == dict:
-            print(response)
-            if "warnings" in response and not response["warnings"]:
-                self.message_user(
-                    request,
-                    f"Moodle-Kurs mit ID {obj.moodle_id} wurde gelöscht, im EventManager ist er aber weiterhin vorhanden.",
-                    messages.SUCCESS,
-                )
-                obj.moodle_id = 0
-                obj.moodle_course_created = False
-                obj.save()
-            if "exception" in response or "errorcode" in response:
-                self.message_user(
-                    request,
-                    f"Moodle-Kurs konnte nicht gelöscht werden: {response.get('exception', '')}, {response.get('errorcode', '')}, {response.get('message', '')}",
-                    messages.ERROR,
-                )
-        else:
-            return None
-
-    delete_course_in_moodle.short_description = "xM"
-
     def copy_event(self, request, queryset):
         # TODO: handling of fk's , ref: https://stackoverflow.com/questions/32234986/duplicate-django-model-instance-and-all-foreign-keys-pointing-to-it
         # with this
@@ -1800,9 +1584,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
             # set collections to none
             event.event_collection = None
             event.payless_collection = None
-            event.moodle_id = 0
-            event.moodle_course_created = False
-            event.moodle_new_user_flag = False
             event.students_number = 0
 
             event.save()

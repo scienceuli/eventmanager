@@ -104,7 +104,6 @@ from shop.admin import OrderItemAdmin
 from shop.forms import CartAddEventForm
 from shop.models import OrderItem
 
-from .api import call
 from .choices import (
     BOOKING_CHOICES_27,
     BOOKING_CHOICES_28,
@@ -395,11 +394,6 @@ class EventListView(ListView):
         return queryset.order_by("first_day")
 
     def get_context_data(self, **kwargs):
-        # get moodle courses
-        # fname = 'core_course_get_courses'
-        # courses_list = call(fname)
-        print("called")
-
         # events from database
         context = super().get_context_data(**kwargs)
 
@@ -980,21 +974,6 @@ def event_pre_register(request, slug):
         "events/event_pre_register_form.html",
         {"form": form, "event": event},
     )
-
-
-# moodle
-def moodle(request):
-    fname = "core_course_get_courses"
-    courses_list = call(fname)
-    context = {"courses": courses_list}
-    return render(request, "events/moodle_list.html", context)
-
-
-@login_required(login_url="login")
-def get_moodle_data(request):
-    get_and_save_courses_from_moodle.delay()
-    return HttpResponse("moodle Daten aktualisiert")
-
 
 @login_required(login_url="login")
 def admin_event_pdf(request, event_id):

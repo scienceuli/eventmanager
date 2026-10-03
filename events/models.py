@@ -687,24 +687,7 @@ class Event(BaseModel, HitCountMixin):
         ("cancel", "abgesagt"),
     )
     status = models.CharField(choices=STATUS_CHOICES, max_length=10, default="active")
-    moodle_id = models.PositiveSmallIntegerField(default=0)
-    moodle_course_created = models.BooleanField(default=False)
 
-    MOODLE_COURSE_TYPE_CHOICES = (
-        (3, "in Planung"),
-        (4, "Fortbildungen"),
-    )
-    moodle_course_type = models.PositiveSmallIntegerField(
-        verbose_name="Moodle Kurstyp", choices=MOODLE_COURSE_TYPE_CHOICES, default=4
-    )
-    moodle_new_user_flag = models.BooleanField(
-        verbose_name="Autom. E-Mail an neue Moodle-User",
-        default=False,
-        help_text="Hier kann für den Kurs festgelegt werden, ob neue Moodle-User die automatische Begrüßungsmail von Moodle (mit Zufallspasswort) bekommen (default=False). Ist das Feld nicht angeklickt, verschickt Moodle keine E-Mail und die neuen User können sich mit dem Standardpasswort anmelden. Bein Änderung dieses Feldes immer erst abspeichern!",
-    )
-    moodle_standard_password = models.CharField(
-        max_length=24, verbose_name="Moodle Standard-Passwort", default="VfllMoodle123#"
-    )
     students_number = models.PositiveSmallIntegerField(default=0, editable=False)
     confirmation_template = models.FileField(
         verbose_name="Vorlage Teilnahmebescheinigung (PDF)",
@@ -1308,7 +1291,6 @@ class EventMember(AddressModel):
     mail_to_admin = models.BooleanField("m > admin", default=False)
     mail_to_member = models.BooleanField("m > member", default=False)
     via_form = models.BooleanField("AF", default=False)
-    moodle_id = models.PositiveIntegerField("MoodleID", default=0)
     roles = models.ManyToManyField(MemberRole, through="EventMemberRole")
     enroled = models.BooleanField(">m", default=False)
 

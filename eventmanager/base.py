@@ -99,7 +99,6 @@ INSTALLED_APPS = [
     # lokale apps
     "events.apps.EventsConfig",
     "users.apps.UsersConfig",
-    "moodle.apps.MoodleConfig",
     "bugz.apps.BugzConfig",
     "shop.apps.ShopConfig",
     "payment.apps.PaymentConfig",

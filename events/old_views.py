@@ -108,8 +108,6 @@ from .forms import (
 
 from shop.forms import CartAddEventForm
 
-from .api import call
-
 from .serializers import EventSerializer
 
 from .choices import MEMBERSHIP_CHOICES, FOOD_PREFERENCE_CHOICES
