@@ -1132,7 +1132,6 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
         event = get_object_or_404(Event, id=int(object_id))
         return hitcount_view(request, self, event)
 
-    change_list_template = "admin/event_change_list.html"
     change_form_template = "admin/event_change_form.html"
 
     list_display = (
