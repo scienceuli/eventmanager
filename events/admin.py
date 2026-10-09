@@ -1633,14 +1633,8 @@ class EventAdmin(InlineActionsModelAdminMixin, admin.ModelAdmin):
 
         event = form.instance
 
-        # update dates
-        first_day = event.get_first_day_start_date()
-        last_day = event.get_last_day_start_date()
-
-        if event.first_day != first_day or event.last_day != last_day:
-            event.first_day = first_day
-            event.last_day = last_day
-            event.save(update_fields=["first_day", "last_day"])
+        # the EventDay signal already did this; also refreshes the in-memory instance
+        event.update_dates()
 
         # ensure survey
         service = SurveyService()

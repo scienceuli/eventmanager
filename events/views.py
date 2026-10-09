@@ -618,7 +618,9 @@ class EventCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
             else:
                 print("ERROR", days.errors)
                 messages.error(self.request, "ERROR")
-        return super(EventCreateView, self).form_valid(form)
+        # No super().form_valid(): it would save the form a second time and
+        # overwrite first_day/last_day set by the EventDay signal with None.
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class EventUpdateModalView(LoginRequiredMixin, BSModalUpdateView):
@@ -664,8 +666,9 @@ class EventUpdateView(LoginRequiredMixin, UpdateView):
                 days.save()
             else:
                 print("ERROR", days.errors)
-                messages.error(request, "ERROR")
-        return super(EventUpdateView, self).form_valid(form)
+                messages.error(self.request, "ERROR")
+        # see EventCreateView.form_valid
+        return HttpResponseRedirect(self.get_success_url())
 
 
 class EventCollectionDetailView(DetailView):

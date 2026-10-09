@@ -908,6 +908,19 @@ class Event(BaseModel, HitCountMixin):
         except IndexError:
             pass
 
+    def update_dates(self):
+        """Store first_day/last_day from the event days.
+
+        The event lists filter and sort by these fields, so they have to
+        follow every change of the event days. Uses a queryset update, so it
+        neither triggers save() logic nor fails if the event is being deleted.
+        """
+        self.first_day = self.get_first_day_start_date()
+        self.last_day = self.get_last_day_start_date()
+        Event.objects.filter(pk=self.pk).update(
+            first_day=self.first_day, last_day=self.last_day
+        )
+
     def is_several_days(self):
         return self.event_days.count() > 1
 

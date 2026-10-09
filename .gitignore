@@ -68,7 +68,6 @@ development.py
 db.sqlite3
 db.sqlite3-journal
 db-dev.sqlite3
-manage.py
 media
 
 # Flask stuff:
