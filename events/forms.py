@@ -25,8 +25,6 @@ from django_countries.fields import CountryField
 from django_countries.widgets import CountrySelectWidget
 from django_tables2 import CheckBoxColumn
 from entangled.forms import EntangledModelForm
-from jinja2 import ChainableUndefined
-from regex import B
 from tinymce.widgets import TinyMCE
 
 from events.models import (

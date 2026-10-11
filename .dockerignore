@@ -1,0 +1,34 @@
+.git
+.gitignore
+.vscode
+.claude
+.DS_Store
+**/__pycache__
+*.pyc
+.coverage
+htmlcov/
+
+# Local environments and secrets
+.env
+**/.env
+.python-version
+event_env/
+old_event_env/
+node_modules/
+eventmanager/local_settings.py
+
+# Live data must never end up in the image
+*.sqlite3
+*.sqlite3-journal
+*.json.gz
+eventmanager_data.json
+filtered_data.json
+media/
+static/
+sent_emails/
+orders_sent.csv
+*.log
+
+# Misc local tools
+ngrok
+docker-compose.yml

@@ -30,7 +30,6 @@ from fieldsets_with_inlines import FieldsetsInlineMixin
 
 # for inline actions, from 3rd party module
 from inline_actions.admin import InlineActionsMixin, InlineActionsModelAdminMixin
-from mapbox_location_field.admin import MapAdmin
 
 from event_feedback.services.feedback_service import SurveyService
 from events.filter import DateRangeFilter, MembershipFilter, PeriodFilter

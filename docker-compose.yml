@@ -1,0 +1,54 @@
+# Local smoke test of the container setup (the servers get their compose
+# file from the Ansible role "eventmanager", which mirrors this one).
+#
+#   cp docker/env.example docker/.env   # and fill in
+#   docker compose up --build
+#   -> http://localhost:8000 (static/media are served by nginx on the
+#      servers, locally only the app itself is reachable)
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: eventmanager
+      POSTGRES_USER: eventmanager
+      POSTGRES_PASSWORD: eventmanager
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eventmanager -d eventmanager"]
+      interval: 5s
+      retries: 10
+
+  mjml:
+    image: liminspace/mjml-tcpserver:1.4
+
+  web:
+    build: .
+    image: eventmanager:latest
+    env_file: docker/.env
+    environment:
+      RUN_MIGRATIONS: "1"
+      DATABASE_URL: postgres://eventmanager:eventmanager@db:5432/eventmanager
+    ports:
+      - "8000:8000"
+    volumes:
+      - app-data:/data
+    depends_on:
+      db:
+        condition: service_healthy
+
+  mailqueue:
+    image: eventmanager:latest
+    command: ["/app/docker/mailqueue.sh"]
+    env_file: docker/.env
+    environment:
+      DATABASE_URL: postgres://eventmanager:eventmanager@db:5432/eventmanager
+    volumes:
+      - app-data:/data
+    depends_on:
+      - web
+
+volumes:
+  db-data:
+  app-data:

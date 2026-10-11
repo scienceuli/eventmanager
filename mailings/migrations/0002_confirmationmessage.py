@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('mailqueue', '0009_alter_attachment_file_attachment'),
+        ('mailqueue', '0008_alter_attachment_file_attachment_and_more'),
         ('events', '0019_auto_20260422_2006'),
         ('mailings', '0001_initial'),
     ]

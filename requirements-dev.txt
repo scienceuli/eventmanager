@@ -1,0 +1,6 @@
+# Development tools, not installed in the Docker image
+#   pip install -r requirements-dev.txt
+-r requirements.txt
+black==26.10.0
+coverage==7.16.2
+isort==9.0.2
