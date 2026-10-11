@@ -10,7 +10,7 @@ _logger = logging.getLogger(__name__)
 
 from django import http
 
-locale.setlocale(locale.LC_ALL, "de_DE")
+locale.setlocale(locale.LC_ALL, "de_DE.UTF-8")
 
 from decimal import Decimal
 
