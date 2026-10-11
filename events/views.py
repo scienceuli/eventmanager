@@ -160,7 +160,11 @@ yes_no_dict = {
 }
 
 # for German locale
-locale.setlocale(locale.LC_TIME, "de_DE")
+try:
+    locale.setlocale(locale.LC_TIME, "de_DE.UTF-8")
+except locale.Error:
+    pass
+
 
 
 def is_member_of_mv_orga(user):

@@ -12,6 +12,9 @@ RUN apt-get update \
         wkhtmltopdf \
         fonts-dejavu-core \
         gettext \
+        locales \
+    && sed -i 's/^# *\(de_DE.UTF-8 UTF-8\)/\1/' /etc/locale.gen \
+    && locale-gen \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
