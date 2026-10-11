@@ -38,5 +38,13 @@
     "name": "can_export",
     "permissions": []
   }
+},
+{
+  "model": "auth.group",
+  "pk": 6,
+  "fields": {
+    "name": "newsletter",
+    "permissions": []
+  }
 }
 ]
