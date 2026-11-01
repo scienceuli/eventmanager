@@ -1,4 +1,4 @@
-{% load static honeypot %}
+{% load static honeypot vfllnl_tags %}
 
 <div class="bg-vfllred text-white mt-12">
     <div class="mx-auto max-w-7xl px-6 py-12 lg:px-8 lg:py-16">
@@ -21,6 +21,11 @@
                 >
                     {% csrf_token %}
                     {% render_honeypot_field "secret_key_for_vfll" %}
+                    <input type="hidden" name="form_token" value="{% nl_form_token %}" />
+                    <div style="position: absolute; left: -10000px;" aria-hidden="true">
+                        <label for="nl-website">Website</label>
+                        <input id="nl-website" type="text" name="website" value="" tabindex="-1" autocomplete="off" />
+                    </div>
                     <label for="newsletter-email" class="sr-only"
                         >Email address</label
                     >

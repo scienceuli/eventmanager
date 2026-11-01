@@ -6,6 +6,7 @@ import traceback
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
@@ -25,6 +26,7 @@ from .email_utility import send_subscription_email
 from .encrypt_utils import decrypt, encrypt
 from .forms import EmailTemplateForm
 from .models import EmailTemplate, NewsletterSubscription
+from .templatetags.vfllnl_tags import FORM_TOKEN_SALT
 from .utils import save_email, validate_email
 
 
@@ -38,11 +40,46 @@ def unsubscribe(request, email):
     return redirect("home")  # Redirect to a page after unsubscribing
 
 
+FORM_MIN_SECONDS = 3  # humans need longer than this to type an email address
+FORM_MAX_AGE = 60 * 60 * 24
+
+
+def is_bot_submission(post_data):
+    """Return a reason string if the signup looks automated, else None."""
+    if post_data.get("website"):
+        return "bait field filled"
+    try:
+        rendered_at = signing.loads(
+            post_data.get("form_token", ""), salt=FORM_TOKEN_SALT, max_age=FORM_MAX_AGE
+        )
+    except signing.SignatureExpired:
+        return "form token expired"
+    except signing.BadSignature:
+        return "form token missing or invalid"
+    if time.time() - rendered_at < FORM_MIN_SECONDS:
+        return "submitted too fast"
+    return None
+
+
 @check_honeypot(field_name="secret_key_for_vfll")
 def subscribe(request):
     if request.method == "POST":
         post_data = request.POST.copy()
         email = post_data.get("email", None)
+
+        bot_reason = is_bot_submission(post_data)
+        if bot_reason:
+            logging.getLogger("warning").warning(
+                "Rejected newsletter signup for %s: %s", email, bot_reason
+            )
+            # pretend success so bots get no feedback
+            messages.success(
+                request,
+                "Eine E-Mail wurde gesendet. Bitte bestätige deine Anmeldung "
+                "durch Klicken des Links in der E-Mail.",
+            )
+            return HttpResponseRedirect(reverse("vfllnl:subscribe"))
+
         error_msg = validate_email(email)
         if error_msg:
             messages.error(request, error_msg)
