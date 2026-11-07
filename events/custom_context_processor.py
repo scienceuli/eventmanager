@@ -42,7 +42,7 @@ def events_in_frontend_context(request):
 
 
 def dev_ribbon(request):
-    return {"SHOW_DEV_RIBBON": settings.DEBUG}
+    return {"SHOW_DEV_RIBBON": getattr(settings, "SHOW_DEV_RIBBON", settings.DEBUG)}
 
 
 def site_settings(request):

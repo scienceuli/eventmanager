@@ -16,6 +16,8 @@ env = environ.Env()
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env.bool("DEBUG", default=False)
 USE_2FA = env.bool("USE_2FA", default=False)
+# "DEV" ribbon in the corner of every page (set per instance by Ansible)
+SHOW_DEV_RIBBON = env.bool("SHOW_DEV_RIBBON", default=DEBUG)
 
 if USE_2FA:
     LOGIN_URL = "two_factor:login"
