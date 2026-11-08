@@ -14,8 +14,12 @@ function changePrice() {
     var priceElement = document.getElementById('totalprice');
     var discountedPriceElement = document.getElementById('discounted-totalprice');
     
+    // employer-paid participation never gets the member discount
+    var employedCheckBox = document.getElementById("id_employed");
+    var employed = employedCheckBox && employedCheckBox.checked;
+
     //if ((checkBox.checked == true) ) {
-    if ((checkBox.checked == true) || (membershipCheckBoxes.some(checkCheck) == true)) {
+    if (!employed && ((checkBox.checked == true) || (membershipCheckBoxes.some(checkCheck) == true))) {
         // hide the priceElement and singlePriceElement
         singlePriceElement.style.display = "none";
         priceElement.style.display = "none";

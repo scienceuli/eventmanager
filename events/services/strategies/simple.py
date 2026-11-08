@@ -25,6 +25,11 @@ class SimpleRegistrationStrategy(BaseRegistrationStrategy):
         data = form_utils.get_personal_form_data(form)
         data.update(form_utils.get_additional_form_data(form, event, event.registration_form))
         data["attend_status"] = member.attend_status
+        data["employed_string"] = (
+            "Teilnahme über Arbeitgeber (Kosten trägt der Arbeitgeber, voller Preis)"
+            if member.employed
+            else ""
+        )
         survey_service = SurveyService()
         survey_service.ensure_survey(event)
         data["survey_info"] = f"Feedback-Link: {survey_service.build_survey_link(member)}"

@@ -26,9 +26,13 @@ class OrderService:
             email=self.email,
             phone=self.form.cleaned_data["phone"],
         )
+        employed = self.form.cleaned_data.get("employed", False)
+        order.employed = employed
+        order.company_email = self.form.cleaned_data.get("company_email", "") or ""
         vfll = self.form.cleaned_data["vfll"]
         memberships = self.form.cleaned_data["memberships"]
-        order.discounted = vfll or (len(memberships) > 0)
+        # employer-paid participation always pays the full (premium) price
+        order.discounted = not employed and (vfll or (len(memberships) > 0))
 
         # only cart items where payment is possible belong to order
         order.save()

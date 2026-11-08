@@ -22,6 +22,10 @@ class Order(AddressModel):
     academic = models.CharField("Titel", max_length=40, null=True, blank=True)
     company = models.CharField("Firma", max_length=255, null=True, blank=True)
     phone = models.CharField("Tel", max_length=64, blank=True)
+    employed = models.BooleanField(verbose_name="über Arbeitgeber", default=False)
+    company_email = models.EmailField(
+        verbose_name="E-Mail Firma", blank=True, max_length=255
+    )
 
     email = models.EmailField(verbose_name="E-Mail")
     payment_type = models.CharField(
