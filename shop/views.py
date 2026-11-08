@@ -139,7 +139,7 @@ class OrderCreateView(FormView):
 
         order_price_html_string = "<br>".join(
             [
-                f"{item['event'].name} – {locale.currency(item['premium_price'], grouping=False, symbol=False)} €*"
+                f"{item['event'].name} – {locale.currency(item['premium_price'], grouping=False, symbol=False)} €<span class='nonmember_star'>*</span>"
                 for item in payment_cart
             ]
         )
@@ -152,7 +152,7 @@ class OrderCreateView(FormView):
         )
 
         order_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_total_price(), grouping=False, symbol=False)} €</span>"
-        order_totalprice_html_string += "<br><span class='italic'>*Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span>"
+        order_totalprice_html_string += "<span id='nonmember_note'><br><span class='italic'>*Preis für Nichtmitglieder. VFLL-Mitglied? Dann bitte entsprechendes Feld anklicken.</span></span>"
 
         order_discounted_totalprice_html_string = f"<span class='font-semibold'>Gesamtpreis: {locale.currency(cart.get_discounted_total_price(), grouping=False, symbol=False)} €</span>"
 

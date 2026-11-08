@@ -119,7 +119,10 @@ def create_mail(invoice):
     invoice_email = InvoiceMessage()
     invoice_email.subject = f"VFLL - {invoice_dict[invoice_type]['subject']} Nr. {invoice.invoice_number}" if invoice_type in invoice_dict else f"VFLL - {invoice_dict[invoice_type]} zu Nr. {invoice.invoice_number}"
     invoice_email.from_address = settings.DEFAULT_FROM_EMAIL
-    invoice_email.to_address = order.email
+    # employer-paid registrations: invoice goes to the company
+    invoice_email.to_address = (
+        order.company_email if order.employed and order.company_email else order.email
+    )
     invoice_email.reply_to = settings.REPLY_TO_EMAIL
     if len(settings.EMAIL_NOTIFY_BCC) > 0:
         invoice_email.bcc_address = settings.EMAIL_NOTIFY_BCC

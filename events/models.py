@@ -1275,6 +1275,14 @@ class EventMember(AddressModel):
     company = models.CharField(
         verbose_name="Firma", max_length=255, null=True, blank=True
     )
+    employed = models.BooleanField(
+        verbose_name="über Arbeitgeber",
+        default=False,
+        help_text="Teilnahme als Angestellte*r, Kosten trägt der Arbeitgeber (Adresse = Firmenadresse, voller Preis).",
+    )
+    company_email = models.EmailField(
+        verbose_name="E-Mail Firma", blank=True, max_length=255
+    )
     vfll = models.BooleanField(verbose_name="VFLL-Mitglied", default=False)
 
     memberships = models.CharField(

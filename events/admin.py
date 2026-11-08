@@ -391,6 +391,7 @@ class EventMemberAdmin(admin.ModelAdmin):
         "email",
         "vfll",
         "memberships",
+        "employed",
         "event",
         "date_created",
         "via_form",
@@ -412,7 +413,18 @@ class EventMemberAdmin(admin.ModelAdmin):
         ("Status", {"fields": ("attend_status",)}),
         (
             "Anschrift",
-            {"fields": ("address_line", "street", "postcode", "city", "state")},
+            {
+                "fields": (
+                    "employed",
+                    "company",
+                    "company_email",
+                    "address_line",
+                    "street",
+                    "postcode",
+                    "city",
+                    "state",
+                )
+            },
         ),
         (
             "weitere Angaben",

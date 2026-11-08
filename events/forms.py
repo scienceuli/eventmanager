@@ -392,6 +392,25 @@ class EventMemberForm(forms.Form):
             if value in self["memberships"].value()
         ]
 
+    # registration as employee: costs are covered by the employer.
+    # If checked, the address fields are the company (billing) address,
+    # company and company_email are required and member discounts don't apply.
+    employed = forms.BooleanField(
+        label="Sie sind in einem Anstellungsverhältnis und die Kosten übernimmt Ihr Arbeitgeber?",
+        widget=forms.CheckboxInput(
+            attrs={"class": "form-radio", "onclick": "toggleCompanyRegistration()"}
+        ),
+        required=False,
+        initial=False,
+    )
+    company_email = forms.EmailField(
+        widget=forms.EmailInput(
+            attrs={
+                "class": "block w-full p-3 mt-2 text-gray-700 bg-gray-200 appearance-none focus:outline-none focus:bg-gray-300 focus:shadow-inner"
+            }
+        ),
+        required=False,
+    )
     academic = forms.CharField(
         widget=forms.TextInput(
             attrs={
@@ -571,6 +590,28 @@ class EventMemberForm(forms.Form):
         firstname = cleaned_data.get('firstname')
         lastname = cleaned_data.get('lastname')
         company = cleaned_data.get('company')
+
+        if cleaned_data.get("employed"):
+            # participation as employee: name of participant is mandatory,
+            # address and company_email belong to the employer
+            if not firstname:
+                self.add_error("firstname", "Bitte Vornamen angeben.")
+            if not lastname:
+                self.add_error("lastname", "Bitte Nachnamen angeben.")
+            if not company:
+                self.add_error("company", "Bitte den Namen Ihres Arbeitgebers angeben.")
+            if not cleaned_data.get("company_email"):
+                self.add_error(
+                    "company_email",
+                    "Bitte die E-Mail-Adresse Ihres Arbeitgebers (für die Rechnung) angeben.",
+                )
+            # member discounts / education bonus don't apply for employer-paid participation
+            cleaned_data["vfll"] = False
+            cleaned_data["memberships"] = []
+            cleaned_data["education_bonus"] = False
+            return cleaned_data
+
+        cleaned_data["company_email"] = ""
         if not firstname and not company:
             self.add_error(
                 "firstname",

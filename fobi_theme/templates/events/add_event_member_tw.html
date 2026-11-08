@@ -35,6 +35,17 @@
     <form class="mt-6 divide-y divide-red" method="post">
       {% csrf_token %}
       <div class="grid grid-cols-1 py-5">
+        <label for="{{ form.employed.id_for_label }}" class="inline-flex items-center">
+          {{ form.employed }}
+          <span class="ml-3 text-xs font-semibold text-gray-600 uppercase">{{ form.employed.label }}</span>
+        </label>
+        <p id="employed_note" class="mt-2 text-xs text-gray-600" {% if not form.employed.value %}style="display:none"{% endif %}>
+          Bitte geben Sie Ihren Namen und Ihre E-Mail-Adresse für die Teilnahme sowie Anschrift und
+          E-Mail-Adresse Ihres Arbeitgebers für die Rechnung an. Bei Teilnahme über den Arbeitgeber
+          gilt der reguläre Preis (keine Mitgliederermäßigung).
+        </p>
+      </div>
+      <div class="grid grid-cols-1 py-5">
         <div class="flex justify-between gap-3">
           <span class="w-1/3">
 
@@ -60,11 +71,22 @@
             {% endfor %}
           </span>
         </div>
+        <label for="email" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">E-Mail</label>
+        {{ form.email }}
+        {% for error in form.email.errors %}
+        <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+        {% endfor %}
+        <p id="email_note" class="mt-2 text-xs text-gray-600">Wenn Sie bereits einen Zugang zur Lernplattform der Akademie haben, verwenden Sie bitte die dort verwendete E-Mail-Adresse.</p>
+
+        <p id="company_address_heading" class="mt-4 text-xs font-semibold text-gray-600 uppercase" {% if not form.employed.value %}style="display:none"{% endif %}>Angaben zum Arbeitgeber (Rechnungsanschrift)</p>
+        <label for="company" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Firma</label>
+        {{ form.company }}
+        {% for error in form.company.errors %}
+        <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+        {% endfor %}
         <label for="address_line" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Anschrift
           Zusatz</label>
         {{ form.address_line }}
-        <label for="address_line" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Firma</label>
-        {{ form.company }}
         <label for="street" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Straße und
           Hausnummer</label>
         {{ form.street }}
@@ -81,9 +103,13 @@
         </div>
         <label for="country" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Land</label>
         {{ form.country }}
-        <label for="email" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">E-Mail</label>
-        {{ form.email }}
-        <p id="email_note" class="mt-2 text-xs text-gray-600">Wenn Sie bereits einen Zugang zur Lernplattform der Akademie haben, verwenden Sie bitte die dort verwendete E-Mail-Adresse.</p>
+        <div id="company_email_block" {% if not form.employed.value %}style="display:none"{% endif %}>
+          <label for="company_email" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">E-Mail Arbeitgeber (für die Rechnung)</label>
+          {{ form.company_email }}
+          {% for error in form.company_email.errors %}
+          <p class="mt-1 text-xs text-red-600">{{ error }}</p>
+          {% endfor %}
+        </div>
         <label for="phone" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Telefon</label>
         {{ form.phone }}
 
@@ -91,6 +117,7 @@
 
       </div>
       <div class="grid grid-cols-1 py-5">
+        <div id="membership_block" {% if form.employed.value %}style="display:none"{% endif %}>
         <label for="vfll" class="inline-flex items-center">
           {{ form.vfll }}
           <span class="ml-3 text-xs font-semibold text-gray-600 uppercase">Ich bin VFLL-Mitglied</span>
@@ -100,6 +127,7 @@
         <label for="memberships" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Ich bin Mitglied bei
           ...</label>
         {{ form.memberships }}
+        </div>
         <label for="attention" class="block mt-2 text-xs font-semibold text-gray-600 uppercase">Ich bin auf die
           Veranstaltung aufmerksam geworden durch</label>
         <div class="grid grid-cols-1 md:grid-cols2 gap-2 mt-2">
@@ -242,6 +270,7 @@
 {% endblock content %}
 
 {% block extrascript %}
+<script src="{% static 'js/company_registration.js' %}"></script>
 <script src="{% static 'js/change_price.js' %}"></script>
 
 {% endblock extrascript %}

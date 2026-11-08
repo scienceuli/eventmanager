@@ -62,6 +62,8 @@ def get_additional_form_data(form, event, form_type):
         data_dict["name"] = f"{event.label} | {timezone.now()}"
         data_dict["academic"] = form.cleaned_data["academic"]
         data_dict["company"] = form.cleaned_data["company"]
+        data_dict["employed"] = form.cleaned_data.get("employed", False)
+        data_dict["company_email"] = form.cleaned_data.get("company_email", "")
         data_dict["message"] = form.cleaned_data["message"]
         data_dict["vfll"] = form.cleaned_data["vfll"]
         data_dict["memberships"] = form.cleaned_data["memberships"]

@@ -116,6 +116,21 @@ class CreateOrderTest(OrderServiceTestBase):
 
         self.assertFalse(order.discounted)
 
+    def test_not_discounted_when_employed_even_if_member(self):
+        data = make_form_data(
+            vfll=True,
+            memberships=["BDU"],
+            employed=True,
+            company_email="rechnung@firma.de",
+        )
+        form = make_mock_form(data)
+        service = OrderService(form, "max@example.com")
+        order = service.create_order()
+
+        self.assertFalse(order.discounted)
+        self.assertTrue(order.employed)
+        self.assertEqual(order.company_email, "rechnung@firma.de")
+
 
 class EnsureOrderTest(OrderServiceTestBase):
 
