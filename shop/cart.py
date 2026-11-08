@@ -140,13 +140,12 @@ class Cart:
         Iterate over the items in the cart and get the events
         from the database.
         """
-        event_ids = self.cart.keys()
-        # get the event objects and add them to the cart
-        events = Event.objects.filter(id__in=event_ids)
-        cart = self.cart.copy()
+        events = Event.objects.filter(id__in=self.cart.keys())
         for event in events:
-            cart[str(event.id)]["event"] = event
-        for item in cart.values():
+            # copy each item: the session must only hold JSON-serializable
+            # values (str), never Decimal or model instances
+            item = dict(self.cart[str(event.id)])
+            item["event"] = event
             item["price"] = Decimal(item["price"])  # the discounted price
             item["premium_price"] = Decimal(item["premium_price"])
             item["total_price"] = item["price"] * item["quantity"]
