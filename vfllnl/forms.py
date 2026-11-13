@@ -1,4 +1,5 @@
 from django import forms
+from .constants import SUBSCRIBE_STATUS_CONFIRMED
 from .models import EmailTemplate, NewsletterSubscription
 from ckeditor.fields import RichTextFormField
 
@@ -26,7 +27,9 @@ class EmailTemplateForm(forms.ModelForm):
         instance = kwargs.get('instance', None)
         # first call parent's constructor
         super().__init__(*args, **kwargs)        # there's a `fields` property now
-        self.subs = NewsletterSubscription.objects.all()
+        self.subs = NewsletterSubscription.objects.filter(
+            status=SUBSCRIBE_STATUS_CONFIRMED
+        )
         #self.fields["recipients"].queryset = subs
         choices = [(ALL_RECIPIENTS_ID, "Alle Subscribers")] + [
             (str(sub.pk), str(sub)) for sub in self.subs

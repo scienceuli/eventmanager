@@ -8,14 +8,15 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core import signing
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.mail import send_mail
+from django.core.mail import EmailMultiAlternatives, get_connection
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.html import strip_tags
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-from honeypot.decorators import check_honeypot
+from honeypot.decorators import check_honeypot, honeypot_exempt
 
 from .constants import (
     SEPARATOR,
@@ -30,14 +31,38 @@ from .templatetags.vfllnl_tags import FORM_TOKEN_SALT
 from .utils import save_email, validate_email
 
 
-def unsubscribe(request, email):
+UNSUBSCRIBE_SALT = "vfllnl.unsubscribe"
+
+
+def make_unsubscribe_token(email):
+    return signing.dumps(email, salt=UNSUBSCRIBE_SALT)
+
+
+def add_html_footer(html, footer):
+    """Insert footer before </body>, or append it if there is no body tag."""
+    index = html.lower().rfind("</body>")
+    if index == -1:
+        return html + footer
+    return html[:index] + footer + html[index:]
+
+
+@csrf_exempt  # one-click unsubscribe (RFC 8058) is POSTed by mail clients
+@honeypot_exempt
+def unsubscribe(request, token):
     try:
-        subscription = NewsletterSubscription.objects.get(email=email)
-        subscription.delete()
-        messages.success(request, "Du hast dich von Newsletter abgemeldet.")
-    except NewsletterSubscription.DoesNotExist:
-        messages.error(request, "E-Mail nicht gefunden.")
-    return redirect("home")  # Redirect to a page after unsubscribing
+        email = signing.loads(token, salt=UNSUBSCRIBE_SALT)
+    except signing.BadSignature:
+        messages.error(request, "Ungültiger Abmeldelink.")
+        return redirect("home")
+
+    # GET only shows a confirmation page: mail scanners follow links and
+    # would otherwise unsubscribe people unintentionally
+    if request.method != "POST":
+        return render(request, "vfllnl/unsubscribe.html", {"email": email})
+
+    NewsletterSubscription.objects.filter(email=email).delete()
+    messages.success(request, "Du hast dich vom Newsletter abgemeldet.")
+    return redirect("home")
 
 
 FORM_MIN_SECONDS = 3  # humans need longer than this to type an email address
@@ -138,9 +163,13 @@ def subscription_confirmation(request):
         token = token.split(SEPARATOR)
         email = token[0]
         print(email)
-        initiate_time = token[
-            1
-        ]  # time when email was sent , in epoch format. can be used for later calculations
+        initiate_time = float(token[1])  # time when email was sent, in epoch format
+        if time.time() - initiate_time > settings.NEWSLETTER_CONFIRMATION_DAYS * 86400:
+            messages.error(
+                request,
+                "Der Bestätigungslink ist abgelaufen. Bitte melde dich erneut an.",
+            )
+            return HttpResponseRedirect(reverse("vfllnl:subscribe"))
         try:
             subscribe_model_instance = NewsletterSubscription.objects.get(email=email)
             subscribe_model_instance.status = SUBSCRIBE_STATUS_CONFIRMED
@@ -214,21 +243,42 @@ def send_newsletter(request, pk):
 
     plain_message = strip_tags(html_message)
 
-    recipients = [subscriber.email for subscriber in obj.recipients.all()]
-    if not recipients:
-        recipients = [
-            subscriber.email for subscriber in NewsletterSubscription.objects.all()
-        ]
+    # no explicit selection means all subscribers; only confirmed ones get mail
+    subscribers = (
+        obj.recipients.all()
+        if obj.recipients.exists()
+        else NewsletterSubscription.objects.all()
+    )
+    recipients = [
+        subscriber.email
+        for subscriber in subscribers.filter(status=SUBSCRIBE_STATUS_CONFIRMED)
+    ]
     from_email = settings.NEWSLETTER_EMAIL_FROM
 
-    send_mail(
-        subject,
-        plain_message,
-        from_email,
-        recipients,
-        fail_silently=False,
-        html_message=html_message,
-    )
+    # one mail per recipient so subscribers don't see each other's addresses
+    # and every mail can carry a personal unsubscribe link
+    mails = []
+    for recipient in recipients:
+        unsubscribe_url = request.build_absolute_uri(
+            reverse("vfllnl:unsubscribe", args=[make_unsubscribe_token(recipient)])
+        )
+        footer = render_to_string(
+            "vfllnl/emails/unsubscribe_footer.html",
+            {"unsubscribe_url": unsubscribe_url},
+        )
+        mail = EmailMultiAlternatives(
+            subject,
+            plain_message + "\n\n" + strip_tags(footer).strip(),
+            from_email,
+            [recipient],
+            headers={
+                "List-Unsubscribe": f"<{unsubscribe_url}>",
+                "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+            },
+        )
+        mail.attach_alternative(add_html_footer(html_message, footer), "text/html")
+        mails.append(mail)
+    get_connection(fail_silently=False).send_messages(mails)
 
     obj.sent_at = obj.created_at
     obj.save()

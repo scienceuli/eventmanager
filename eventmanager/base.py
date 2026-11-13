@@ -309,6 +309,10 @@ ADMIN_EXPORT_ACTION = {"ENABLE_SITEWIDE": False}
 # honeypot
 HONEYPOT_FIELD_NAME = "secret_key_for_vfll"
 
+# newsletter: days a subscriber has to confirm (double opt-in); unconfirmed
+# subscriptions older than this are deleted by purge_unconfirmed_subscriptions
+NEWSLETTER_CONFIRMATION_DAYS = 7
+
 # invoiceninja settings
 INVOICE_NINJA_API_KEY = os.environ.get("INVOICE_NINJA_API_KEY", None)
 INVOICE_NINJA_BASE_URL = os.environ.get("INVOICE_NINJA_BASE_URL", None)

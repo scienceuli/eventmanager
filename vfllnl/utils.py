@@ -8,7 +8,7 @@ from django.contrib import messages
 
 from .models import NewsletterSubscription
 
-from .constants import SUBSCRIBE_STATUS_SUBSCRIBED
+from .constants import SUBSCRIBE_STATUS_CONFIRMED, SUBSCRIBE_STATUS_SUBSCRIBED
 
 
 def validate_email(email):
@@ -18,7 +18,9 @@ def validate_email(email):
         return "Invalid Email Address."
     elif email.split("@")[-1].lower() in blocklist:
         return "Temporäre E-Mail-Adressen werden nicht akzeptiert."
-    elif NewsletterSubscription.objects.filter(email=email).exists():
+    elif NewsletterSubscription.objects.filter(
+        email=email, status=SUBSCRIBE_STATUS_CONFIRMED
+    ).exists():
         return "E-Mail-Adresse exitiert bereits"
     else:
         return None
