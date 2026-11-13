@@ -13,7 +13,7 @@ def send_email(data):
             url,
             auth=("api", settings.MAILGUN_API_KEY),
             data={
-                "from": "VFLL <postmaster@mg.vfll.de>",
+                "from": "VFLL <noreply@mg.vfll.de>",
                 "to": [data["email"]],
                 "subject": data["subject"],
                 "text": data["plain_text"],
