@@ -203,6 +203,8 @@ class EventCategory(BaseModel):
     belongs_to_all_events = models.BooleanField(
         verbose_name="gehört zu VFLL-Fortbildungen", default=True
     )
+    show_location = models.BooleanField("Ort anzeigen", default=False)
+
 
     class Meta:
         ordering = ("position",)
@@ -223,6 +225,7 @@ class EventFormat(BaseModel):
     title = models.CharField(verbose_name="Titel", max_length=255, blank=True)
     description = models.TextField("Beschreibung", blank=True)
     moodle = models.BooleanField(default=False)
+    show_location = models.BooleanField("Ort anzeigen", default=False)
 
     class Meta:
         ordering = ("name",)
@@ -278,7 +281,7 @@ class EventOrganizer(BaseModel):
         verbose_name="Kontakt", max_length=255, blank=True, null=True
     )
     url = models.URLField(verbose_name="Veranstalter Website", blank=True)
-
+    show_organizer = models.BooleanField("Veranstalter zeigen", default=False)
     def __str__(self):
         return self.name
 

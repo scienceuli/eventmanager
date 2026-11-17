@@ -128,6 +128,16 @@
           <span class="text-sm italic"><a href="{% url 'event-collection-detail' event.event_collection.slug %}">{{ event.event_collection.name }}</a></span>
           {% endif %}
         </p>
+        {% if event.eventformat.show_location or event.category.show_location and event.location %}
+        <p class="text-left text-base">
+        <span class="mr-2">Ort:  {{ event.location.title }}
+        </p>
+        {% endif %}
+        {% if event.organizer and event.organizer.show_organizer %}
+        <p class="text-left text-base">
+        <span class="mr-2">Veranstalter:  {{ event.organizer.name }}
+        </p>
+        {% endif %}
         {% if event.label != 'zukunft2021' %}
         <p class="text-left text-base">
           {% if event.registration_possible %}
